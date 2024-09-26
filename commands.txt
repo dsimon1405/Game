@@ -1,0 +1,7 @@
+-> ZeroCore
+cd /home/dmitry/projects/Game/ZeroCore && git add . && git commit -m "" && cd /home/dmitry/projects/Game/build
+cd /home/dmitry/projects/Game/ZeroCore && git add . && git commit -m "" && git push origin main && cd /home/dmitry/projects/Game/build
+
+-> Game
+cd /home/dmitry/projects/Game && git add . && git commit -m "" && cd /home/dmitry/projects/Game/build
+cd /home/dmitry/projects/Game && git add . && git commit -m "" && git push origin main && cd /home/dmitry/projects/Game/build

@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/ZeroCore/include",
+                "${workspaceFolder}/ZeroCore/src",
+                "/home/dmitry/projects/external/glm/include",
+                "${workspaceFolder}/external/assimp/include",
+                "${workspaceFolder}/build/external/ZeroCore/config"
+            ],
+            "defines": [],
+            "cStandard": "c17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
