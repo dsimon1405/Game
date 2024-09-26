@@ -22,26 +22,22 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	F_FATAL_EQUAL(${process_result} 0 "git init => failed with: ${process_result}")
 endif()
 
-#	git clone assimp recursive while cloned
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/external/assimp/CMakeLists.txt")
-	message(STATUS "Git clone assimp")
-	function(F_TRY_CLONE_ASSIMP)
-		execute_process(COMMAND ${GIT_EXECUTABLE} clone "https://github.com/assimp/assimp.git external"
-						WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-						RESULT_VARIABLE process_result)
+function(F_TRY_CLONE_ASSIMP)
+	execute_process(COMMAND ${GIT_EXECUTABLE} clone "https://github.com/assimp/assimp.git"
+					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external
+					RESULT_VARIABLE process_result)
 
-		if(NOT ${process_result} EQUAL 0)
-			F_TRY_CLONE_ASSIMP()	#	recurcive call while not load assimp
-		else()
-			#	checkout
-			message(STATUS "Git checkout assimp to 97257a3")
-			execute_process(COMMAND ${GIT_EXECUTABLE} checkout "97257a3"
-							WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/assimp
-							RESULT_VARIABLE process_result)
-			F_FATAL_EQUAL(${process_result} 0 "git checkout assimp 97257a3 => failed with: ${process_result}")
-		endif()
-	endfunction()
-endif()
+	if(NOT ${process_result} EQUAL 0)
+		F_TRY_CLONE_ASSIMP()	#	recurcive call while not load assimp
+	else()
+		#	checkout
+		message(STATUS "Git checkout assimp to 97257a3")
+		execute_process(COMMAND ${GIT_EXECUTABLE} checkout "97257a3"
+						WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/assimp
+						RESULT_VARIABLE process_result)
+		F_FATAL_EQUAL(${process_result} 0 "git checkout assimp 97257a3 => failed with: ${process_result}")
+	endif()
+endfunction()
 
 # F_TRY_CLONE_ASSIMP()	#start trying to clone assimp
 
@@ -52,6 +48,12 @@ execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
                 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                 RESULT_VARIABLE process_result)
 F_FATAL_EQUAL(${process_result} 0 "git submodule update --init --recursive => failed with: ${process_result}")
+
+#	git clone assimp recursive while cloned
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/external/assimp/CMakeLists.txt")
+	message(STATUS "Git clone assimp")
+	F_TRY_CLONE_ASSIMP()
+endif()
 
 
 #	DELETE ON RELEASE AND ADD ZeroCore submodule last stabel commit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
