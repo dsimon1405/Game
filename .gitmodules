@@ -1,0 +1,3 @@
+[submodule "external/ZeroCore"]
+	path = external/ZeroCore
+	url = https://github.com/dsimon1405/ZeroCore.git

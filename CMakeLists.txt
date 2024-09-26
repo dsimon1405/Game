@@ -12,13 +12,13 @@ set(Game_ASSETS_DIRECTORY_NAME assets)
 set(Game_ASSETS_DESTINATION_PATH 
     ${PROJECT_BINARY_DIR}/$<$<PLATFORM_ID:Windows>:$<IF:$<CONFIG:Debug>,Debug/,Release/>>${Game_ASSETS_DIRECTORY_NAME})   #   windows?
 
-set(Game_MY_DEBUG 1)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
+set(Game_MY_DEBUG 0)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
 
 #========================= external libs
 #   add submodules
-# if(NOT Game_MY_DEBUG)
-#     add_subdirectory(cmakeGitSubmodules)
-# endif()
+if(NOT Game_MY_DEBUG)
+    add_subdirectory(cmakeGitSubmodules)
+endif()
 
 set(Game_INCLUDE_DIRS)
 set(Game_LINK_LIBS)
@@ -41,7 +41,7 @@ endif()
 set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS} PUBLIC $<IF:${Game_MY_DEBUG},${PROJECT_SOURCE_DIR}/ZeroCore/include,${PROJECT_SOURCE_DIR}/external/ZeroCore/include>)
 set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC ZeroCore)
 
-    #   Assimp
+    #   assimp
 if(Game_MY_DEBUG EQUAL 1)
     set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS} PUBLIC /home/dmitry/projects/external/assimp/include)
 else()
@@ -54,9 +54,9 @@ else()
         #   include
     set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS}
         PUBLIC ${PROJECT_SOURCE_DIR}/external/assimp/include
-        PUBLIC ${PROJECT_BINARY_DIR}/assimp/include)
+        PUBLIC ${PROJECT_BINARY_DIR}/external/assimp/include)
 endif()
-set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC $<IF:${Game_MY_DEBUG},/home/dmitry/projects/external/assimp/lib/libassimp.so,Assimp>)
+set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC $<IF:${Game_MY_DEBUG},/home/dmitry/projects/external/assimp/lib/libassimp.so,assimp>)
 
 #========================= ZERO CREATOR =========================
 
