@@ -5,10 +5,13 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/ZeroCore/include",
+                "${workspaceFolder}/ZeroCore/includeVariable",
                 "${workspaceFolder}/ZeroCore/src",
                 "/home/dmitry/projects/external/glm/include",
+                "/home/dmitry/projects/external/SDL3/include",
                 "${workspaceFolder}/external/assimp/include",
-                "${workspaceFolder}/build/external/ZeroCore/config"
+                "${workspaceFolder}/build/external/ZeroCore/config",
+                "${workspaceFolder}/src"
             ],
             "defines": [],
             "cStandard": "c17",

@@ -7,8 +7,11 @@
 class G_Camera
 {
 public:
+    ZC_Camera cam;
+
     G_Camera(ZC_Function<void(const ZC_Vec3<float>&)> _callback_camera_roatted);
 
+    void SetDefaultState();
     //  Change camera's look on. New position of camera save previous position's (camPos - lookOn) vector.
     void SetCameraLookOn(const ZC_Vec3<float>& lookOn);
     void MoveCamera(const ZC_Vec3<float>& lookOn);
@@ -16,8 +19,8 @@ public:
     void SetConnectionToEvents(bool use);
         //  rotate around Z axis
     float GetHorizontalRotationAngle() const;
+    void RotateCameraHorizontal(float angle);
 
-    ZC_Camera cam;
 private:
     ZC_Function<void(const ZC_Vec3<float>&)> callback_camera_roatted;
 
@@ -32,8 +35,8 @@ private:
     float distanceToObject = 15.f;
     
     const float sensitivityRotation = 1.f;
-    float horizontalAngle = 0.f,    //  rotate around Z
-        verticalAngle = 0.f;        //  rotate around X
+    float horizontalAngle = 0.f;    //  rotate around Z
+    float verticalAngle = 0.f;        //  rotate around X
 
     ZC_EC ec_mouseMove;
     ZC_EC ec_mouseScroll;

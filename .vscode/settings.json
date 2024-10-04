@@ -69,6 +69,11 @@
         "variant": "cpp",
         "d": "c",
         "condition_variable": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "shared_mutex": "cpp",
+        "any": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp",
+        "zc_renderlevel.h": "c"
     }
 }

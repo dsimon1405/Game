@@ -2,12 +2,20 @@
 
 #include <ZC/Events/ZC_Events.h>
 #include <ZC/Video/ZC_SWindow.h>
+#include <ZC/Tools/Math/ZC_Math.h>
 
 G_Camera::G_Camera(ZC_Function<void(const ZC_Vec3<float>&)> _callback_camera_rotated)
     : cam(CreateCamera()),
     callback_camera_roatted(std::move(_callback_camera_rotated))
 {
     cam.MakeActive();
+    SetDefaultState();
+}
+
+void G_Camera::SetDefaultState()
+{
+    horizontalAngle = 0.f;
+    verticalAngle = 0.f;
     MouseMoveCallback(0.f, 0.f, 0.f, -30.f, 1.f);
 }
 
@@ -26,7 +34,7 @@ void G_Camera::MoveCamera(const ZC_Vec3<float>& offset)
 
 void G_Camera::SetConnectionToEvents(bool use_events)
 {
-    if (use_events && ec_mouseMove.IsConnected()) return;
+    if (use_events == ec_mouseMove.IsConnected()) return;
     if (use_events)
     {
         ec_mouseMove.NewConnection(ZC_Events::ConnectMouseMoveOnceInFrame({ &G_Camera::MouseMoveCallback, this }));      //  disconnect scroll, connect mouse move callback
@@ -42,6 +50,13 @@ void G_Camera::SetConnectionToEvents(bool use_events)
 float G_Camera::GetHorizontalRotationAngle() const
 {
     return horizontalAngle;
+}
+
+void G_Camera::RotateCameraHorizontal(float angle)
+{
+    horizontalAngle += angle;
+    RotateAroundObject();
+    callback_camera_roatted(cam.GetPosition());
 }
 
 ZC_Camera G_Camera::CreateCamera()
@@ -60,8 +75,8 @@ void G_Camera::MouseMoveCallback(float x, float y, float xRel, float yRel, float
     // if (horizontalAngle >= 90.f) horizontalAngle = 89.9f;
     // else if (horizontalAngle <= -90.f) horizontalAngle = -89.9f;
     // verticalAngle += xRel * sensitivityRotation;
-    // if (verticalAngle >= 360.f) verticalAngle -= 360.f;
-    // else if (verticalAngle <= -360.f) verticalAngle += 360.f;
+    // if (verticalAngle >= ZC_angle_360f) verticalAngle -= ZC_angle_360f;
+    // else if (verticalAngle <= - ZC_angle_360f) verticalAngle += ZC_angle_360f;
 
     const float vertical_max = 20.f;
     const float vertical_min = 20.f;
@@ -70,8 +85,8 @@ void G_Camera::MouseMoveCallback(float x, float y, float xRel, float yRel, float
     if (verticalAngle >= vertical_max) verticalAngle = vertical_max;
     else if (verticalAngle <= vertical_min) verticalAngle = vertical_min;
     horizontalAngle += sensitivityRotation * xRel;
-    if (horizontalAngle >= 360.f) horizontalAngle -= 360.f;
-    else if (horizontalAngle <= -360.f) horizontalAngle += 360.f;
+    if (horizontalAngle >= ZC_angle_360f) horizontalAngle -= ZC_angle_360f;
+    else if (horizontalAngle <= - ZC_angle_360f) horizontalAngle += ZC_angle_360f;
 
     RotateAroundObject();
 

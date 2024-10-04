@@ -1,24 +1,19 @@
-#include <ZC/Video/ZC_SWindow.h>
-
-#include <G_GameManager.h>
-#include <ZC/Events/ZC_ESignal.h>
+#include "System/G_Window.h"
+#include "GamePlay/G_GameManager.h"
 
 int main(int argv, char** args)
 {
-    using namespace ZC_SWindow;
-    ZC_SWindow::MakeWindow(
-        ZC_SW__Multisampling_4 | 
-        ZC_SW__Border
-        //  | ZC_SW__GUI
-         , 800, 600, "Game");
-    // ZC_SWindow::SetFPS(0);
-    ZC_SWindow::NeedDrawFPS(true);
-    ZC_SWindow::SetFPSTimeMeasure(ZC_FPS_TM__Seconds);
-    ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
+    G_Window window;
+    G_GameManager gm;
 
-    G_GameaManager gm;
+    G_Config::Update_language(G_L_English);
+    // G_Config::Update_language(G_L_Russian);
+
+    // ZC_upSound s = ZC_Sounds::GetSound(0);
+    // s->Play();
+
     
-    ZC_SWindow::RunMainCycle();
+    window.RunMainCycle();
 
     return 0;
 }

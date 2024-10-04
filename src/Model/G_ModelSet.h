@@ -2,16 +2,7 @@
 
 #include <ZC/Video/OpenGL/Renderer/ZC_DrawerSet.h>
 #include <ZC/Collision/ZC_CO_Surface.h>
-
-enum G_ModelName
-{
-	G_MN__Sphere,
-	G_MN__Platform_cylinder_black,
-
-	G_MN__Platform_cube,
-
-	G_MN__sizeof
-};
+#include "G_ModelName.h"
 
 struct G_ModelSet
 {

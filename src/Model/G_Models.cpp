@@ -6,13 +6,14 @@
 
 void G_Models::LoadModels()
 {
-	models.reserve(G_MN__sizeof);
-	// G_ModelLoader::LoadModel((G_ModelName::G_MN__Sphere));
-	// G_ModelLoader::LoadModel((G_ModelName::G_MN__Platform_cylinder_black));
+	models.reserve(G_MN__Platform_cube);
 	for (int i = 0.f; i < G_MN__Platform_cube; ++i)
-		models.emplace_back(G_ModelLoader::LoadModel((G_ModelName)i));
+	{
+		auto& iter = models.emplace_back(G_ModelLoader::LoadModel((G_ModelName)i));
+		iter.radius = ZC_Vec::Length(GetFarestVertexOfSurface(iter.surfaces));	//	set radius
+	}
 
-	models.emplace_back(G_CubeModelCreator::LoadModel());	//	not from blender, hard coded vertices
+	// models.emplace_back(G_CubeModelCreator::LoadModel());	//	load quad platform, not from blender, hard coded vertices
 }
 
 ZC_DSController G_Models::GetModel_DSController(G_ModelName model_name, int texSetId, std::forward_list<ZC_uptr<ZC_RSPersonalData>>&& personalData)
@@ -24,27 +25,35 @@ ZC_DSController G_Models::GetModel_DSController(G_ModelName model_name, int texS
 ZC_CO_Figure G_Models::GetModel_COFigure(G_ModelName model_name, const ZC_Vec3<float>& scale)
 {
  	G_ModelSet* pMS = ZC_Find(models, model_name);
-		//	return farest vertex of first on surfaces quad
-	auto lamb_GetFarestVertex = [](const std::vector<ZC_CO_Surface<ZC_Vec3<float>>>& _surfaces)
-	{
-		LengtheKeeper lengthes[]
-		{
-			LengtheKeeper{ .v = &(_surfaces[0].points[0]), .length = ZC_Vec::Length(_surfaces[0].points[0]) },
-			LengtheKeeper{ .v = &(_surfaces[0].points[1]), .length = ZC_Vec::Length(_surfaces[0].points[1]) },
-			LengtheKeeper{ .v = &(_surfaces[0].points[2]), .length = ZC_Vec::Length(_surfaces[0].points[2]) },
-			LengtheKeeper{ .v = &(_surfaces[0].points[3]), .length = ZC_Vec::Length(_surfaces[0].points[3]) }
-		};
-		std::sort(lengthes, lengthes + 3, [](LengtheKeeper& lk1, LengtheKeeper& lk2) { return lk1.length > lk2.length; });
-		return *(lengthes[0].v);
-	};
-	if (pMS->radius == 0.f) pMS->radius = ZC_Vec::Length(lamb_GetFarestVertex(pMS->surfaces));		//	correct for model with origin at the {0,0,0}, and each of surfaces must have farest vertex (right geometry figures...)
+	return ZC_CO_Figure({ 0.f, 0.f, 0.f }, scale == ZC_Vec3<float>(1.f, 1.f, 1.f) ? pMS->radius : CalculateScaledRadius(GetFarestVertexOfSurface(pMS->surfaces), scale),
+		pMS->surfaces);
+}
 
-		//	calculates radius for scaled model
-	auto lamb_GetScaledRadius = [scale](const ZC_Vec3<float>& _farest_vertex)
-	{
-		ZC_Vec4<float> pos = ZC_Mat4<float>(1.f).Scale(scale) * ZC_Vec4<float>(_farest_vertex, 1.f);
-		return ZC_Vec::Length<float>({ pos[0], pos[1], pos[2] });
-	};
+float G_Models::CalculateRadius(G_ModelName model_name, const ZC_Vec3<float>& scale)
+{
+	return CalculateScaledRadius(GetFarestVertexOfSurface(ZC_Find(models, model_name)->surfaces), scale);
+}
 
-	return ZC_CO_Figure({ 0.f, 0.f, 0.f }, scale == ZC_Vec3<float>(1.f, 1.f, 1.f) ? pMS->radius : lamb_GetScaledRadius(lamb_GetFarestVertex(pMS->surfaces)), pMS->surfaces);
+float G_Models::GetRadius(G_ModelName model_name)
+{
+	return ZC_Find(models, model_name)->radius;
+}
+
+const ZC_Vec3<float>& G_Models::GetFarestVertexOfSurface(const std::vector<ZC_CO_Surface<ZC_Vec3<float>>>& _surfaces)
+{
+	LengtheKeeper lengthes[]
+	{
+		LengtheKeeper{ .v = &(_surfaces[0].points[0]), .length = ZC_Vec::Length(_surfaces[0].points[0]) },
+		LengtheKeeper{ .v = &(_surfaces[0].points[1]), .length = ZC_Vec::Length(_surfaces[0].points[1]) },
+		LengtheKeeper{ .v = &(_surfaces[0].points[2]), .length = ZC_Vec::Length(_surfaces[0].points[2]) },
+		LengtheKeeper{ .v = &(_surfaces[0].points[3]), .length = ZC_Vec::Length(_surfaces[0].points[3]) }
+	};
+	std::sort(lengthes, lengthes + 3, [](LengtheKeeper& lk1, LengtheKeeper& lk2) { return lk1.length > lk2.length; });
+	return *(lengthes[0].v);
+}
+
+float G_Models::CalculateScaledRadius(const ZC_Vec3<float>& _farest_vertex, const ZC_Vec3<float>& scale)
+{
+	ZC_Vec4<float> pos = ZC_Mat4<float>(1.f).Scale(scale) * ZC_Vec4<float>(_farest_vertex, 1.f);
+	return ZC_Vec::Length<float>({ pos[0], pos[1], pos[2] });
 }

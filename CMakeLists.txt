@@ -12,7 +12,7 @@ set(Game_ASSETS_DIRECTORY_NAME assets)
 set(Game_ASSETS_DESTINATION_PATH 
     ${PROJECT_BINARY_DIR}/$<$<PLATFORM_ID:Windows>:$<IF:$<CONFIG:Debug>,Debug/,Release/>>${Game_ASSETS_DIRECTORY_NAME})   #   windows?
 
-set(Game_MY_DEBUG 0)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
+set(Game_MY_DEBUG 1)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
 
 #========================= external libs
 #   add submodules
@@ -27,7 +27,7 @@ set(Game_LINK_LIBS)
 set(ZC_PC ON)
 set(ZC_ANDROID OFF)
 set(ZC_PARANT_BIN_DIR ${Game_ASSETS_DESTINATION_PATH})
-set(ZC_AUDIO OFF)
+set(ZC_AUDIO ON)
 set(ZC_IMGUI OFF)
 set(ZC_STATIC ON)
 # set(ZC_STATIC OFF)
@@ -64,11 +64,42 @@ set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC $<IF:${Game_MY_DEBUG},/home/dmitry/p
 set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/main.cpp
     ${PROJECT_SOURCE_DIR}/src/G_Camera.cpp
-    ${PROJECT_SOURCE_DIR}/src/G_GameManager.cpp
-    ${PROJECT_SOURCE_DIR}/src/Objects/G_Object.cpp
-    ${PROJECT_SOURCE_DIR}/src/Objects/G_Platform.cpp
-    ${PROJECT_SOURCE_DIR}/src/Objects/G_Player.cpp
+    ${PROJECT_SOURCE_DIR}/src/System/G_Window.cpp
+    ${PROJECT_SOURCE_DIR}/src/System/G_Config.cpp
+    ${PROJECT_SOURCE_DIR}/src/System/G_DrawerCreator.cpp
+    ${PROJECT_SOURCE_DIR}/src/System/G_Time.cpp
+    ${PROJECT_SOURCE_DIR}/src/System/G_Func.cpp
+    ${PROJECT_SOURCE_DIR}/src/System/G_FontData.cpp
+    
+    ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_MainMenu.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_PlayerWin.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_RestartLevel.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_GUI_Text.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_LanguageDependent.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_GUI_Text.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_LangText.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_GUI_ButtonText.cpp
+    
+    ${PROJECT_SOURCE_DIR}/src/GamePlay/GUI/G_GUI_GM_W_LevelTimer.cpp
+    ${PROJECT_SOURCE_DIR}/src/GamePlay/GUI/G_GUI_P_W_Health.cpp
+    ${PROJECT_SOURCE_DIR}/src/GamePlay/G_GameManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Player.cpp
+    ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Map.cpp
+    ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Section.cpp
 
+    ${PROJECT_SOURCE_DIR}/src/Objects/G_Object.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_Platform.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformWind.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformDamage.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformScale.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformDisapear.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformTransforms.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformWin.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/G_ObjPlayable.cpp    
+    ${PROJECT_SOURCE_DIR}/src/Objects/G_OP_MarbleSphere.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/G_PushSet.cpp
+    
     ${PROJECT_SOURCE_DIR}/src/Model/G_Assimp_ZC_Converter.cpp
     ${PROJECT_SOURCE_DIR}/src/Model/G_ModelLoader.cpp
     ${PROJECT_SOURCE_DIR}/src/Model/G_ModelSet.cpp
