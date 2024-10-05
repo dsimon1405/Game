@@ -4,6 +4,7 @@
 #include "G_GUI_W_MainMenu.h"
 #include "G_GUI_W_RestartLevel.h"
 #include "G_GUI_W_PlayerWin.h"
+#include "G_GUI_W_Options.h"
 
 class G_GUI
 {
@@ -18,6 +19,7 @@ private:
     G_WindowName opened_window = G_WN__main_menu;
     
     G_GUI_W_MainMenu w_main_menu;
+    G_GUI_W_Options w_options;
     G_GUI_W_RestartLevel w_restart_level;
     G_GUI_W_PlayerWin w_player_win;
 

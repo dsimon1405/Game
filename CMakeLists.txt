@@ -72,6 +72,7 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/System/G_FontData.cpp
     
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_MainMenu.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_Options.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_PlayerWin.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_RestartLevel.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI.cpp
@@ -79,7 +80,10 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_LanguageDependent.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_GUI_Text.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_LangText.cpp
-    ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_GUI_ButtonText.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_ButtonText.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_CheckBox.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_Button.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_ButtonInt32Text.cpp
     
     ${PROJECT_SOURCE_DIR}/src/GamePlay/GUI/G_GUI_GM_W_LevelTimer.cpp
     ${PROJECT_SOURCE_DIR}/src/GamePlay/GUI/G_GUI_P_W_Health.cpp

@@ -2,7 +2,7 @@
 
 #include <ZC/GUI/ZC_GUI__Window.h>
 #include "Text/G_GUI_Text.h"
-#include "Text/G_GUI_ButtonText.h"
+#include "Buttons/G_GUI_ButtonText.h"
 #include <System/G_Time.h>
 #include "G_WindowName.h"
 
@@ -16,22 +16,19 @@ public:
     void CloseWindow();
 
 private:
-    const float button_width = 400.f;
-    const float button_height = 50.f;
-    
     G_WindowName win_name = G_WN__player_win;
 
     ZC_EC ecUpdater;
 
     ZC_GUI__WinImmutable window;
-    G_GUI_Text text_win;
-    G_GUI_Text text_time_level;
-    G_GUI_Text text_time_total;
-    G_GUI_Text text_time;
-    ZC_GUI__Text text_time_level_number;
-    ZC_GUI__Text text_time_total_number;
-    G_GUI_ButtonText bt_main_menu;
-    G_GUI_ButtonText bt_next_level;
+    G_GUI_Text text_Victory;
+    G_GUI_Text text_Level;
+    G_GUI_Text text_Total;
+    G_GUI_Text text_Time;
+    ZC_GUI__Text text_level_time;
+    ZC_GUI__Text text_total_time;
+    G_GUI_ButtonText bt_Go_to_main_menu;
+    G_GUI_ButtonText bt_Go_to_next_level;
     ZC_GUI__Text text_arrow;
 
     enum UpdatePhase
@@ -48,7 +45,6 @@ private:
 
     void CallMainMenu(float);
     void NextLevel(float);
-    void ButtonFocuseChanged(bool);
     
     void Callback_Updater(float time);
 

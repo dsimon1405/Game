@@ -7,28 +7,28 @@
 
 G_GUI_W_PlayerWin::G_GUI_W_PlayerWin()
     : window(ZC_WOIData(550.f, 360.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__Stacionar
-    | ZC_GUI_WF__NeedDraw),
-    // ),
-    text_win(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Победа" }, { .lang = G_L_English, .text = L"Victory" } }),
-    text_time_level(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Уровнь" }, { .lang = G_L_English, .text = L"Level" } }),
-    text_time_total(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Общее" }, { .lang = G_L_English, .text = L"Total" } }),
-    text_time(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Время:" }, { .lang = G_L_English, .text = L"Time:" } }),
-    // text_time_level_number(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
-    // text_time_total_number(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
-    text_time_level_number(CreateNumberWstr({}), false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
-    text_time_total_number(CreateNumberWstr({}), false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
-    bt_main_menu(button_width, button_height, { &G_GUI_W_PlayerWin::CallMainMenu, this }, { &G_GUI_W_PlayerWin::ButtonFocuseChanged, this }, {},
+    // | ZC_GUI_WF__NeedDraw),
+    ),
+    text_Victory(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Победа" }, { .lang = G_L_English, .text = L"Victory" } }),
+    text_Level(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Уровнь" }, { .lang = G_L_English, .text = L"Level" } }),
+    text_Total(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Общее" }, { .lang = G_L_English, .text = L"Total" } }),
+    text_Time(ZC_GUI_TextAlignment::Left, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Время:" }, { .lang = G_L_English, .text = L"Time:" } }),
+    text_level_time(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
+    text_total_time(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
+    // text_level_time(CreateNumberWstr({}), false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
+    // text_total_time(CreateNumberWstr({}), false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
+    bt_Go_to_main_menu({ &G_GUI_W_PlayerWin::CallMainMenu, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"В главное меню" }, { .lang = G_L_English, .text = L"Go to main menu" } }),
-    bt_next_level(button_width, button_height, { &G_GUI_W_PlayerWin::NextLevel, this }, { &G_GUI_W_PlayerWin::ButtonFocuseChanged, this }, {},
+    bt_Go_to_next_level({ &G_GUI_W_PlayerWin::NextLevel, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Следующий уровень" }, { .lang = G_L_English, .text = L"Go to next level" } }),
     text_arrow(L"=>", true, 0, ZC_GUI_TextAlignment::Left)
 {
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 10.f, 0.f), { text_win.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(33.f, ZC_GUI_RowParams::Right, 30.f, 96.f), { text_time_total.GetObj(), text_time_level.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 10.f, 0.f), { text_Victory.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(33.f, ZC_GUI_RowParams::Right, 30.f, 96.f), { text_Total.GetObj(), text_Level.GetObj() }));
     window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 10.f, 20.f),
-        { text_time.GetObj(), text_time_level_number.GetObj(), text_arrow.GetObj(), text_time_total_number.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 40.f, 0.f), { bt_next_level.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 20.f, 0.f), { bt_main_menu.GetObj() }));
+        { text_Time.GetObj(), text_level_time.GetObj(), text_arrow.GetObj(), text_total_time.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 40.f, 0.f), { bt_Go_to_next_level.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 20.f, 0.f), { bt_Go_to_main_menu.GetObj() }));
 }
 
 G_GUI_W_PlayerWin::~G_GUI_W_PlayerWin()
@@ -49,8 +49,8 @@ void G_GUI_W_PlayerWin::OpenWindow()
     cur_time = 0;
     update_phase = UP_start;
 
-    text_time_level_number.UpdateText(CreateNumberWstr(time_level), true);
-    text_time_total_number.UpdateText(CreateNumberWstr(time_total), true);
+    text_level_time.UpdateText(CreateNumberWstr(time_level), true);
+    text_total_time.UpdateText(CreateNumberWstr(time_total), true);
     ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GUI_W_PlayerWin::Callback_Updater, this }, G_UpdaterLevels::G_UL__w_player_win));
 }
 
@@ -69,11 +69,6 @@ void G_GUI_W_PlayerWin::NextLevel(float)
 {
     G_GameManager::pGM->ContinueGame();
     G_GameManager::pGM->gui.CloseCurrentWindow();
-}
-
-void G_GUI_W_PlayerWin::ButtonFocuseChanged(bool)
-{
-    
 }
 
 void G_GUI_W_PlayerWin::Callback_Updater(float time)
@@ -96,17 +91,17 @@ void G_GUI_W_PlayerWin::Callback_Updater(float time)
     {
         if (cur_time >= seconds_for_update_time)
         {
-            text_time_level_number.UpdateText(CreateNumberWstr(G_Time{}), true);
-            text_time_total_number.UpdateText(CreateNumberWstr(time_result), true);
+            text_level_time.UpdateText(CreateNumberWstr(G_Time{}), true);
+            text_total_time.UpdateText(CreateNumberWstr(time_result), true);
             ecUpdater.Disconnect();
         }
         else
         {
             int offset = seconds_to_move * time / seconds_for_update_time;
             time_level.MinusSeconds(offset);
-            text_time_level_number.UpdateText(CreateNumberWstr(time_level), true);
+            text_level_time.UpdateText(CreateNumberWstr(time_level), true);
             time_total.PlusSeconds(offset);
-            text_time_total_number.UpdateText(CreateNumberWstr(time_total), true);
+            text_total_time.UpdateText(CreateNumberWstr(time_total), true);
         }
     } break;
     }

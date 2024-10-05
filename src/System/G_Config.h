@@ -9,7 +9,8 @@ struct G_ConfigData
 {
     char name[4] { 'G', 'A', 'M', 'E' };
     G_Language language = G_L_Russian;
-    float volume = 80.f;
+    bool fuull_screen = true;
+    int volume = 80;
     unsigned short level = 1;
     G_Time time;
 };
@@ -20,8 +21,9 @@ struct G_Config
     ~G_Config();
 
     static const G_ConfigData& GetConfigData();
-    static void Update_language(G_Language language);
-    static void Update_volume(float volume);
+    static void Update_language(unsigned int language);
+    static void Update_full_screen(bool full_screen);
+    static void Update_volume(int volume);
     static void UpdateGameStats(unsigned char level, G_Time time);
 
 private:

@@ -2,7 +2,7 @@
 
 #include <ZC/GUI/ZC_GUI__Window.h>
 #include "Text/G_GUI_Text.h"
-#include "Text/G_GUI_ButtonText.h"
+#include "Buttons/G_GUI_ButtonText.h"
 #include "G_WindowName.h"
 
 class G_GUI_W_MainMenu
@@ -14,9 +14,6 @@ public:
     void CloseWindow();
 
 private:
-    const float button_width = 100.f;
-    const float button_height = 50.f;
-    
     G_WindowName win_name = G_WN__main_menu;
 
     ZC_GUI__WinImmutable window;

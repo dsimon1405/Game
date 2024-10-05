@@ -2,6 +2,7 @@
 
 #include <ZC/File/ZC_File.h>
 #include <GUI/Text/G_LanguageDependent.h>
+#include <ZC/Video/ZC_SWindow.h>
 
 #include <fstream>
 
@@ -42,16 +43,24 @@ const G_ConfigData& G_Config::GetConfigData()
     return pConfig->config_data;
 }
 
-void G_Config::Update_language(G_Language language)
+void G_Config::Update_language(unsigned int language)
 {
-    pConfig->config_data.language = language;
+    pConfig->config_data.language = static_cast<G_Language>(language);
     G_LanguageDependent::LanguageChanged();     //  update all texts with different languages
     pConfig->config_data_changed = true;
 }
 
-void G_Config::Update_volume(float volume)
+void G_Config::Update_full_screen(bool full_screen)
+{
+    pConfig->config_data.fuull_screen = full_screen;
+    ZC_SWindow::SetFullScreen(full_screen);
+    pConfig->config_data_changed = true;
+}
+
+void G_Config::Update_volume(int volume)
 {
     pConfig->config_data.volume = volume;
+                                                                    //  add upadte colume
     pConfig->config_data_changed = true;
 }
 

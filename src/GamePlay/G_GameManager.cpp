@@ -16,14 +16,19 @@ G_GameManager::~G_GameManager()
     ecUpdater.Disconnect();
 }
 
-G_Time G_GameManager::GetLevelTime()
+G_Time G_GameManager::GetLevelTime() const noexcept
 {
     return time_cur_lvl;
 }
 
-G_Time G_GameManager::GetTotalTime()
+G_Time G_GameManager::GetTotalTime() const noexcept
 {
     return time_total;
+}
+
+G_GameState G_GameManager::GetGameState() const noexcept
+{
+    return game_state;
 }
 
 void G_GameManager::StartNewGame()
@@ -43,6 +48,7 @@ void G_GameManager::StartNewGame()
     map.CreateLevel(level);
     ChangeGamePlayActivityState(true);
     game_state = GS_Play;
+    cur_time = 0.f;
 }
 
 void G_GameManager::PauseGame()
@@ -63,13 +69,14 @@ void G_GameManager::ContinueGame()
         player.SetDefaultState();
         map.CreateLevel(level);
         SetCurrentLevelTimeDefault();
+        cur_time = 0.f;
     } break;
     case GS_NextLevel:
     {
         player.SetDefaultState();
-        ++level;
         map.CreateLevel(level);
         SetCurrentLevelTimeDefault();
+        cur_time = 0.f;
     } break;
     default: assert(false);
     }
@@ -92,6 +99,8 @@ void G_GameManager::ContinueBestGame()
     map.CreateLevel(level);
     ChangeGamePlayActivityState(true);
     game_state = GS_Play;
+
+    cur_time = 0.f;
 }
 
 void G_GameManager::PlayerDead()
@@ -106,6 +115,10 @@ void G_GameManager::PlayerWin()
     ChangeGamePlayActivityState(false);
     gui.OpenWindow(G_WN__player_win);
     game_state = GS_NextLevel;
+
+    time_total.PlusSeconds(time_cur_lvl.GetInSeconds());
+    ++level;
+    G_Config::UpdateGameStats(level, time_total);
 }
 
 

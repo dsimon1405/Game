@@ -50,8 +50,8 @@ void G_GUI::ChangeOpenedWindowDrawState(bool need_draw)
     {
     case G_WN__none: break;
     case G_WN__main_menu: need_draw ? w_main_menu.OpenWindow() : w_main_menu.CloseWindow(); break;
+    case G_WN__options: w_options.SetDrawState(need_draw); break;
     case G_WN__restart_level: w_restart_level.SetDrawState(need_draw); break;
-    case G_WN__options: break;
     case G_WN__player_win: need_draw ? w_player_win.OpenWindow() : w_player_win.CloseWindow(); break;
     }
 }

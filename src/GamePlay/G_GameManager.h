@@ -24,8 +24,10 @@ public:
     G_GameManager();
     ~G_GameManager();
     
-    G_Time GetLevelTime();
-    G_Time GetTotalTime();
+    G_Time GetLevelTime() const noexcept;
+    G_Time GetTotalTime() const noexcept;
+
+    G_GameState GetGameState() const noexcept;
 
     void StartNewGame();
     void PauseGame();
