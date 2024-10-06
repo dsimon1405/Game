@@ -12,7 +12,9 @@ public:
     G_Player(ZC_uptr<G_ObjPlayable>&& _upObj);
     ~G_Player();
     
-    void SetEventsState(bool use);
+    void ChangeActivityState(bool on);
+    void ChangeMoveState(bool on);
+    void ChangeCameraState(bool on);
     void SetDefaultState();
 
 private:
@@ -24,6 +26,7 @@ private:
     ZC_EC ec_A;
     ZC_EC ec_D;
     ZC_EC ec_space;
+    ZC_EC ec_updater;
 
     ZC_Vec3<float> dir_front;
     ZC_Vec3<float> dir_right;
@@ -40,4 +43,5 @@ private:
     void Callback_Space(ZC_ButtonID, float time);
     void RecalculateDirection();
     void CallbackPlayerInfo(G_PlayerInfro player_info);
+    void Callback_Updater(float time);
 };

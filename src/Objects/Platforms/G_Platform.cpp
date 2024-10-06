@@ -43,6 +43,15 @@ void G_Platform::RotateInternal(float angle)
     for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_O(platf_trans.translate, angle);
 }
 
+bool G_Platform::SwitchWithWinPlatform(G_Platform* pPLat_win)
+{
+    if (!objects_on_platform.empty()) return false; //  platfrom not empty can't switch
+    {
+        platf_trans.SwitchMoselMatrices(pPLat_win->platf_trans);
+        return true;
+    }
+}
+
 void G_Platform::RotateExternal(float angle)
 {
     platf_trans.Update_rotate_angle_external_Z(platf_trans.rotate_angle_external_Z + angle);

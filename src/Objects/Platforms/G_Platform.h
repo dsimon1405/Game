@@ -3,6 +3,7 @@
 #include "../G_Object.h"
 #include "G_PlatformTransforms.h"
 #include <ZC/Events/ZC_EC.h>
+#include <ZC/Tools/Math/ZC_Math.h>
 
 enum G_ActivePlatforms
 {
@@ -26,10 +27,14 @@ public:
     void RotateInternal(float angle);
         //  rotation around map origin. angle - on wich need to current angle
     void RotateExternal(float angle);
+        //   try to switch win platform position. Return true on success, otherwise wsitching platform is not empty.
+    bool SwitchWithWinPlatform(G_Platform* pPLat_win);
     
 protected:
-    static inline const ZC_Vec3<float> default_lightning { 0.3f, 0.3f, 0.3f };
-    static inline const ZC_Vec3<float> start_lightning_color { 1.f, 1.f, 1.f };
+    static inline const ZC_Vec3<float> color_default { 0.3f, 0.3f, 0.3f };
+    static inline const uint color_default_packed = ZC_PackColorFloatToUInt_RGB(color_default[0], color_default[1], color_default[2]);
+    static inline const ZC_Vec3<float> color_white { 1.f, 1.f, 1.f };
+    static inline const uint packed_active_color = ZC_PackColorFloatToUInt_RGB(color_white[0], color_white[1], color_white[2]);
 
     ZC_EC ecUpdater;
 

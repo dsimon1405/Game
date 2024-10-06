@@ -49,7 +49,7 @@ void G_PlatformWind::Callback_Updater(float time)
         else    //  activate platform
         {        //  start coloring platform to 0.4 (min value) using 2 secs range (while platform activate)
             float azure_g_b = min_wind_power / max_wind_power;
-            this->unColor = G_InterpolateColor(G_Platform::start_lightning_color, { 0.f, azure_g_b, azure_g_b }, ch_d.wind_time / seconds_to_start_wind);
+            this->unColor = G_InterpolateColor(G_Platform::color_white, { 0.f, azure_g_b, azure_g_b }, ch_d.wind_time / seconds_to_start_wind);
                                                                                             //  ADD VOLUME CONTROLL SOUND
         }
     }
@@ -104,7 +104,7 @@ void G_PlatformWind::Callback_Updater(float time)
                 ecUpdater.Disconnect();
                 this->unColor = 0;  //  default color
             }
-            else this->unColor = G_InterpolateColor(ch_d.deactivate_color, G_Platform::default_lightning, ch_d.wind_time / seconds_deactivate);
+            else this->unColor = G_InterpolateColor(ch_d.deactivate_color, G_Platform::color_default, ch_d.wind_time / seconds_deactivate);
             return;
         } break;
         }

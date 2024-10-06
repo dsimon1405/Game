@@ -35,7 +35,7 @@ void G_PlatformDisapear::Callback_Updater(float time)
             this->unColor = disapear_color_packed;
             this->dsCon.SwitchToDrawLvl(ZC_RL_Default, G_DL_AlphaBlending);
         }
-        else this->unColor = G_InterpolateColor(G_Platform::start_lightning_color, disapear_color, ch_d.time / seconds_phase);
+        else this->unColor = G_InterpolateColor(G_Platform::color_white, disapear_color, ch_d.time / seconds_phase);
     } break;
     case DS_phase1_disapear:
     {
@@ -102,7 +102,7 @@ void G_PlatformDisapear::Callback_Updater(float time)
         {
             float time_coef = ch_d.time / seconds_phase;
             this->unAlpha = disapear_phase1_alpha + (disapear_phase1_alpha * time_coef);
-            this->unColor = G_InterpolateColor(disapear_color, G_Platform::default_lightning, time_coef);
+            this->unColor = G_InterpolateColor(disapear_color, G_Platform::color_default, time_coef);
         }
     } break;
     }

@@ -31,10 +31,6 @@ private:
     const int lines_count_in_first_level = 6;
     const int platforms_on_line = 3;    //  platforms between on line in section
     
-    int lvl = 0;
-    int sections_count = 0;     //  section is platforms on line limited with circle 
-    int lines_count = 0;
-
     G_Platform start_platform;
     std::list<G_Section> sections;
 };

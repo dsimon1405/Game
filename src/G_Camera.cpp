@@ -3,6 +3,7 @@
 #include <ZC/Events/ZC_Events.h>
 #include <ZC/Video/ZC_SWindow.h>
 #include <ZC/Tools/Math/ZC_Math.h>
+#include <System/G_UpdaterLevels.h>
 
 G_Camera::G_Camera(ZC_Function<void(const ZC_Vec3<float>&)> _callback_camera_rotated)
     : cam(CreateCamera()),
@@ -10,6 +11,13 @@ G_Camera::G_Camera(ZC_Function<void(const ZC_Vec3<float>&)> _callback_camera_rot
 {
     cam.MakeActive();
     SetDefaultState();
+}
+
+G_Camera::~G_Camera()
+{
+    ec_mouseMove.Disconnect();
+    ec_mouseScroll.Disconnect();
+    ec_updater.Disconnect();
 }
 
 void G_Camera::SetDefaultState()
@@ -78,10 +86,21 @@ void G_Camera::MouseMoveCallback(float x, float y, float xRel, float yRel, float
     // if (verticalAngle >= ZC_angle_360f) verticalAngle -= ZC_angle_360f;
     // else if (verticalAngle <= - ZC_angle_360f) verticalAngle += ZC_angle_360f;
 
-    const float vertical_max = 20.f;
-    const float vertical_min = 20.f;
+    const float vertical_max = 10.f;
+    const float vertical_min = 30.f;
 
+    if (yRel != 0.f)
+    {
+        float new_anle = vertical_angle_must_be + (sensitivityRotation * - yRel);
+        new_anle = new_anle > vertical_max ? vertical_max : new_anle < vertical_min ? vertical_min : new_anle;
+        if (new_anle != vertical_angle_must_be)
+        {
+            vertical_angle_must_be = new_anle;
+            ec_updater = ZC_SWindow::ConnectToUpdater({ &G_Camera::Callback_Updater, this }, G_UL__game_play);
+        }
+    }
     verticalAngle += sensitivityRotation * - yRel;
+
     if (verticalAngle >= vertical_max) verticalAngle = vertical_max;
     else if (verticalAngle <= vertical_min) verticalAngle = vertical_min;
     horizontalAngle += sensitivityRotation * xRel;
@@ -150,5 +169,19 @@ void G_Camera::MouseWheelScroll(float rotationHorizontal, float rotationVertical
     {
         distanceToObject = newDistance;
         cam.SetPosition(cam.GetLookOn() - (dirFront * distanceToObject));
+    }
+}
+
+void G_Camera::Callback_Updater(float time)
+{
+    static const float vectical_angle_rotation_speed = 0.3f / 1.f;    //  angle/sec
+
+    if (verticalAngle < vertical_angle_must_be)
+    {
+        verticalAngle += 
+    }
+    else
+    {
+
     }
 }

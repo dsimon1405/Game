@@ -26,6 +26,7 @@ G_Section::G_Section(G_Section&& s)
     rotSet_circle(s.rotSet_circle)
 {
     s.ecUpdater.Disconnect();
+    if (pPlat_win) dynamic_cast<G_PlatformWin*>(pPlat_win)->Update_func_change_pos({ &G_Section::Callback_SwitchWinPlatfrom, this });
 }
 
 G_Section::~G_Section()
@@ -80,8 +81,9 @@ void G_Section::FillPlatforms(int lines_count, int platforms_on_line, float dist
     for (int platform_i = 0; platform_i < platforms_on_circle_count; ++platform_i, cur_angle += angle_between_platforms)    //  calculate dirs for other lines
     {
         ZC_Vec3<float> dir = ZC_Vec::Vec4_to_Vec3(ZC_Mat4<float>(1.f).Rotate(cur_angle, { 0.f, 0.f, 1.f }) * first_line_dir);
-        if (platform_i == win_platform_id) platforms_on_circle.emplace_back(new G_PlatformWin(
-            G_PlatformTransforms{ .translate = ZC_Vec::MoveByLength(G_Map::platforms_start_pos, dir, distance_to_circle_platform), .scale = G_Map::other_platform_scale }));
+        if (platform_i == win_platform_id) pPlat_win = platforms_on_circle.emplace_back(new G_PlatformWin(
+            G_PlatformTransforms{ .translate = ZC_Vec::MoveByLength(G_Map::platforms_start_pos, dir, distance_to_circle_platform), .scale = G_Map::other_platform_scale },
+            { &G_Section::Callback_SwitchWinPlatfrom, this })).Get();
         else platforms_on_circle.emplace_back(GetRandomPlatform(ZC_Vec::MoveByLength(G_Map::platforms_start_pos, dir, distance_to_circle_platform)));
     }
 }
@@ -103,4 +105,12 @@ void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<Z
         rotate_set.cur_rotate_angle = 0.f;
         if (rotate_set.is_internal_rotation) rotate_set.rotate_angle = ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i);  //  change angle for next internal-external phase
     }
+}
+
+void G_Section::Callback_SwitchWinPlatfrom(G_Platform* pPlat_win)
+{
+    int new_pos_id = ZC_Random::GetRandomInt(0, platforms_on_circle.size() - 1);
+    ZC_uptr<G_Platform>& pPlat = platforms_on_circle[new_pos_id];
+    if (pPlat.Get() != pPlat_win && pPlat->SwitchWithWinPlatform(pPlat_win)) return;    //  found platform is not win platform and successfull switched
+    else Callback_SwitchWinPlatfrom(pPlat_win);    //  something go wrong, try again
 }

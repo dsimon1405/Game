@@ -1,7 +1,9 @@
 #include "G_ObjPlayable.h"
 
-G_ObjPlayable::G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO)
-    : G_Object(modelName, texSetId, std::move(_upCO))
+G_ObjPlayable::G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health)
+    : G_Object(modelName, texSetId, std::move(_upCO)),
+    changable_data_op{ .health = health },
+    max_hp(health)
 {}
 
 G_ObjPlayable::~G_ObjPlayable()
@@ -23,12 +25,13 @@ void G_ObjPlayable::VSetPosition_O(const ZC_Vec3<float>& _position)
 void G_ObjPlayable::VDamagerObject_O(float damage)
 {
     changable_data_op.health -= damage;
+    VDamageObject_OP(damage);
     if (callback_player_info) callback_player_info(G_PI__health);
 }
 
 void G_ObjPlayable::VMakeDefaultState_O()
 {
-    changable_data_op = {};
+    changable_data_op = { .health = max_hp };
     VMakeDefaultState_OP();
 }
 

@@ -1,9 +1,7 @@
 #include "G_Map.h"
 
 G_Map::G_Map()
-    :start_platform(G_PlatformTransforms{ .translate = platforms_start_pos, .scale = { scaleXY_start_platform, scaleXY_start_platform, scaleZ_platform } })
-    // : start_platform(ZC_Mat4<float>(1.f).Translate(platforms_start_pos).
-    //     Scale({ scaleXY_start_platform, scaleXY_start_platform, scaleZ_platform }), { scaleXY_start_platform, scaleXY_start_platform, scaleZ_platform })
+    : start_platform(G_PlatformTransforms{ .translate = platforms_start_pos, .scale = { scaleXY_start_platform, scaleXY_start_platform, scaleZ_platform } })
 {
         //  calculate positions of the platforms on the lines
     float other_platforms_diameter = (platforms_model_radius * 2.f) * scaleXY_other_platforms;
@@ -19,11 +17,11 @@ void G_Map::CreateLevel(int _lvl)
 {
     sections.clear();
         //  calculate sections and lines count
-    lvl = _lvl;
-    sections_count = std::ceil(float(lvl) / float(lines_count_in_first_level));
+    int lvl = _lvl;
+    int sections_count = std::ceil(float(lvl) / float(lines_count_in_first_level));
     
     int minus_lines_on_level = (lvl % lines_count_in_first_level);
-    lines_count = minus_lines_on_level != 0 ? lines_count_in_first_level - (minus_lines_on_level - 1) : 1;
+    int lines_count = minus_lines_on_level != 0 ? lines_count_in_first_level - (minus_lines_on_level - 1) : 1;
     
         //  calculate radius of the map
     map_radius = first_section_lenght + (other_section_length * (sections_count - 1));

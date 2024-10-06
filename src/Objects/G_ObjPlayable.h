@@ -15,7 +15,7 @@ enum G_PlayerInfro
 class G_ObjPlayable : public G_Object
 {
 public:
-    G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO);
+    G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health);
     ~G_ObjPlayable();
 
         //  calls by owner (player...)
@@ -34,15 +34,17 @@ public:
 protected:
     struct ChangableData_OP
     {
-        float health = 100.f;
+        float health = 0.f;
         ZC_Vec3<float> position;
         float rotate_angle_z = 0.f;
     } changable_data_op;
 
     ZC_EC ecUpdater;
     G_ObjectType object_type = G_OT__None;
+    const float max_hp;
 
     ZC_Function<void(G_PlayerInfro)> callback_player_info;
 
     virtual void VMakeDefaultState_OP() = 0;
+    virtual void VDamageObject_OP(float damage) {}
 };

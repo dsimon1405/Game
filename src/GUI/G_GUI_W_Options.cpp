@@ -6,7 +6,7 @@
 #include <ZC/GUI/ZC__GUI.h>
 
 G_GUI_W_Options::G_GUI_W_Options()
-    : ZC_GUI__WinImmutable(ZC_WOIData(500.f, 430.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__Stacionar
+    : ZC_GUI__WinImmutable(ZC_WOIData(500.f, 430.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__None
     //  | ZC_GUI_WF__NeedDraw),
     ),
     text_Options(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"НАСТРОЙКИ" }, { .lang = G_L_English, .text = L"OPTIONS" } }),

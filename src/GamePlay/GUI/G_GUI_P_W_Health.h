@@ -34,5 +34,10 @@ private:
     int cur_hp = hp_default;
     float minus_hp_fractional = 0.f;
 
+    float subtract_indent_X = 0.f;
+    float subtract_indent_Y = 0.f;
+    bool subtract_indents_need_update = true;
+
     void Callback_Updater(float time);
+    void CalculateSubtractIndents();
 };

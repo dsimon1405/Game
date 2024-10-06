@@ -38,6 +38,11 @@ G_Config::~G_Config()
     of_stream.close();
 }
 
+void G_Config::CreateGUI()
+{
+    upW_save_level = new G_GUI_W_ConfigSaveLevel();
+}
+
 const G_ConfigData& G_Config::GetConfigData()
 {
     return pConfig->config_data;
@@ -64,13 +69,16 @@ void G_Config::Update_volume(int volume)
     pConfig->config_data_changed = true;
 }
 
-void G_Config::UpdateGameStats(unsigned char level, G_Time time)
+void G_Config::UpdateGameStats(int level, G_Time time)
 {
-    if (pConfig->config_data.level > level && pConfig->config_data.time.hours < time.hours && pConfig->config_data.time.minutes < time.minutes
-        && pConfig->config_data.time.seconds < time.seconds) return;
+    if (pConfig->config_data.level > level) return;
+    else if (pConfig->config_data.time.GetInSeconds() <= time.GetInSeconds()) return;
+
     pConfig->config_data.level = level;
     pConfig->config_data.time = time;
     pConfig->config_data_changed = true;
+
+    pConfig->upW_save_level->ShowSavedData(level, time);
 }
 
 bool G_Config::ConstCharEqual(const char* first, char* second) noexcept

@@ -43,15 +43,15 @@ void G_PlatformDamage::Callback_Updater(float time)
         ch_d.dmg_time += time;
             //  changing color, must be before changing time ch_d.dmg_time second time
         float half_sec_to_dmg = seconds_to_dmg / 2.f;
-        if (ch_d.is_first_dmg)  //  on first dmg nned to change dmg color from start_lightning_color to dmg_color full dmg_time, in other case: first half to deactivate, second half time to activate
+        if (ch_d.is_first_dmg)  //  on first dmg nned to change dmg color from color_white to dmg_color full dmg_time, in other case: first half to deactivate, second half time to activate
         {
-            this->unColor = G_InterpolateColor(G_Platform::start_lightning_color, dmg_color, ch_d.dmg_time > seconds_to_dmg ? 1.f : ch_d.dmg_time / seconds_to_dmg);
+            this->unColor = G_InterpolateColor(G_Platform::color_white, dmg_color, ch_d.dmg_time > seconds_to_dmg ? 1.f : ch_d.dmg_time / seconds_to_dmg);
             if (ch_d.dmg_time >= seconds_to_dmg) ch_d.is_first_dmg = false;     //  first dmg reached
         }
         else if (ch_d.dmg_time >= half_sec_to_dmg)
-            this->unColor = G_InterpolateColor(G_Platform::default_lightning, dmg_color,
+            this->unColor = G_InterpolateColor(G_Platform::color_default, dmg_color,
                 ch_d.dmg_time > seconds_to_dmg ? 1.f : (ch_d.dmg_time - half_sec_to_dmg) / half_sec_to_dmg);    //  activate
-        else this->unColor = G_InterpolateColor(dmg_color, G_Platform::default_lightning, ch_d.dmg_time);   //  deactivate
+        else this->unColor = G_InterpolateColor(dmg_color, G_Platform::color_default, ch_d.dmg_time);   //  deactivate
         if (ch_d.dmg_time >= seconds_to_dmg)
         {
             ch_d.dmg_time -= seconds_to_dmg;
@@ -79,7 +79,7 @@ void G_PlatformDamage::Callback_Updater(float time)
         }
         else
         {
-            this->unColor = G_InterpolateColor(ch_d.deactivate_color, G_Platform::default_lightning, ch_d.dmg_time);
+            this->unColor = G_InterpolateColor(ch_d.deactivate_color, G_Platform::color_default, ch_d.dmg_time);
                 //          LOW VOLUME
         }
     }

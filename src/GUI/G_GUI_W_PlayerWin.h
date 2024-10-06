@@ -49,5 +49,4 @@ private:
     void Callback_Updater(float time);
 
     std::wstring CreateNumberWstr(G_Time time);
-    // std::wstring GetNumber(unsigned char number);
 };

@@ -16,7 +16,6 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
     struct ChangableData
     {
         ZC_Vec3<float> cur_move_direction;
-        // ZC_Vec3<float> cur_rotate_direction;
         ZC_Vec3<float> cur_rotate_direction { 0.f, 1.f, 0.f};
 
         float rotate_angle_X = 0.f;
@@ -36,13 +35,18 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
         std::vector<ZC_Vec3<float>> move_dirs;  //  dirs added with buttons in one frame, mux 2
 
         bool on_ground_collision_in_prev_frame = false;
+
+        float dmg_time = 0.f;
+        float dmg_color_start = 0.f;   //  color for rgb red channal [0,1] to wich need to move
     } ch_d;
 
-    const float max_move_speed = 10.f;
-    const float speed_change_val = 10.f;
+    static inline const float max_move_speed = 10.f;
+    static inline const float speed_change_val = 10.f;
 
-    const float max_rotation_speed = 500.f;
-    const float move_rotation_speed_coef = max_rotation_speed / max_move_speed;
+    static inline const float max_rotation_speed = 500.f;
+    static inline const float move_rotation_speed_coef = max_rotation_speed / max_move_speed;
+
+    static inline const float max_health = 100.f;
 
     G_OP_MarbleSphere();
 
@@ -52,6 +56,7 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
     void VMakeDefaultState_OP() override;
     G_ObjectTypeMask VGetType_O() const override;
     void VOnGroundRotateZ_O(const ZC_Vec3<float>& origin, float angle) override;
+    void VDamageObject_OP(float damage) override;
 
     void Callback_Updater(float time);
 
@@ -71,9 +76,7 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
 
         //  normalization with check, too much fails
     bool Normalize(ZC_Vec3<float>& vec, const ZC_Vec3<float>& vec_default);
-
-
-void CalculateRotateZWithTempDir(float time, const ZC_Vec3<float>& dir);
-
+    
+    void UpdateColorDMG(float time);
 };
 

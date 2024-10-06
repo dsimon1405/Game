@@ -3,6 +3,7 @@
 
 int main(int argv, char** args)
 {
+
     G_Window window;
     G_GameManager gm;
 

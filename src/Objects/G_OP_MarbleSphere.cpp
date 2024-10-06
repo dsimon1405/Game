@@ -3,14 +3,13 @@
 #include <ZC/Video/ZC_SWindow.h>
 #include <Model/G_Models.h>
 #include <System/G_UpdaterLevels.h>
+#include <System/G_Func.h>
 
 G_OP_MarbleSphere::G_OP_MarbleSphere()
     : G_ObjPlayable(G_ModelName::G_MN__Sphere, 0, new ZC_CollisionObject(G_Models::GetModel_COFigure(G_MN__Sphere), ZC_C0_Type::ZC_COT__DynamicPushback,
-        this, { &G_OP_MarbleSphere::Callback_Collision, this }))
+        this, { &G_OP_MarbleSphere::Callback_Collision, this }), max_health)
 {
     ch_d.move_dirs.reserve(2);   //  max pressed button for dir change in one frame 2
-
-    // UpdateMatModel(_position);   //  update position seted in param
 
     this->ecUpdater = ZC_SWindow::ConnectToUpdater({ &G_OP_MarbleSphere::Callback_Updater, this }, G_UL__game_play);
 }
@@ -41,6 +40,14 @@ void G_OP_MarbleSphere::VOnGroundRotateZ_O(const ZC_Vec3<float>& origin, float a
     UpdateMatModel(new_pos);
 }
 
+void G_OP_MarbleSphere::VDamageObject_OP(float damage)
+{
+    static const float max_dmg = 15.f;
+
+    ch_d.dmg_time = 0.f;
+    ch_d.dmg_color_start = damage / max_dmg;
+}
+
 void G_OP_MarbleSphere::VMoveInDirection_OP(const ZC_Vec3<float>& dir)
 {
     if (ch_d.space_position != SP_Ground || ch_d.move_dirs.size() == 2) return;     //  sphere is flying or, reached max of move dirs in frame 2 (2 pressed button at the same time max)
@@ -66,7 +73,7 @@ void G_OP_MarbleSphere::VMakeDefaultState_OP()
 
 void G_OP_MarbleSphere::Callback_Updater(float time)
 {
-    if (this->VGetPosition_O()[2] < -15.f)
+    if (this->VGetPosition_O()[2] < -30.f)
     {
         this->callback_player_info(G_PI__fall);
         return;
@@ -94,6 +101,8 @@ void G_OP_MarbleSphere::Callback_Updater(float time)
         const float gravitation_power = 10.f;
         pos[2] -= gravitation_power * time;
     }
+
+    UpdateColorDMG(time);
     
     CalculateRotateZ(time);
     UpdateMatModel(pos);
@@ -442,6 +451,26 @@ bool G_OP_MarbleSphere::Normalize(ZC_Vec3<float>& vec, const ZC_Vec3<float>& vec
     }
     return true;
 }
+
+void G_OP_MarbleSphere::UpdateColorDMG(float time)
+{
+    static const float seconds_dmg_phase = 2.f;
+
+    if (ch_d.dmg_color_start == 0.f || this->changable_data_op.health <= 0.f) return;
+
+    ch_d.dmg_time += time;
+    if (ch_d.dmg_time >= seconds_dmg_phase)
+    {
+        ch_d.dmg_time = 0.f;
+        this->unColor = 0.f;
+        ch_d.dmg_color_start = 0.f;
+    }
+    else
+    {
+        this->unColor = G_InterpolateColor({ ch_d.dmg_color_start, 0.f, 0.f }, { 0.f, 0.f, 0.f }, ch_d.dmg_time / seconds_dmg_phase);
+    }
+}
+
 
 
 

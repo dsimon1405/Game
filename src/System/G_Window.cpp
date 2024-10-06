@@ -17,17 +17,17 @@ G_Window::G_Window()
         //  setup gui
     ZC__GUI::SetFontHeight(40);
         //  create window
-    ZC_SWindow::MakeWindow(
-        ZC_SWF__Multisampling_4 | 
-        ZC_SWF__Border
-        | ZC_SWF__GUI
-         , 800, 600, "Game");
+    
+    ZC_SWindow::MakeWindow(ZC_SWF__Multisampling_4 | ZC_SWF__Border | ZC_SWF__GUI, 800, 600, "SPHERUM");
     ZC_SWindow::SetMinSize(800, 600);
+    if (config.GetConfigData().fuull_screen) ZC_SWindow::SetFullScreen(true);
     // ZC_SWindow::SetFPS(0);
     
     ZC_SWindow::NeedDrawFPS(true);
     ZC_SWindow::SetFPSTimeMeasure(ZC_FPS_TM__Seconds);
     ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
+
+    config.CreateGUI();
         //      models
     G_Models::LoadModels();
         //  fonts for ZC_Text class, not ZC_GUI (gui load for them self)

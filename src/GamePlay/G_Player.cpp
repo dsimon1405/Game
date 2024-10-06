@@ -2,6 +2,8 @@
 
 #include <ZC/Events/ZC_Events.h>
 #include <GamePlay/G_GameManager.h>
+#include <ZC/Video/ZC_SWindow.h>
+#include <System/G_UpdaterLevels.h>
 
 G_Player::G_Player(ZC_uptr<G_ObjPlayable>&& _upObj)
     : upObj(std::move(_upObj)),
@@ -19,32 +21,40 @@ G_Player::~G_Player()
     ec_A.Disconnect();
     ec_D.Disconnect();
     ec_space.Disconnect();
+    ec_updater.Disconnect();
 }
 
-void G_Player::SetEventsState(bool use)
+void G_Player::ChangeActivityState(bool on)
 {
-    if (use)
+    ChangeMoveState(on);
+    ChangeCameraState(on);
+}
+
+void G_Player::ChangeMoveState(bool on)
+{
+    if (on)
     {
-        assert(use != ec_W.IsConnected());
-        if (use == ec_W.IsConnected()) return;
+        if (on == ec_W.IsConnected()) return;
         ec_W.NewConnection(ZC_Events::ConnectButtonPressDown(ZC_ButtonID::K_W, { &G_Player::Callback_W,this }));
         ec_S.NewConnection(ZC_Events::ConnectButtonPressDown(ZC_ButtonID::K_S, { &G_Player::Callback_S,this }));
         ec_A.NewConnection(ZC_Events::ConnectButtonPressDown(ZC_ButtonID::K_A, { &G_Player::Callback_A,this }));
         ec_D.NewConnection(ZC_Events::ConnectButtonPressDown(ZC_ButtonID::K_D, { &G_Player::Callback_D,this }));
         ec_space.NewConnection(ZC_Events::ConnectButtonClick(ZC_ButtonID::K_SPACE, { &G_Player::Callback_Space,this }, nullptr));
-        camera.SetConnectionToEvents(use);
     }
     else
     {
-        assert(use != ec_W.IsConnected());
-        if (use == ec_W.IsConnected()) return;
+        if (on == ec_W.IsConnected()) return;
         ec_W.Disconnect();
         ec_S.Disconnect();
         ec_A.Disconnect();
         ec_D.Disconnect();
         ec_space.Disconnect();
-        camera.SetConnectionToEvents(use);
     }
+}
+
+void G_Player::ChangeCameraState(bool on)
+{
+    camera.SetConnectionToEvents(on);
 }
 
 void G_Player::SetDefaultState()
@@ -99,7 +109,7 @@ void G_Player::RecalculateDirection()
 
     dirs_actual = true;
 }
-#include <iostream>
+
 void G_Player::CallbackPlayerInfo(G_PlayerInfro player_info)
 {
     switch (player_info)
@@ -107,16 +117,31 @@ void G_Player::CallbackPlayerInfo(G_PlayerInfro player_info)
     case G_PI__position: camera.SetCameraLookOn(upObj->VGetPosition_O()); break;
     case G_PI__health:
     {
-        static float prev_health = 100.f;
-        float cur_hp = upObj->GetHealth();
-        float minus = prev_health - cur_hp;
-        prev_health = cur_hp;
-std::cout<<upObj->GetHealth()<<"        - "<<minus<<std::endl;
-        gui_w_health.UpdateHealth(cur_hp);
-        if (cur_hp <= 0.f)
-            G_GameManager::pGM->PlayerDead();
+        if (ec_updater.IsConnected()) return;
+        float health = upObj->GetHealth();
+        if (health <= 0.f)
+        {
+            gui_w_health.UpdateHealth(0.f);
+            ChangeMoveState(false);
+            ec_updater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_Player::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_play));
+        }
+        else gui_w_health.UpdateHealth(health);
     } break;
     case G_PI__cam_rotate_angle_z: camera.RotateCameraHorizontal(upObj->GetRotateAngle()); break;
-    case G_PI__fall: G_GameManager::pGM->PlayerDead();
+    case G_PI__fall: if (!ec_updater.IsConnected()) G_GameManager::pGM->PlayerDead();
+    }
+}
+
+void G_Player::Callback_Updater(float time)
+{
+    static const float seconds_after_death_wait = 4.f;
+    static float cur_time = 0.f;
+
+    cur_time += time;
+    if (cur_time >= seconds_after_death_wait)
+    {
+        cur_time = 0.f;
+        ec_updater.Disconnect();
+        G_GameManager::pGM->PlayerDead();
     }
 }

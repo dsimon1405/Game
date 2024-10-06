@@ -25,6 +25,8 @@ private:
     G_GUI_ButtonText bt_options;
     G_GUI_ButtonText bt_exit;
 
+    bool game_was_launched = false;
+
     void StartNewGame(float);
     void ContinueGame(float);
     void ContinueBestGame(float);

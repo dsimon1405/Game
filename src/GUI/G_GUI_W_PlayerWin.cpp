@@ -6,7 +6,7 @@
 #include <System/G_UpdaterLevels.h>
 
 G_GUI_W_PlayerWin::G_GUI_W_PlayerWin()
-    : window(ZC_WOIData(550.f, 360.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__Stacionar
+    : window(ZC_WOIData(550.f, 360.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__None
     // | ZC_GUI_WF__NeedDraw),
     ),
     text_Victory(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Победа" }, { .lang = G_L_English, .text = L"Victory" } }),
@@ -15,8 +15,6 @@ G_GUI_W_PlayerWin::G_GUI_W_PlayerWin()
     text_Time(ZC_GUI_TextAlignment::Left, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Время:" }, { .lang = G_L_English, .text = L"Time:" } }),
     text_level_time(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
     text_total_time(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
-    // text_level_time(CreateNumberWstr({}), false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
-    // text_total_time(CreateNumberWstr({}), false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
     bt_Go_to_main_menu({ &G_GUI_W_PlayerWin::CallMainMenu, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"В главное меню" }, { .lang = G_L_English, .text = L"Go to main menu" } }),
     bt_Go_to_next_level({ &G_GUI_W_PlayerWin::NextLevel, this }, {}, true,
@@ -42,12 +40,13 @@ void G_GUI_W_PlayerWin::OpenWindow()
         //  get times
     time_level = G_GameManager::pGM->GetLevelTime();
     time_total = G_GameManager::pGM->GetTotalTime();
-    time_result = time_level;
-    seconds_to_move = time_total.GetInSeconds() - time_level.GetInSeconds();
+    seconds_to_move = time_level.GetInSeconds();
+    time_result = time_total;
     time_result.PlusSeconds(seconds_to_move);
         //  on start
     cur_time = 0;
     update_phase = UP_start;
+    text_arrow.SetDrawState(false);
 
     text_level_time.UpdateText(CreateNumberWstr(time_level), true);
     text_total_time.UpdateText(CreateNumberWstr(time_total), true);
@@ -56,7 +55,7 @@ void G_GUI_W_PlayerWin::OpenWindow()
 
 void G_GUI_W_PlayerWin::CloseWindow()
 {
-    window.SetDrawState(true);
+    window.SetDrawState(false);
     ecUpdater.Disconnect();
 }
 
@@ -73,8 +72,9 @@ void G_GUI_W_PlayerWin::NextLevel(float)
 
 void G_GUI_W_PlayerWin::Callback_Updater(float time)
 {
-    static const float seconds_start = 1.f;
+    static const float seconds_start = 0.5f;
     static const float seconds_for_update_time = 2.f;    //  second to move time from time_level to time_total
+    static float cur_seconds_offset = 0.f;
     
     cur_time += time;
     switch (update_phase)
@@ -85,23 +85,33 @@ void G_GUI_W_PlayerWin::Callback_Updater(float time)
         {
             update_phase = UP_move;
             cur_time = 0.f;
+
+            cur_seconds_offset = 0.f;
         }
     } break;
     case UP_move:
     {
         if (cur_time >= seconds_for_update_time)
         {
+            text_arrow.SetDrawState(false);
             text_level_time.UpdateText(CreateNumberWstr(G_Time{}), true);
             text_total_time.UpdateText(CreateNumberWstr(time_result), true);
             ecUpdater.Disconnect();
         }
         else
         {
-            int offset = seconds_to_move * time / seconds_for_update_time;
-            time_level.MinusSeconds(offset);
-            text_level_time.UpdateText(CreateNumberWstr(time_level), true);
-            time_total.PlusSeconds(offset);
-            text_total_time.UpdateText(CreateNumberWstr(time_total), true);
+            text_arrow.SetDrawState(true);
+            cur_seconds_offset += float(seconds_to_move) * time / seconds_for_update_time;
+            if (cur_seconds_offset >= 1.f)
+            {
+                float offset = 0.f;
+                cur_seconds_offset = std::modf(cur_seconds_offset, &offset);
+
+                time_level.MinusSeconds(offset);
+                text_level_time.UpdateText(CreateNumberWstr(time_level), true);
+                time_total.PlusSeconds(offset);
+                text_total_time.UpdateText(CreateNumberWstr(time_total), true);
+            }
         }
     } break;
     }

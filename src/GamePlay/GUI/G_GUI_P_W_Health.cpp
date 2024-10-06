@@ -9,12 +9,12 @@
 #include <cmath>
 
 G_GUI_P_W_Health::G_GUI_P_W_Health(int _hp)
-    : window(ZC_WOIData(ZC__GUI::GetLongestNumberCharacterWidth() * 3, ZC__GUI::GetFontHeight(), 0.f, 0.f, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel),
+    : window(ZC_WOIData(ZC__GUI::GetLongestNumberCharacterWidth() * 3, ZC__GUI::GetFontHeight(), 0.f, ZC__GUI::GetFontHeight(), ZC_WOIF__X_Center | ZC_WOIF__Y_Bottom_Pixel),
         ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Stacionar | ZC_GUI_WF__NoBackground),
     text_health(std::to_wstring(_hp), false, ZC__GUI::GetLongestNumberCharacterWidth() * 3, ZC_GUI_TextAlignment::Center, color_hp_max_pack),
     hp_default(_hp)
 {
-    window.AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::Left, 0, 0), { text_health.GetObj() })));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::Center, 0, 0), { text_health.GetObj() })));
 }
 
 G_GUI_P_W_Health::~G_GUI_P_W_Health()
@@ -47,17 +47,20 @@ void G_GUI_P_W_Health::UpdateHealth(int hp_new)
     else subtract_hp = hp_new - new_hps.back();
         //  add subtract number
     ZC_uptr<ZC_TextWindow>& tw_subtract = hp_substracts.emplace_back(
-            new ZC_TextWindow(G_FontData::fd__minus_hp, std::to_string(subtract_hp), ZC_TA_Center, 0, 0, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel, true));
-        //  calculate subtract text indents from right and buttom borders
-    ZC_Vec2<float> health_pos = text_health.GetPositionBL();
-    float offset_x = text_health.GetWidth() - tw_subtract->GetWidth();
-    float tw_X = health_pos[0] + (offset_x >= 0.f ? (offset_x) / 2.f : offset_x) + tw_subtract->GetWidth();  //  pos in window from bl corner
-    float tw_Y = health_pos[1] + text_health.GetHeight();  //  pos in dindow from bl corner
-    int swindow_width = 0.f;
-    int swindow_height = 0.f;
-    ZC_SWindow::GetSize(swindow_width, swindow_height);
-    float tw_indent_right = swindow_width - tw_X;
-    tw_subtract->SetNewIndentParams(tw_indent_right, tw_Y, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel);
+            new ZC_TextWindow(G_FontData::fd_Arial_30, std::to_string(subtract_hp), ZC_TA_Center, 0.f, text_health.GetPositionBL()[1] + text_health.GetHeight(),
+                ZC_WOIF__X_Center | ZC_WOIF__Y_Bottom_Pixel, true));
+    // ZC_uptr<ZC_TextWindow>& tw_subtract = hp_substracts.emplace_back(
+    //         new ZC_TextWindow(G_FontData::fd_Arial_30, std::to_string(subtract_hp), ZC_TA_Center, 0, 0, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel, true));
+    //     //  calculate subtract text indents from right and buttom borders
+    // ZC_Vec2<float> health_pos = text_health.GetPositionBL();
+    // float offset_x = text_health.GetWidth() - tw_subtract->GetWidth();
+    // float tw_X = health_pos[0] + (offset_x >= 0.f ? (offset_x) / 2.f : offset_x) + tw_subtract->GetWidth();  //  pos in window from bl corner
+    // float tw_Y = health_pos[1] + text_health.GetHeight();  //  pos in dindow from bl corner
+    // int swindow_width = 0.f;
+    // int swindow_height = 0.f;
+    // ZC_SWindow::GetSize(swindow_width, swindow_height);
+    // float tw_indent_right = swindow_width - tw_X;
+    // tw_subtract->SetNewIndentParams(tw_indent_right, tw_Y, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel);
     tw_subtract->SetColorFloat(color_hp_min[0], color_hp_min[1], color_hp_min[2]);
 
     new_hps.emplace_back(hp_new);

@@ -22,4 +22,6 @@ struct G_PlatformTransforms
     void Update_rotate_angle_internal_Z(float angle);
         //  set new scale, recalculate model matrix and call pCO->UpdateModelMatrix() and upCO->UpdateRadius()
     void Update_scale(const ZC_Vec3<float>& _scale, G_ModelName model_name);
+        //  switch platfrom matrices but stand previous pointers to Collision object (uses in G_Platform::SwitchWithWinPlatform)
+    void SwitchMoselMatrices(G_PlatformTransforms& rPT);
 };

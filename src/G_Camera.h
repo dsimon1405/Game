@@ -10,6 +10,7 @@ public:
     ZC_Camera cam;
 
     G_Camera(ZC_Function<void(const ZC_Vec3<float>&)> _callback_camera_roatted);
+    ~G_Camera();
 
     void SetDefaultState();
     //  Change camera's look on. New position of camera save previous position's (camPos - lookOn) vector.
@@ -37,9 +38,12 @@ private:
     const float sensitivityRotation = 1.f;
     float horizontalAngle = 0.f;    //  rotate around Z
     float verticalAngle = 0.f;        //  rotate around X
+    float vertical_angle_must_be = 0.f;
 
     ZC_EC ec_mouseMove;
     ZC_EC ec_mouseScroll;
+
+    ZC_EC ec_updater;
 
     ZC_Camera CreateCamera();
     void MouseMoveCallback(float x, float y, float xRel, float yRel, float time);
@@ -49,4 +53,6 @@ private:
     void MouseWheelDown(ZC_ButtonID buttonId, float time);
     void MouseWheelUp(ZC_ButtonID buttonId, float time);
     void MouseWheelScroll(float rotationHorizontal, float rotationVertical, float time);
+
+    void Callback_Updater(float time);
 };

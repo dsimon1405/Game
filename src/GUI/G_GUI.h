@@ -17,6 +17,8 @@ public:
 
 private:
     G_WindowName opened_window = G_WN__main_menu;
+
+    bool try_close_game = false;
     
     G_GUI_W_MainMenu w_main_menu;
     G_GUI_W_Options w_options;
@@ -25,6 +27,7 @@ private:
 
     void CloseSWindowButtonClicked();
     void EscapeeClicked(ZC_ButtonID,float);
+    void GoBackToMainMenu();
 
     void ChangeOpenedWindowDrawState(bool need_draw);
 };

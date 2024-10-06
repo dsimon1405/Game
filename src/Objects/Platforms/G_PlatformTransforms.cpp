@@ -36,3 +36,18 @@ void G_PlatformTransforms::Update_scale(const ZC_Vec3<float>& _scale, G_ModelNam
     pCO->UpdateModelMatrix(CalculateModelMatrix());
     pCO->UpdateRadius(G_Models::CalculateRadius(model_name, scale));
 }
+
+void G_PlatformTransforms::SwitchMoselMatrices(G_PlatformTransforms& rPT)
+{
+    G_PlatformTransforms pt_temp = rPT;
+        //  change his data
+    rPT = *this;
+    rPT.pCO = pt_temp.pCO;  //  must stand his own
+    rPT.pCO->UpdateModelMatrix(rPT.CalculateModelMatrix());     //  update update model matrix
+
+        //  change our data
+    ZC_CollisionObject* pCO_this = pCO;
+    *this = pt_temp;
+    pCO = pCO_this;
+    pCO->UpdateModelMatrix(CalculateModelMatrix());
+}

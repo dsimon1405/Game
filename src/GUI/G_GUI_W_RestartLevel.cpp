@@ -3,7 +3,7 @@
 #include <GamePlay/G_GameManager.h>
 
 G_GUI_W_RestartLevel::G_GUI_W_RestartLevel()
-    : ZC_GUI__WinImmutable(ZC_WOIData(680.f, 150.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__Stacionar
+    : ZC_GUI__WinImmutable(ZC_WOIData(680.f, 150.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__None
     // | ZC_GUI_WF__NeedDraw),
     ),
     text_fail(ZC_GUI_TextAlignment::Center, ZC_PackColorFloatToUInt_RGB(0.6f, 0.f, 0.f),

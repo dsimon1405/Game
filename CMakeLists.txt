@@ -71,6 +71,7 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/System/G_Func.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_FontData.cpp
     
+    ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_Colors.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_MainMenu.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_Options.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_PlayerWin.cpp
@@ -84,6 +85,7 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_CheckBox.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_Button.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_ButtonInt32Text.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Config/G_GUI_W_ConfigSaveLevel.cpp
     
     ${PROJECT_SOURCE_DIR}/src/GamePlay/GUI/G_GUI_GM_W_LevelTimer.cpp
     ${PROJECT_SOURCE_DIR}/src/GamePlay/GUI/G_GUI_P_W_Health.cpp

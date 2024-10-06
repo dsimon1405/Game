@@ -33,7 +33,7 @@ void G_PlatformScale::Callback_Updater(float time)
             ch_d.scale_time -= seconds_pause;
             this->unColor = scale_color_packed;
         }
-        else this->unColor = G_InterpolateColor(G_Platform::start_lightning_color, scale_color, ch_d.scale_time / seconds_pause);
+        else this->unColor = G_InterpolateColor(G_Platform::color_white, scale_color, ch_d.scale_time / seconds_pause);
     } break;
     case SS_scale_down: 
     {
@@ -70,8 +70,8 @@ void G_PlatformScale::Callback_Updater(float time)
         else 
         {
             float half_pause_time = seconds_pause / 2.f;
-            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor(scale_color, G_Platform::default_lightning, ch_d.scale_time / half_pause_time);
-            else this->unColor = G_InterpolateColor(G_Platform::default_lightning, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
+            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor(scale_color, G_Platform::color_default, ch_d.scale_time / half_pause_time);
+            else this->unColor = G_InterpolateColor(G_Platform::color_default, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
         }
     } break;
     case SS_scale_up: 
@@ -109,8 +109,8 @@ void G_PlatformScale::Callback_Updater(float time)
         else 
         {
             float half_pause_time = seconds_pause / 2.f;
-            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor(scale_color, G_Platform::default_lightning, ch_d.scale_time / half_pause_time);
-            else this->unColor = G_InterpolateColor(G_Platform::default_lightning, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
+            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor(scale_color, G_Platform::color_default, ch_d.scale_time / half_pause_time);
+            else this->unColor = G_InterpolateColor(G_Platform::color_default, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
         }
     } break;
     case SS_end: 
@@ -140,7 +140,7 @@ void G_PlatformScale::Callback_Updater(float time)
                 // this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3])).Scale(scale));
                 // this->upCO->UpdateRadius(G_Models::CalculateRadius(G_MN__Platform_cylinder_black, scale));
             }
-            this->unColor = G_InterpolateColor(scale_color, G_Platform::default_lightning, time_coef);
+            this->unColor = G_InterpolateColor(scale_color, G_Platform::color_default, time_coef);
         }
     } break;
     }
