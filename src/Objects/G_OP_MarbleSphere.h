@@ -31,6 +31,7 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
         float push_angle = 0.f;
 
         SpacePosition space_position = SP_Flight;
+        SpacePosition space_position_prev = SP_Flight;
 
         std::vector<ZC_Vec3<float>> move_dirs;  //  dirs added with buttons in one frame, mux 2
 
@@ -48,7 +49,9 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
 
     static inline const float max_health = 100.f;
 
-    G_OP_MarbleSphere();
+    G_OP_MarbleSphere(bool is_player);
+
+    std::vector<G_Sound> GetSounds();
 
     void VMoveInDirection_OP(const ZC_Vec3<float>& dir) override;
     void VMakeJump_OP() override;
@@ -78,5 +81,6 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
     bool Normalize(ZC_Vec3<float>& vec, const ZC_Vec3<float>& vec_default);
     
     void UpdateColorDMG(float time);
+    void UpdateSound(SpacePosition space_pos_prev);
 };
 

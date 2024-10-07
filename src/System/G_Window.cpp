@@ -4,7 +4,7 @@
 #include <ZC/Audio/ZC_Audio.h>
 #include <ZC/Audio/ZC_Sounds.h>
 #include <ZC/File/ZC_File.h>
-#include "G_SoundName.h"
+#include <Sound/G_SoundName.h>
 #include <ZC/GUI/ZC__GUI.h>
 #include <Model/G_Models.h>
 #include "G_DrawerCreator.h"    //  activate game render levels
@@ -45,5 +45,9 @@ void G_Window::LoadSounds()
 {
     ZC_FSPath path = ZC_FSPath(ZC_assetsDirPath).append("Game/sounds");
 
-    ZC_Sounds::LoadWAV(G_SN_lp, ZC_FSPath(path).append("lp16S.wav").string());
+    // ZC_Sounds::LoadWAV(G_SN__sphere_move, "/home/dmitry/Загрузки/shpere_move_16S.wav");
+    ZC_Sounds::LoadWAV(G_SN__sphere_move, ZC_FSPath(path).append("sphere/sphere_move.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__sphere_flight, ZC_FSPath(path).append("sphere/sphere_flight.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__sphere_jump, ZC_FSPath(path).append("sphere/sphere_jump.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__sphere_lands, ZC_FSPath(path).append("sphere/sphere_lands.wav").string());
 }

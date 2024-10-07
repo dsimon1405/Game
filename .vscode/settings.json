@@ -74,6 +74,10 @@
         "any": "cpp",
         "bitset": "cpp",
         "regex": "cpp",
-        "zc_renderlevel.h": "c"
+        "zc_renderlevel.h": "c",
+        "*.cp": "c",
+        "g_soundname.h": "c",
+        "zc_sound.h": "c",
+        "g_sound.h": "c"
     }
 }

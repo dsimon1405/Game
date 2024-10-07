@@ -2,14 +2,17 @@
 
 #include "Model/G_Models.h"
 
-G_Object::G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO)
+G_Object::G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, ZC_uptr<G_SoundsKeeper>&& _upSK)
     : dsCon(G_Models::GetModel_DSController(modelName, texSetId)),
-    upCO(std::move(_upCO))
+    upCO(std::move(_upCO)),
+    upSK(std::move(_upSK))
 {
     dsCon.SetUniformsData(ZC_UN_unModel, upCO->GetModelMatrix());
     dsCon.SetUniformsData(ZC_UN_unColor, &unColor);
     dsCon.SetUniformsData(ZC_UN_unAlpha, &unAlpha);
     dsCon.SwitchToDrawLvl(ZC_RL_Default, ZC_DL_Drawing);
+
+    if (upSK) upSK->SetPosition(&(upCO->GetFigure().center_fact));
 }
 
 ZC_Vec3<float> G_Object::VGetPosition_O() noexcept

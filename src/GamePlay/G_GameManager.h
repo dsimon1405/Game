@@ -38,7 +38,6 @@ public:
 private:
         //  gm data
     ZC_EC ecUpdater;
-    ZC_EC ecChangeCamPos;
         //  game objects
     G_Player player;
     G_Map map;
@@ -50,16 +49,16 @@ private:
         //  gui (timer)
     G_GUI_GM_W_LevelTimer w_level_timer;
         //  updater data
-    ZC_TextWindow tw_start_counter[3];
     float cur_time = 0.f;
+    ZC_TextWindow tw_start_counter[3];
     unsigned char tw_index = 0;
+    
     ZC_TextSceneTurnedToCamera tstc_level;
+    const float tstc_level_start_Z = 6.f;
+    const float tstc_level_start_scale;
 
     void PrepareLevel();
 
     void Callback_Updater(float time);
-    void Callback_ChangeCamPos(const ZC_Vec3<float>& cam_pos);
-
-    // void SetCurrentLevelTimeDefault();
-    // void ChangeGamePlayActivityState(bool active);
+    void ChangeGamePlayUpdaterState(bool on);
 };

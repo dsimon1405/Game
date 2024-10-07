@@ -60,7 +60,7 @@ void G_Platform::RotateExternal(float angle)
 
 G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId)
     : G_Object(modelName, texSetId, new ZC_CollisionObject(G_Models::GetModel_COFigure(modelName, _plat_trans.scale), ZC_C0_Type::ZC_COT__StaticSoloCollision, this,
-        { &G_Platform::Callback_Collision, this }, _plat_trans.CalculateModelMatrix())),
+        { &G_Platform::Callback_Collision, this }, _plat_trans.CalculateModelMatrix()), nullptr),
     platf_trans(_plat_trans)
 {
     platf_trans.pCO = this->upCO.Get();

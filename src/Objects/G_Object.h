@@ -4,6 +4,7 @@
 #include <ZC/Collision/ZC_CollisionObject.h>
 #include <Model/G_ModelSet.h>
 #include "G_PushSet.h"
+#include <Sound/G_SoundsKeeper.h>
 
 enum G_ObjectType
 {
@@ -19,10 +20,11 @@ struct G_Object
 {
     ZC_DSController dsCon;
     ZC_uptr<ZC_CollisionObject> upCO;
+    ZC_uptr<G_SoundsKeeper> upSK;
     uint unColor = 0;   //  uniform of adding color in sphere.fs. Pack shema bytes 2x10x10x10
     float unAlpha = 1.f;
 
-    G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO);
+    G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, ZC_uptr<G_SoundsKeeper>&& _upSK);
     virtual ~G_Object() = default;
 
     virtual G_ObjectTypeMask VGetType_O() const = 0;

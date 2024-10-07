@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ZC/Tools/ZC_uptr.h>
-#include <G_Camera.h>
+#include "G_Camera.h"
 #include <ZC/Events/ZC_EC.h>
 #include <Objects/G_ObjPlayable.h>
 #include "GUI/G_GUI_P_W_Health.h"

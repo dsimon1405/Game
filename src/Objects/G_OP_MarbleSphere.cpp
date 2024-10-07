@@ -4,14 +4,26 @@
 #include <Model/G_Models.h>
 #include <System/G_UpdaterLevels.h>
 #include <System/G_Func.h>
+#include <Sound/G_SoundName.h>
 
-G_OP_MarbleSphere::G_OP_MarbleSphere()
+G_OP_MarbleSphere::G_OP_MarbleSphere(bool is_player)
     : G_ObjPlayable(G_ModelName::G_MN__Sphere, 0, new ZC_CollisionObject(G_Models::GetModel_COFigure(G_MN__Sphere), ZC_C0_Type::ZC_COT__DynamicPushback,
-        this, { &G_OP_MarbleSphere::Callback_Collision, this }), max_health)
+        this, { &G_OP_MarbleSphere::Callback_Collision, this }), max_health, ZC_uptr<G_SoundsKeeper>(new G_SoundsKeeper(GetSounds(), is_player)))
 {
     ch_d.move_dirs.reserve(2);   //  max pressed button for dir change in one frame 2
 
     this->ecUpdater = ZC_SWindow::ConnectToUpdater({ &G_OP_MarbleSphere::Callback_Updater, this }, G_UL__game_play);
+}
+
+std::vector<G_Sound> G_OP_MarbleSphere::GetSounds()
+{
+    std::vector<G_Sound> sounds;
+    sounds.reserve(4);
+    sounds.emplace_back(G_Sound(G_SN__sphere_move));
+    sounds.emplace_back(G_Sound(G_SN__sphere_flight));
+    sounds.emplace_back(G_Sound(G_SN__sphere_jump));
+    sounds.emplace_back(G_Sound(G_SN__sphere_lands));
+    return sounds;
 }
 
 G_ObjectTypeMask G_OP_MarbleSphere::VGetType_O() const
@@ -69,6 +81,14 @@ void G_OP_MarbleSphere::VPushObjectInDirection_O(const G_PushSet& move_set)
 void G_OP_MarbleSphere::VMakeDefaultState_OP()
 {
     ch_d = {};
+    // this->upSK->SetDefault();
+    this->upSK->SetSoundState(G_SN__sphere_flight, ZC_SS__Stop);
+    this->upSK->SetSoundState(G_SN__sphere_lands, ZC_SS__Stop);
+    this->upSK->SetSoundState(G_SN__sphere_jump, ZC_SS__Stop);
+    // this->upSK->SetSoundState(G_SN__sphere_move, ZC_SS__PlayLoop);
+    this->upSK->SetSoundState(G_SN__sphere_move, ZC_SS__Stop);
+    this->upSK->SetVolume(G_SN__sphere_move, 0.f);
+    this->unColor = 0;
 }
 
 void G_OP_MarbleSphere::Callback_Updater(float time)
@@ -87,7 +107,7 @@ void G_OP_MarbleSphere::Callback_Updater(float time)
     case SP_Flight: if (ch_d.on_ground_collision_in_prev_frame) ch_d.space_position = SP_Ground; break;
     case SP_Jump: break;    //  chages only in JumpMove()
     }
-    ch_d.on_ground_collision_in_prev_frame = false;
+    ch_d.on_ground_collision_in_prev_frame = false;     //  must be after UpdateSound
 
     ZC_Vec3<float> pos = this->VGetPosition_O();
         //  make moves/pushes
@@ -102,10 +122,14 @@ void G_OP_MarbleSphere::Callback_Updater(float time)
         pos[2] -= gravitation_power * time;
     }
 
+    UpdateSound(SP_Flight);
+
     UpdateColorDMG(time);
     
     CalculateRotateZ(time);
     UpdateMatModel(pos);
+    
+    ch_d.space_position_prev = ch_d.space_position;
 }
 
 void G_OP_MarbleSphere::SetMoveAndRotateSpeeds(float new_speed, float time)
@@ -283,7 +307,10 @@ void G_OP_MarbleSphere::Callback_Collision(const ZC_CO_CollisionResult& coll_res
     if (static_cast<G_Object*>(coll_result.pObj->GetHolder())->VGetType_O() == G_OT__Ground)
     {       
         if (!(coll_result.is_your_surface) && (*(coll_result.pSurf->normal))[2] == 0.f)   //  collision with the side surface of the platform
+        {
             ch_d.on_ground_collision_in_prev_frame = false;
+            this->upSK->SetSoundState(G_SN__sphere_lands, ZC_SS__Play);
+        }
         else    //  collision with up/down side of the platform
         {       //  determine, are sphere still on the platform (sphere's collision model not so spheric)
             const ZC_CO_Figure& pFig_platform = coll_result.pObj->GetFigure();
@@ -469,6 +496,53 @@ void G_OP_MarbleSphere::UpdateColorDMG(float time)
     {
         this->unColor = G_InterpolateColor({ ch_d.dmg_color_start, 0.f, 0.f }, { 0.f, 0.f, 0.f }, ch_d.dmg_time / seconds_dmg_phase);
     }
+}
+#include <iostream>
+        // std::cout<<ch_d.on_ground_collision_in_prev_frame<<std::endl;
+void G_OP_MarbleSphere::UpdateSound(SpacePosition space_pos_prev)
+{
+    if (ch_d.space_position_prev != ch_d.space_position)
+    {
+        switch (ch_d.space_position)
+        {
+        case SP_Ground:
+        {
+            // if (!ch_d.on_ground_collision_in_prev_frame)
+            // {
+            //     this->upSK->SetSoundState(G_SN__sphere_flight, ZC_SS__Stop);
+            //     this->upSK->SetSoundState(G_SN__sphere_lands, ZC_SS__Play);
+            // }
+                this->upSK->SetSoundState(G_SN__sphere_flight, ZC_SS__Stop);
+
+                this->upSK->SetSoundState(G_SN__sphere_lands, ZC_SS__Play);
+                this->upSK->SetSoundState(G_SN__sphere_move, ZC_SS__PlayLoop);
+            // this->upSK->SetVolume(G_SN__sphere_move, ch_d.cur_move_speed / max_move_speed);
+        } break;
+        case SP_Jump:
+        {
+                this->upSK->SetSoundState(G_SN__sphere_move, ZC_SS__Stop);
+
+                this->upSK->SetSoundState(G_SN__sphere_jump, ZC_SS__Play);
+                this->upSK->SetSoundState(G_SN__sphere_flight, ZC_SS__PlayLoop);
+            // if (ch_d.on_ground_collision_in_prev_frame)
+            // {
+            //     this->upSK->SetSoundState(G_SN__sphere_move, ZC_SS__Stop);
+            //     this->upSK->SetSoundState(G_SN__sphere_jump, ZC_SS__Play);
+            //     this->upSK->SetSoundState(G_SN__sphere_flight, ZC_SS__PlayLoop);
+            // }
+        } break;
+        case SP_Flight:
+        {
+                this->upSK->SetSoundState(G_SN__sphere_move, ZC_SS__Stop);
+
+                this->upSK->SetSoundState(G_SN__sphere_flight, ZC_SS__PlayLoop);
+
+        } break;
+        }
+    }
+
+    if (ch_d.space_position == SP_Ground)
+        this->upSK->SetVolume(G_SN__sphere_move, ch_d.cur_move_speed / max_move_speed);
 }
 
 

@@ -128,7 +128,7 @@ void G_Player::CallbackPlayerInfo(G_PlayerInfro player_info)
         else gui_w_health.UpdateHealth(health);
     } break;
     case G_PI__cam_rotate_angle_z: camera.RotateCameraHorizontal(upObj->GetRotateAngle()); break;
-    case G_PI__fall: if (!ec_updater.IsConnected()) G_GameManager::pGM->PlayerDead();
+    case G_PI__fall: if (!ec_updater.IsConnected()) G_GameManager::pGM->PlayerDead(); break;
     }
 }
 

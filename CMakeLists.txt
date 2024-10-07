@@ -63,13 +63,16 @@ set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC $<IF:${Game_MY_DEBUG},/home/dmitry/p
 #========================= sources
 set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/G_Camera.cpp
+
     ${PROJECT_SOURCE_DIR}/src/System/G_Window.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_Config.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_DrawerCreator.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_Time.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_Func.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_FontData.cpp
+
+    ${PROJECT_SOURCE_DIR}/src/Sound/G_SoundsKeeper.cpp
+    ${PROJECT_SOURCE_DIR}/src/Sound/G_Sound.cpp
     
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_Colors.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/G_GUI_W_MainMenu.cpp
@@ -93,6 +96,7 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Player.cpp
     ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Map.cpp
     ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Section.cpp
+    ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Camera.cpp
 
     ${PROJECT_SOURCE_DIR}/src/Objects/G_Object.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_Platform.cpp
