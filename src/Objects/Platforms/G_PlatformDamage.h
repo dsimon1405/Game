@@ -26,5 +26,6 @@ private:
     void VAddObjectOnPlatform(G_Object* pObj_add) override;
     void VDeactivatePlatform_P() override;
 
+    std::vector<G_GameSound> GetSounds();
     void Callback_Updater(float time);
 };

@@ -19,5 +19,5 @@ private:
 
     void CallMainMenu(float);
     void RestartLevel(float);
-    void ButtonFocuseChanged(bool);
+    void ButtonFocusChanged(bool);
 };

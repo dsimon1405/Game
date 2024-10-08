@@ -28,7 +28,7 @@ void G_GUI_W_RestartLevel::RestartLevel(float)
     G_GameManager::pGM->gui.CloseCurrentWindow();
 }
 
-void G_GUI_W_RestartLevel::ButtonFocuseChanged(bool)
+void G_GUI_W_RestartLevel::ButtonFocusChanged(bool)
 {
     
 }

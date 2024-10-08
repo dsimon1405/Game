@@ -1,6 +1,6 @@
 #include "G_ObjPlayable.h"
 
-G_ObjPlayable::G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_SoundsKeeper>&& _upSK)
+G_ObjPlayable::G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_GameSounds>&& _upSK)
     : G_Object(modelName, texSetId, std::move(_upCO), std::move(_upSK)),
     changable_data_op{ .health = health },
     max_hp(health)
@@ -29,12 +29,6 @@ void G_ObjPlayable::VDamagerObject_O(float damage)
     if (callback_player_info) callback_player_info(G_PI__health);
 }
 
-void G_ObjPlayable::VMakeDefaultState_O()
-{
-    changable_data_op = { .health = max_hp };
-    VMakeDefaultState_OP();
-}
-
 void G_ObjPlayable::SetPlayersCallback(ZC_Function<void(G_PlayerInfro)>&& _callback_player_info)
 {
     callback_player_info = std::move(_callback_player_info);
@@ -49,4 +43,10 @@ float G_ObjPlayable::GetHealth()
 float G_ObjPlayable::GetRotateAngle()
 {
     return changable_data_op.rotate_angle_z;
+}
+
+void G_ObjPlayable::VSetDefaultState_O()
+{
+    changable_data_op = { .health = max_hp };
+    VMakeDefaultState_OP();
 }

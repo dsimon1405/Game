@@ -30,15 +30,17 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
         std::list<G_PushSet> push_sets;
         float push_angle = 0.f;
 
-        SpacePosition space_position = SP_Flight;
-        SpacePosition space_position_prev = SP_Flight;
+        SpacePosition space_position = SP_Ground;
+        SpacePosition space_position_prev = SP_Ground;
 
         std::vector<ZC_Vec3<float>> move_dirs;  //  dirs added with buttons in one frame, mux 2
 
-        bool on_ground_collision_in_prev_frame = false;
+        bool on_ground_collision_in_prev_frame = true;
 
         float dmg_time = 0.f;
         float dmg_color_start = 0.f;   //  color for rgb red channal [0,1] to wich need to move
+
+        bool pushed_from_platform = false;
     } ch_d;
 
     static inline const float max_move_speed = 10.f;
@@ -51,7 +53,7 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
 
     G_OP_MarbleSphere(bool is_player);
 
-    std::vector<G_Sound> GetSounds();
+    std::vector<G_GameSound> GetSounds();
 
     void VMoveInDirection_OP(const ZC_Vec3<float>& dir) override;
     void VMakeJump_OP() override;

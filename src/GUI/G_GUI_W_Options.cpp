@@ -14,7 +14,7 @@ G_GUI_W_Options::G_GUI_W_Options()
     sdd_language({ L"English", L"Русский" }, G_Config::GetConfigData().language, 0.f, 0.f, { &G_Config::Update_language }),
     chB_fullscreen(G_Config::GetConfigData().fuull_screen, { &G_Config::Update_full_screen }, false, {},
         { G_LangText{ .lang = G_L_Russian, .text = L"Весь экран" }, { .lang = G_L_English, .text = L"Full screen" } }),
-    bit_volume(G_Config::GetConfigData().volume, 0, 100, { &G_Config::Update_volume }, false, {},
+    bit_volume(int(G_Config::GetConfigData().volume_coef * 100.f), 0, 100, { &G_Config::Update_volume }, false, {},
         { G_LangText{ .lang = G_L_Russian, .text = L"Звук" }, { .lang = G_L_English, .text = L"Sound" } }),
     bt_Go_to_main_menu({ &G_GUI_W_Options::CallMainMenu, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"В главное меню" }, { .lang = G_L_English, .text = L"Go to main menu" } })

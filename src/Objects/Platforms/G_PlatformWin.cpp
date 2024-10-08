@@ -8,7 +8,7 @@
 #include <System/G_Func.h>
 
 G_PlatformWin::G_PlatformWin(const G_PlatformTransforms& _plat_trans, ZC_Function<void(G_Platform*)>&& _func_change_pos)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0),
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr),
     func_change_pos(std::move(_func_change_pos))
 {
     ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformWin::Callback_Updater, this }, G_UL__game_play));

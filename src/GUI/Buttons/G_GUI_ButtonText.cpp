@@ -17,6 +17,7 @@ G_GUI_ButtonText::G_GUI_ButtonText(ZC_Function<void(float)>&& _callback_button_u
                 _colorsButtonText.text_color),
             nullptr,
             std::move(_callback_button_up),
-            use_sound ? ZC_Function<void(bool)>(&G_GUI_Button::ButtonFocuseChanged, static_cast<G_GUI_Button*>(this)) : ZC_Function<void(bool)>()),
-        std::move(_lang_texts))
+            use_sound ? ZC_Function<void(bool)>(&G_GUI_Button::ButtonFocusChanged, static_cast<G_GUI_Button*>(this)) : ZC_Function<void(bool)>()),
+        std::move(_lang_texts)),
+    G_GUI_Button(use_sound)
 {}

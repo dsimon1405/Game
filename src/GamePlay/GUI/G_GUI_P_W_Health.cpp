@@ -47,7 +47,7 @@ void G_GUI_P_W_Health::UpdateHealth(int hp_new)
     else subtract_hp = hp_new - new_hps.back();
         //  add subtract number
     ZC_uptr<ZC_TextWindow>& tw_subtract = hp_substracts.emplace_back(
-            new ZC_TextWindow(G_FontData::fd_Arial_30, std::to_string(subtract_hp), ZC_TA_Center, 0.f, text_health.GetPositionBL()[1] + text_health.GetHeight(),
+            new ZC_TextWindow(G_FontData::fd_Arial_30, std::to_wstring(subtract_hp), ZC_TA_Center, 0.f, text_health.GetPositionBL()[1] + text_health.GetHeight(),
                 ZC_WOIF__X_Center | ZC_WOIF__Y_Bottom_Pixel, true));
     // ZC_uptr<ZC_TextWindow>& tw_subtract = hp_substracts.emplace_back(
     //         new ZC_TextWindow(G_FontData::fd_Arial_30, std::to_string(subtract_hp), ZC_TA_Center, 0, 0, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel, true));

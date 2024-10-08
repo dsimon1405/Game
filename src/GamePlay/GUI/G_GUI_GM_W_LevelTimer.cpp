@@ -45,7 +45,7 @@ G_Time G_GUI_GM_W_LevelTimer::GetTime() const noexcept
 void G_GUI_GM_W_LevelTimer::Callback_Updater(float time)
 {
     static const float one_second = 1.f;
-
+        
     cur_time += time;
     if (cur_time >= one_second)
     {

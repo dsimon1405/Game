@@ -7,7 +7,7 @@
 #include <System/G_Func.h>
 
 G_PlatformScale::G_PlatformScale(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0)
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr)
 {}
 
 void G_PlatformScale::VAddObjectOnPlatform(G_Object* pObj_add)

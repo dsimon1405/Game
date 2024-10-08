@@ -11,9 +11,9 @@ struct G_ConfigData
     char name[4] { 'G', 'A', 'M', 'E' };
     G_Language language = G_L_Russian;
     bool fuull_screen = true;
-    int volume = 80;
-    int level = 1;
-    G_Time time;
+    float volume_coef = 0.8f;
+    int level = 0;
+    G_Time time { .hours = 1000 };
 };
 
 struct G_Config

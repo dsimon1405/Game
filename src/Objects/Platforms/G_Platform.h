@@ -41,12 +41,11 @@ protected:
     G_PlatformTransforms platf_trans;
     std::list<G_Object*> objects_on_platform;   //  pushable objectes wich had lust collision with that platform
 
-    G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId);
+    G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSounds>&& _upSK);
 
     G_ObjectTypeMask VGetType_O() const override;
         //  start callback for all platforms
     void Callback_Collision(const ZC_CO_CollisionResult& coll_result);
-    
     bool IsObjectInPlatformRadiusXY(G_Object* pObj);
 
 private:

@@ -15,7 +15,7 @@ enum G_PlayerInfro
 class G_ObjPlayable : public G_Object
 {
 public:
-    G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_SoundsKeeper>&& _upSK);
+    G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_GameSounds>&& _upSK);
     ~G_ObjPlayable();
 
         //  calls by owner (player...)
@@ -25,7 +25,6 @@ public:
     ZC_Vec3<float> VGetPosition_O() noexcept override;
     void VSetPosition_O(const ZC_Vec3<float>& _position) override;
     void VDamagerObject_O(float damage) override;
-    void VMakeDefaultState_O() override;
 
     void SetPlayersCallback(ZC_Function<void(G_PlayerInfro)>&& _callback_player_info);
     float GetHealth();
@@ -44,6 +43,8 @@ protected:
     const float max_hp;
 
     ZC_Function<void(G_PlayerInfro)> callback_player_info;
+    
+    void VSetDefaultState_O() override;
 
     virtual void VMakeDefaultState_OP() = 0;
     virtual void VDamageObject_OP(float damage) {}

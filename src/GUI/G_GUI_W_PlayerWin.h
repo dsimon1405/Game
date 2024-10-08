@@ -5,6 +5,7 @@
 #include "Buttons/G_GUI_ButtonText.h"
 #include <System/G_Time.h>
 #include "G_WindowName.h"
+#include <Sound/G_GameSound.h>
 
 class G_GUI_W_PlayerWin
 {
@@ -19,7 +20,7 @@ private:
     G_WindowName win_name = G_WN__player_win;
 
     ZC_EC ecUpdater;
-
+        //  gui
     ZC_GUI__WinImmutable window;
     G_GUI_Text text_Victory;
     G_GUI_Text text_Level;
@@ -36,12 +37,16 @@ private:
         UP_start,    //  wait to start update
         UP_move    //  move time from time_level to time_total
     } update_phase = UP_start;
-
+        //  time
     G_Time time_level;
     G_Time time_total;
     G_Time time_result;     //  must be in time_total in the end of updater phase
     int seconds_to_move = 0; //  seconds to move from time_level to time_total
     float cur_time = 0.f;
+    
+        //  sound
+    G_GameSound sound_win { G_SN__gui_win_sound };
+    G_GameSound sound_transfer_time_points { G_SN__gui_win_transfer_time_points };
 
     void CallMainMenu(float);
     void NextLevel(float);

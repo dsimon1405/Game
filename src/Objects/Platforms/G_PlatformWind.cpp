@@ -8,7 +8,7 @@
 #include <System/G_Func.h>
 
 G_PlatformWind::G_PlatformWind(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0)
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr)
 {}
 
 void G_PlatformWind::VAddObjectOnPlatform(G_Object* pObj_add)

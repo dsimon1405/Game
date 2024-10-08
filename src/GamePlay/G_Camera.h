@@ -43,8 +43,9 @@ private:
             //  rotate around X
     const float vertical_angle_max = 30.f;
     const float vertical_angle_min = 10.f;
-    float cur_vertical_angle = (vertical_angle_max - vertical_angle_min) / 2.f;
-    float vertical_angle_must_be = (vertical_angle_max - vertical_angle_min) / 2.f;
+    const float vertical_angle_start_pos = vertical_angle_min + ((vertical_angle_max - vertical_angle_min) / 2.f);
+    float cur_vertical_angle = vertical_angle_start_pos;
+    float vertical_angle_must_be = vertical_angle_start_pos;
 
     ZC_EC ec_mouseMove;
     ZC_EC ec_mouseScroll;

@@ -24,6 +24,8 @@ void G_GUI::OpenWindow(G_WindowName win)
     }
     opened_window = win;
     ChangeOpenedWindowDrawState(true);
+
+    ss_open_window.upSound->Play();
 }
 
 void G_GUI::CloseCurrentWindow()
@@ -33,6 +35,8 @@ void G_GUI::CloseCurrentWindow()
     // ZC_SWindow::HideCursor();
     // ZC_SWindow::LimitCursor();
     opened_window = G_WN__none;
+
+    ss_open_window.upSound->Play();
 }
 
 void G_GUI::CloseSWindowButtonClicked()
@@ -40,11 +44,15 @@ void G_GUI::CloseSWindowButtonClicked()
     if (try_close_game) return;
     try_close_game = true;
     GoBackToMainMenu();
+
+    ss_open_window.upSound->Play();
 }
 
 void G_GUI::EscapeeClicked(ZC_ButtonID,float)
 {
     GoBackToMainMenu();
+    
+    ss_open_window.upSound->Play();
 }
 
 void G_GUI::GoBackToMainMenu()

@@ -32,5 +32,5 @@ private:
     void ContinueBestGame(float);
     void OpenOptions(float);
     void ExitGame(float);
-    void ButtonFocuseChanged(bool);
+    void ButtonFocusChanged(bool);
 };

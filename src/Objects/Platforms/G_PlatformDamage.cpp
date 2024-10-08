@@ -8,7 +8,7 @@
 #include <System/G_Func.h>
 
 G_PlatformDamage::G_PlatformDamage(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0)
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSounds(GetSounds()))
 {
     float dist_to_plat = ZC_Vec::Length(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3]));    //  distance from {0,0,0} to platform center
     const float min_dmg = 5.f;
@@ -25,6 +25,7 @@ void G_PlatformDamage::VAddObjectOnPlatform(G_Object* pObj_add)
         {
             ch_d.is_active = true;
             ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformDamage::Callback_Updater, this }, G_UL__game_play));   //  connect to update if it is not yet
+            this->upSK->SetSoundState(G_SN__platform_activation, ZC_SS__Play);
         }
     }
 }
@@ -34,6 +35,14 @@ void G_PlatformDamage::VDeactivatePlatform_P()
     ch_d.is_active = false;
     ch_d.deactivate_color = ZC_UnpackUINTtoFloat_RGB(this->unColor);
     ch_d.dmg_time = 0.f;
+}
+
+std::vector<G_GameSound> G_PlatformDamage::GetSounds()
+{
+    std::vector<G_GameSound> sounds;
+    sounds.reserve(1);
+    sounds.emplace_back(G_GameSound(G_SN__platform_activation));
+    return sounds;
 }
 
 void G_PlatformDamage::Callback_Updater(float time)

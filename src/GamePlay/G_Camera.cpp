@@ -25,8 +25,9 @@ void G_Camera::SetDefaultState()
 {
     cur_horizontal_angle = 0.f;
     horizontal_angle_must_be = 0.1f;
-    cur_vertical_angle = (vertical_angle_max - vertical_angle_min) / 2.f;
-    vertical_angle_must_be = (vertical_angle_max - vertical_angle_min) / 2.f;
+    cur_vertical_angle = vertical_angle_start_pos;
+    vertical_angle_must_be = vertical_angle_start_pos;
+    Callback_Updater(1.f);
 }
 
 void G_Camera::SetCameraLookOn(const ZC_Vec3<float>& lookOn)

@@ -1,10 +1,17 @@
 #include "G_GUI_Button.h"
 
 #include <ZC/GUI/ZC__GUI.h>
+#include <ZC/Audio/ZC_Sounds.h>
+#include <Sound/G_SoundName.h>
 
-void G_GUI_Button::ButtonFocuseChanged(bool is_on)
+G_GUI_Button::G_GUI_Button(bool use_focus_changed_sound)
 {
-    
+    if (use_focus_changed_sound) ss_button_focused = G_SystemSound(G_SN__gui_button_focused);
+}
+
+void G_GUI_Button::ButtonFocusChanged(bool is_on)
+{
+    ss_button_focused.upSound->Play();
 }
 
 float G_GUI_Button::CalculateButtonWidth(const std::forward_list<G_LangText>& _lang_texts)

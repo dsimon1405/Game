@@ -59,8 +59,8 @@ void G_Player::ChangeCameraState(bool on)
 
 void G_Player::SetDefaultState()
 {
-    upObj->VMakeDefaultState_O();
-    camera.SetDefaultState();
+    camera.SetDefaultState();   //  must be before upObj, caurse G_Object::upSK need updated camera on SetDefaultState()
+    upObj->SetDefaultState();
     gui_w_health.SetDefaultState();
 }
 

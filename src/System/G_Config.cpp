@@ -3,6 +3,8 @@
 #include <ZC/File/ZC_File.h>
 #include <GUI/Text/G_LanguageDependent.h>
 #include <ZC/Video/ZC_SWindow.h>
+#include <Sound/G_GameSound.h>
+#include <Sound/G_SystemSound.h>
 
 #include <fstream>
 
@@ -64,21 +66,25 @@ void G_Config::Update_full_screen(bool full_screen)
 
 void G_Config::Update_volume(int volume)
 {
-    pConfig->config_data.volume = volume;
-                                                                    //  add upadte colume
+    pConfig->config_data.volume_coef = float(volume) / 100.f;
+    G_GameSound::UpdateSoundsVolume();
+    G_SystemSound::UpdateSoundsVolume();
     pConfig->config_data_changed = true;
 }
 
 void G_Config::UpdateGameStats(int level, G_Time time)
 {
-    if (pConfig->config_data.level > level) return;
-    else if (pConfig->config_data.time.GetInSeconds() <= time.GetInSeconds()) return;
+    auto lamb_save = [level, &time]()
+    {
+        pConfig->config_data.level = level;
+        pConfig->config_data.time = time;
+        pConfig->config_data_changed = true;
 
-    pConfig->config_data.level = level;
-    pConfig->config_data.time = time;
-    pConfig->config_data_changed = true;
+        pConfig->upW_save_level->ShowSavedData(level, time);
+    };
 
-    pConfig->upW_save_level->ShowSavedData(level, time);
+    if (pConfig->config_data.level < level) lamb_save();
+    else if (pConfig->config_data.time.GetInSeconds() > time.GetInSeconds()) lamb_save();
 }
 
 bool G_Config::ConstCharEqual(const char* first, char* second) noexcept

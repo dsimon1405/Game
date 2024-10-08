@@ -2,25 +2,10 @@
 
 #include <Model/G_Models.h>
 #include <ZC/Video/ZC_SWindow.h>
-    // void G_Platform::CallbackTestRotate(float time)
-    // {
-    //     static float degrees = 10;
-    //     static float second_on_rotate = 1;
-
-    //     if (!objects_on_platform.empty())
-    //     {
-    //         float angle = degrees * time / second_on_rotate;
-    //         platf_trans.Update_rotate_angle_internal_Z(platf_trans.rotate_angle_internal_Z + angle);
-
-    //         objects_on_platform.front()->VOnGroundRotateZ_O({0,0,0}, angle);
-    //     }
-    // }
 
 G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0)
-{
-    // ZC_SWindow::ConnectToUpdater({ &G_Platform::CallbackTestRotate, this }, 0);
-}
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr)
+{}
 
 G_Platform::~G_Platform()
 {
@@ -58,9 +43,9 @@ void G_Platform::RotateExternal(float angle)
     for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_O({ 0.f, 0.f, 0.f }, angle);
 }
 
-G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId)
+G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSounds>&& _upSK)
     : G_Object(modelName, texSetId, new ZC_CollisionObject(G_Models::GetModel_COFigure(modelName, _plat_trans.scale), ZC_C0_Type::ZC_COT__StaticSoloCollision, this,
-        { &G_Platform::Callback_Collision, this }, _plat_trans.CalculateModelMatrix()), nullptr),
+        { &G_Platform::Callback_Collision, this }, _plat_trans.CalculateModelMatrix()), std::move(_upSK)),
     platf_trans(_plat_trans)
 {
     platf_trans.pCO = this->upCO.Get();

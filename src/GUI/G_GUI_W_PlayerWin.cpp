@@ -51,12 +51,17 @@ void G_GUI_W_PlayerWin::OpenWindow()
     text_level_time.UpdateText(CreateNumberWstr(time_level), true);
     text_total_time.UpdateText(CreateNumberWstr(time_total), true);
     ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GUI_W_PlayerWin::Callback_Updater, this }, G_UpdaterLevels::G_UL__w_player_win));
+
+    sound_win.SetSoundState(ZC_SS__Play);
 }
 
 void G_GUI_W_PlayerWin::CloseWindow()
 {
     window.SetDrawState(false);
     ecUpdater.Disconnect();
+
+    sound_win.SetSoundState(ZC_SS__Stop);
+    sound_transfer_time_points.SetSoundState(ZC_SS__Stop);
 }
 
 void G_GUI_W_PlayerWin::CallMainMenu(float)
@@ -76,11 +81,11 @@ void G_GUI_W_PlayerWin::Callback_Updater(float time)
     static const float seconds_for_update_time = 2.f;    //  second to move time from time_level to time_total
     static float cur_seconds_offset = 0.f;
     
-    cur_time += time;
     switch (update_phase)
     {
     case UP_start:
     {
+        cur_time += time;
         if (cur_time >= seconds_start)
         {
             update_phase = UP_move;
@@ -91,12 +96,17 @@ void G_GUI_W_PlayerWin::Callback_Updater(float time)
     } break;
     case UP_move:
     {
+        if (cur_time == 0.f) sound_transfer_time_points.SetSoundState(ZC_SS__Play);
+
+        cur_time += time;
         if (cur_time >= seconds_for_update_time)
         {
             text_arrow.SetDrawState(false);
             text_level_time.UpdateText(CreateNumberWstr(G_Time{}), true);
             text_total_time.UpdateText(CreateNumberWstr(time_result), true);
             ecUpdater.Disconnect();
+
+            sound_transfer_time_points.SetSoundState(ZC_SS__Stop);
         }
         else
         {

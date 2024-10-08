@@ -5,6 +5,7 @@
 #include "G_GUI_W_RestartLevel.h"
 #include "G_GUI_W_PlayerWin.h"
 #include "G_GUI_W_Options.h"
+#include <Sound/G_SystemSound.h>
 
 class G_GUI
 {
@@ -24,6 +25,8 @@ private:
     G_GUI_W_Options w_options;
     G_GUI_W_RestartLevel w_restart_level;
     G_GUI_W_PlayerWin w_player_win;
+
+    G_SystemSound ss_open_window { G_SN__gui_button_clicked };
 
     void CloseSWindowButtonClicked();
     void EscapeeClicked(ZC_ButtonID,float);
