@@ -7,11 +7,11 @@
 
 G_Player::G_Player(ZC_uptr<G_ObjPlayable>&& _upObj)
     : upObj(std::move(_upObj)),
-    camera({ &G_Player::Callback_CameraRotated, this }),
+    camera({ &G_Player::Callback_CameraRotated, this }, { 0.f, 0.f, upObj->GetRadius() }),
     gui_w_health(upObj->GetHealth())
 {
     upObj->SetPlayersCallback({ &G_Player::CallbackPlayerInfo, this });
-    upObj->VSetPosition_O({ 0.f, 0.f, 1.f });  //  move sphere to {0,0,0} position of the bottom on radius 1.f
+    upObj->VSetPosition_O({ 0.f, 0.f, upObj->GetRadius() });  //  move sphere to {0,0,0} position of the bottom on radius 1.f
 }
 
 G_Player::~G_Player()
@@ -59,9 +59,19 @@ void G_Player::ChangeCameraState(bool on)
 
 void G_Player::SetDefaultState()
 {
-    camera.SetDefaultState();   //  must be before upObj, caurse G_Object::upSK need updated camera on SetDefaultState()
+    camera.SetDefaultState({ 0.f, 0.f, upObj->GetRadius() });   //  must be before upObj, caurse G_Object::upSK need updated camera on SetDefaultState()
     upObj->SetDefaultState();
     gui_w_health.SetDefaultState();
+}
+
+void G_Player::SetSoundSetToDefault()
+{
+    upObj->SetSoundSetToDefault();
+}
+
+float G_Player::GetRadius()
+{
+    return upObj->GetRadius();
 }
 
 void G_Player::Callback_CameraRotated(const ZC_Vec3<float>& cam_pos)

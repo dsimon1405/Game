@@ -2,7 +2,7 @@
 
 #include "Model/G_Models.h"
 
-G_Object::G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, ZC_uptr<G_GameSounds>&& _upSK)
+G_Object::G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, ZC_uptr<G_GameSoundSet>&& _upSK)
     : dsCon(G_Models::GetModel_DSController(modelName, texSetId)),
     upCO(std::move(_upCO)),
     upSK(std::move(_upSK))
@@ -17,8 +17,18 @@ G_Object::G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObje
 
 void G_Object::SetDefaultState()
 {
-    if (upSK) upSK->SetDefaultState();
     VSetDefaultState_O();
+    if (upSK) upSK->SetDefaultState();
+}
+
+void G_Object::SetSoundSetToDefault()
+{
+    if (upSK) upSK->SetDefaultState();
+}
+
+float G_Object::GetRadius()
+{
+    return upCO->GetFigure().radius;
 }
 
 ZC_Vec3<float> G_Object::VGetPosition_O() noexcept

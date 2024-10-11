@@ -22,7 +22,7 @@ void G_GUI_GM_StartTimer::SetDefaultState()
     cur_time = 0.f;
     tw_index = 0;
         //  enable first, other off
-    tw_start_counter[0].NeedDraw(true);
+    tw_start_counter[0].NeedDraw(false);
     tw_start_counter[1].NeedDraw(false);
     tw_start_counter[2].NeedDraw(false);
         //  sound
@@ -31,13 +31,24 @@ void G_GUI_GM_StartTimer::SetDefaultState()
 
 bool G_GUI_GM_StartTimer::Update(float time)
 {
+    static const float start_second = 1.f;
+
     if (tw_index == 3) return true;
 
-    if (cur_time == 0.f) sound_timer.SetSoundState(ZC_SS__Play);
-
     cur_time += time;
+        //  wait a second before start count 3,2,1
+    if (tw_index == 0 && sound_timer.GetState() != ZC_SS__Play)
+    {
+        if (cur_time >= start_second)
+        {
+            cur_time = 0.f;
+            tw_start_counter[0].NeedDraw(true);
+            sound_timer.SetSoundState(ZC_SS__Play);
+        }
+        else return false;
+    }
+
         //  show counter one by one, then start level
-    static const float start_second = 1.f;
     if (cur_time >= start_second)
     {
         tw_start_counter[tw_index].NeedDraw(false);

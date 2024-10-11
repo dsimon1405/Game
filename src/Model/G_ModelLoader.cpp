@@ -5,6 +5,8 @@
 
 #include <assimp/postprocess.h>
 
+#include <list>
+
 G_ModelSet G_ModelLoader::LoadModel(G_ModelName model_name)
 {
 	// read file via ASSIMP
@@ -28,7 +30,8 @@ std::string G_ModelLoader::GetPath(G_ModelName model_name)
 	switch (model_name)
 	{
 	case G_MN__Sphere: return ZC_FSPath(model_dir_path).append("sphere/sphere.dae").string();
-	case G_MN__Platform_cylinder_black:  return ZC_FSPath(model_dir_path).append("cylinder_black/cylinder_black.dae").string();
+	case G_MN__SphereMap: return ZC_FSPath(model_dir_path).append("sphere/sphere.dae").string();
+	case G_MN__Platform_cylinder_black: return ZC_FSPath(model_dir_path).append("cylinder_black/cylinder_black.dae").string();
 	default: assert(false); return {};
 	}
 }
@@ -63,10 +66,13 @@ G_ModelSet G_ModelLoader::ProcessNode(G_ModelName model_name, aiNode* pNode, con
 		if (first_letter == 'D') draw_index = i;	//	draw model
 		else if (first_letter == 'C') collision_index = i;	//	collision model
 	}
+
+	std::vector<ZC_CO_Surface<ZC_Vec3<float>>> co_surfs;
+	if (model_name != G_MN__SphereMap) co_surfs = LoadCollisionSurfaces(pNode->mChildren[collision_index], pScene);	
 	
-	
-	return G_ModelSet{ .model_name = model_name, .drawer_set = CreateDrawerSet(pNode->mChildren[draw_index], pScene, path),
-		.surfaces = LoadCollisionSurfaces(pNode->mChildren[collision_index], pScene) } ;
+	return G_ModelSet{ .model_name = model_name, .drawer_set = CreateDrawerSet(pNode->mChildren[draw_index], pScene, path,
+		(model_name == G_MN__Sphere || model_name == G_MN__SphereMap), model_name == G_MN__SphereMap),
+		.surfaces = std::move(co_surfs) } ;
 
 	// static const aiMatrix4x4 model_one;
 	// // process each mesh located at the current pNode
@@ -146,18 +152,22 @@ std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(
 	return surfaces;
 }
 
-ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path)
+ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path, bool smooth_normals, bool invert_normals)
 {		
 		//	get model matrix if it is
 	static const aiMatrix4x4 model_one;
 	aiMatrix4x4* pModel = model_one != pNode->mTransformation ? &(pNode->mTransformation) : nullptr;
 	ZC_Mat4<float> model = pModel ? G_Assimp_ZC_Converter::GetMat4(*pModel) : ZC_Mat4<float>(1.f);
+	ZC_Mat4<float> model_scale_rotate = model;
+	if (pModel) model_scale_rotate[3] = ZC_Vec4<float>(0.f, 0.f, 0.f, 1.f);
+
 		//	count vertices
 	uint verts_count = 0;
 	for(uint i = 0; i < pNode->mNumMeshes; i++)
 		verts_count += pScene->mMeshes[pNode->mMeshes[i]]->mNumVertices;
 
 		//	vbo
+	std::list<std::list<VertNorm>> verts_to_smooth;
 	std::vector<Vertex> vertices;
 	vertices.reserve(verts_count);
 	for(uint mesh_i = 0; mesh_i < pNode->mNumMeshes; mesh_i++)
@@ -172,17 +182,60 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 				vertex.position = { pos[0], pos[1], pos[2] };
 			}
 			else vertex.position = G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]);
-			aiVector3D& normals = pMesh->mNormals[vert_i];
-			vertex.normal = ZC_Pack_INT_2_10_10_10_REV(normals.x, normals.y, normals.z);		//	need rotate and scale with pModel
-			
+				//	normal
+			aiVector3D& normal = pMesh->mNormals[vert_i];
+			if (invert_normals) normal *= -1.f;		//	invert if need
+			if (!smooth_normals)	//	set normal if don't need make smoth (later)
+			{
+				if (pModel)		//	need rotate and scale with pModel
+				{
+					ZC_Vec3<float> new_normal = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(model_scale_rotate * ZC_Vec4<float>(normal.x, normal.y, normal.z, 1.f)));
+					vertex.normal = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2]);
+				}
+				else vertex.normal = ZC_Pack_INT_2_10_10_10_REV(normal.x, normal.y, normal.z);
+			}
+				//	tex coords
 			if (pMesh->mTextureCoords[0])
 			{
 				aiVector3D& tex_coords = pMesh->mTextureCoords[0][vert_i];
 				vertex.texCoords = ZC_Vec2<ushort>(ZC_PackTexCoordFloatToUShort(tex_coords.x), ZC_PackTexCoordFloatToUShort(tex_coords.y));
 			}
-			vertices.emplace_back(vertex);
+			Vertex& v = vertices.emplace_back(vertex);
+			
+			if (smooth_normals)		//	add same vertices to lists to recalculate normals
+			{
+				bool new_vertex = true;
+				for (auto& same_verts : verts_to_smooth)
+				{
+					if (same_verts.front().pVert->position == v.position)
+					{
+						same_verts.emplace_back(VertNorm{ .pVert = &v, .normal = {normal.x, normal.y, normal.z} });
+						new_vertex = false;
+						break;
+					}
+				}
+				if (new_vertex) verts_to_smooth.emplace_back(std::list<VertNorm>{ VertNorm{ .pVert = &v } });
+			}
 		}
 	}
+	if (smooth_normals)
+	{
+		for (auto& same_verts : verts_to_smooth)
+		{
+			ZC_Vec3<float> smooth_normal;
+			for (VertNorm& v : same_verts) smooth_normal += v.normal;
+			smooth_normal /= same_verts.size();
+			int normal_int = 0;
+			if (pModel)		//	need rotate and scale with pModel
+			{
+				ZC_Vec3<float> new_normal = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(model_scale_rotate * ZC_Vec4<float>(smooth_normal, 1.f)));
+				normal_int = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2]);
+			}
+			else normal_int = ZC_Pack_INT_2_10_10_10_REV(smooth_normal[0], smooth_normal[1], smooth_normal[2]);
+			for (VertNorm& v :same_verts) v.pVert->normal = normal_int;		//change normal for vertices
+		}
+	}
+
 	ZC_Buffer vbo(GL_ARRAY_BUFFER);
 	vbo.GLNamedBufferStorage(vertices.size() * sizeof(Vertex), vertices.data(), 0);
 

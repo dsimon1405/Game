@@ -1,76 +1,63 @@
 #include "G_GameSounds.h"
 
-#include <ZC/Tools/Container/ZC_ContFunc.h>
-#include <ZC/Events/ZC_Events.h>
-#include <ZC/Tools/Math/ZC_Vec.h>
-#include <ZC/Objects/Camera/ZC_Camera.h>
+#include "G_GameSound.h"
 
-G_GameSounds::G_GameSounds(std::vector<G_GameSound>&& _sounds, bool _volume_change_on_scroll)
-    : sounds(std::move(_sounds)),
-    volume_change_on_scroll(_volume_change_on_scroll)
+void G_GameSounds::ChangeSoundsPlayState(bool on)
 {
-    if (volume_change_on_scroll) ecWheelScroll.NewConnection(ZC_Events::ConnectMouseScrollOnceInFrame({ &G_GameSounds::MouseWheelScroll, this }));
+    if (on == game_play_sounds_state) return;
+
+    for (GameSound& ps : game_sounds) ps.ChangeState(on);
+    game_play_sounds_state = on;
 }
 
-void G_GameSounds::SetPosition(const ZC_Vec3<float>* _pPos)
+void G_GameSounds::UpdateSoundsVolume()
 {
-    pPos = _pPos;
+    for (GameSound& s : game_sounds) s.pSound->UpdateVolume(); 
 }
 
-G_GameSounds::~G_GameSounds()
+void G_GameSounds::AddSound(G_GameSound* pGS)
 {
-    ecCamCangedPos.Disconnect();
-    if (volume_change_on_scroll) ecWheelScroll.Disconnect();
+    game_sounds.emplace_back(GameSound{ .pSound = pGS });
 }
 
-void G_GameSounds::SetSoundState(G_SoundName sound_name, ZC_SoundState sound_state)
-{                              //  if ( sound play or playloop,              not player        no connection yet (for process other sounds) )   =>  connect to change cam pos event
-    if (ZC_Find(sounds, sound_name)->SetSoundState(sound_state) && !volume_change_on_scroll && !ecCamCangedPos.IsConnected())
-            ecCamCangedPos.NewConnection(ZC_Events::ConnectActiveCameraChangePosition({ &G_GameSounds::Callback_CameraChangedPosition, this }));
-}
-
-void G_GameSounds::SetDefaultState()
+void G_GameSounds::EraseSound(G_GameSound* pGS)
 {
-    dist_to_cam = ZC_Vec::Length(ZC_Camera::GetActiveCamera()->GetPosition() - *pPos);
-    for (G_GameSound& sound : sounds) sound.SetDefaultState(dist_to_cam);
-    sounds_temp.clear();
-}
-
-void G_GameSounds::AddTempSound(G_GameSound&& _sound)
-{       //  in temp sounds, sounds play only one time, delete stoped sounds before add new
-    for (auto iter = sounds_temp.begin(); iter != sounds_temp.end(); )      //  delete stoped 
-        iter = iter->GetState() == ZC_SS__Stop ? sounds_temp.erase(iter) : ++iter;
-
-    _sound.DistanceToCameraChanged(dist_to_cam);
-    sounds_temp.emplace_back(std::move(_sound)).SetSoundState(ZC_SS__Play);
-}
-
-void G_GameSounds::SetVolume(G_SoundName sound_name, float volume)
-{
-    ZC_Find(sounds, sound_name)->SetVolume(volume);
-}
-
-void G_GameSounds::Callback_CameraChangedPosition(const ZC_Vec3<float>& cam_pos)
-{
-    dist_to_cam = ZC_Vec::Length(cam_pos - *pPos);
-    bool have_playing_sound = false;
-    for (G_GameSound& sound : sounds)   //  main sounds
+    for (auto iter = game_sounds.begin(); iter != game_sounds.end(); ++iter)
     {
-        bool is_plaing = sound.DistanceToCameraChanged(dist_to_cam);
-        if (!have_playing_sound) have_playing_sound = is_plaing;
+        if (iter->pSound == pGS)
+        {
+            game_sounds.erase(iter);
+            break;
+        }
     }
-    
-    for (auto iter = sounds_temp.begin(); iter != sounds_temp.end(); )      //  temp sounds (delete stoped) 
-        iter = iter->DistanceToCameraChanged(dist_to_cam) ? ++iter : sounds_temp.erase(iter);
-
-    if (!have_playing_sound) ecCamCangedPos.Disconnect();   //  will be reconnected when some sound start playing in SetSoundState
 }
 
-void G_GameSounds::MouseWheelScroll(float,float,float)
+void G_GameSounds::SetDefaultSate()
 {
-    dist_to_cam = ZC_Vec::Length(ZC_Camera::GetActiveCamera()->GetPosition() - *pPos);
-    for (G_GameSound& sound : sounds) sound.DistanceToCameraChanged(dist_to_cam);   //  main sounds
-    
-    for (auto iter = sounds_temp.begin(); iter != sounds_temp.end(); )      //  temp sounds (delete stoped) 
-        iter = iter->DistanceToCameraChanged(dist_to_cam) ? ++iter : sounds_temp.erase(iter);
+    for (GameSound& gs : game_sounds) gs.sound_state_restore = ZC_SS__Stop;
+    game_play_sounds_state = true;
+}
+
+
+
+    //  G_GameSound::GameSound
+
+void G_GameSounds::GameSound::ChangeState(bool on)
+{
+    if (on)
+    {
+        if (sound_state_restore != ZC_SS__Stop)
+        {
+            sound_state_restore == ZC_SS__Play ? pSound->upSound->Play() : pSound->upSound->PlayLoop();
+            sound_state_restore = ZC_SS__Stop;  //  back ZC_SS__Stop in restore state for next call ChangeState()
+        }
+    }
+    else
+    {
+        if (pSound->upSound->GetState() == ZC_SS__Play || pSound->upSound->GetState() == ZC_SS__PlayLoop)
+        {
+            sound_state_restore = pSound->upSound->GetState();
+            pSound->upSound->Pause();
+        }
+    }
 }

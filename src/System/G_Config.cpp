@@ -3,7 +3,7 @@
 #include <ZC/File/ZC_File.h>
 #include <GUI/Text/G_LanguageDependent.h>
 #include <ZC/Video/ZC_SWindow.h>
-#include <Sound/G_GameSound.h>
+#include <Sound/G_GameSounds.h>
 #include <Sound/G_SystemSound.h>
 
 #include <fstream>
@@ -67,7 +67,7 @@ void G_Config::Update_full_screen(bool full_screen)
 void G_Config::Update_volume(int volume)
 {
     pConfig->config_data.volume_coef = float(volume) / 100.f;
-    G_GameSound::UpdateSoundsVolume();
+    G_GameSounds::UpdateSoundsVolume();
     G_SystemSound::UpdateSoundsVolume();
     pConfig->config_data_changed = true;
 }
@@ -80,7 +80,7 @@ void G_Config::UpdateGameStats(int level, G_Time time)
         pConfig->config_data.time = time;
         pConfig->config_data_changed = true;
 
-        pConfig->upW_save_level->ShowSavedData(level, time);
+        pConfig->upW_save_level->ShowSavedData(level - 1, time);
     };
 
     if (pConfig->config_data.level < level) lamb_save();

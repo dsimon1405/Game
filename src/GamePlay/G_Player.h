@@ -16,6 +16,8 @@ public:
     void ChangeMoveState(bool on);
     void ChangeCameraState(bool on);
     void SetDefaultState();
+    void SetSoundSetToDefault();
+    float GetRadius();
 
 private:
     ZC_uptr<G_ObjPlayable> upObj;

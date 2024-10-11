@@ -17,9 +17,6 @@ private:
     std::vector<ZC_uptr<G_Platform>> platforms_on_circle;
     ZC_EC ecUpdater;
 
-    static inline const float rotation_speed_external = 6.f;      //  5 degrees per second
-    static inline const float rotation_speed_internal = 25.f;      //  25 degrees per second
-
     struct RotateSet
     {
         float rotate_angle = 0.f;   //  random angle to ratate on at first platforms at first internal, then external

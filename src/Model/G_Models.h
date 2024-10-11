@@ -14,7 +14,7 @@ struct G_Models
 	static float GetRadius(G_ModelName model_name);
 
 private:
-	struct LengtheKeeper
+	struct LengthKeeper
 	{
 		const ZC_Vec3<float>* v;
 		float length;

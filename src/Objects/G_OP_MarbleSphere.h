@@ -25,6 +25,8 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
 
         float cur_move_speed = 0.f;
 
+        float cur_jump_angle = 0.f;
+
         float cur_rotattion_speed = 0.f;
 
         std::list<G_PushSet> push_sets;
@@ -50,6 +52,8 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
     static inline const float move_rotation_speed_coef = max_rotation_speed / max_move_speed;
 
     static inline const float max_health = 100.f;
+
+    static inline const float radius = 1.f;
 
     G_OP_MarbleSphere(bool is_player);
 
@@ -83,6 +87,6 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
     bool Normalize(ZC_Vec3<float>& vec, const ZC_Vec3<float>& vec_default);
     
     void UpdateColorDMG(float time);
-    void UpdateSound(SpacePosition space_pos_prev);
+    void UpdateSound();
 };
 

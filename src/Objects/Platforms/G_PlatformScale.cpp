@@ -7,7 +7,7 @@
 #include <System/G_Func.h>
 
 G_PlatformScale::G_PlatformScale(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr)
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()))
 {}
 
 void G_PlatformScale::VAddObjectOnPlatform(G_Object* pObj_add)
@@ -17,11 +17,30 @@ void G_PlatformScale::VAddObjectOnPlatform(G_Object* pObj_add)
     {
         ch_d.scale_state = SS_start;
         ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformScale::Callback_Updater, this }, G_UL__game_play));   //  connect to update if it is not yet
+        this->upSK->SetSoundState(G_SN__platform_activation, ZC_SS__Play);
     }
+}
+
+std::vector<G_GameSound> G_PlatformScale::GetSounds()
+{
+    std::vector<G_GameSound> sounds;
+    sounds.reserve(2);
+    sounds.emplace_back(G_GameSound(G_SN__platform_activation));
+    sounds.emplace_back(G_GameSound(G_SN__platform_scale));
+    return sounds;
 }
 
 void G_PlatformScale::Callback_Updater(float time)
 {
+    static const float seconds_pause = 1.f;
+    static const float seconds_scale = 2.f;
+    static const float scale_min = G_Map::scaleXY_other_platforms * 0.2f;
+    static const float scale_max = G_Map::scaleXY_other_platforms * 1.f;
+    static const float scale_Z = G_Map::scaleZ_platform;
+    static const ZC_Vec3<float> scale_color { 1.f, 1.f, 0.f };
+    static const uint scale_color_packed = ZC_PackColorFloatToUInt_RGB(scale_color[0], scale_color[1], scale_color[2]);
+    static const float deactivate_time = 1.f;
+
     ch_d.scale_time += time;
     switch (ch_d.scale_state)
     {
@@ -32,6 +51,7 @@ void G_PlatformScale::Callback_Updater(float time)
             ch_d.scale_state = SS_scale_down;
             ch_d.scale_time -= seconds_pause;
             this->unColor = scale_color_packed;
+            this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Play);
         }
         else this->unColor = G_InterpolateColor(G_Platform::color_white, scale_color, ch_d.scale_time / seconds_pause);
     } break;
@@ -44,9 +64,6 @@ void G_PlatformScale::Callback_Updater(float time)
                 //  update model matrix and radius for collision object
             ZC_Vec3<float> scale(scale_min, scale_min, scale_Z);
             this->platf_trans.Update_scale(scale, G_MN__Platform_cylinder_black);
-            // this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3])).Scale(scale));
-            // this->upCO->UpdateRadius(G_Models::CalculateRadius(G_MN__Platform_cylinder_black, scale));
-
             CheckPlatformHabitability(scale_min);
         }
         else
@@ -55,8 +72,6 @@ void G_PlatformScale::Callback_Updater(float time)
             ZC_Vec3<float> scale(scale_coef, scale_coef, scale_Z);
                 //  update model matrix and radius for collision object
             this->platf_trans.Update_scale(scale, G_MN__Platform_cylinder_black);
-            // this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3])).Scale(scale));
-            // this->upCO->UpdateRadius(G_Models::CalculateRadius(G_MN__Platform_cylinder_black, scale));
         }
     } break;
     case SS_pause_on_down: 
@@ -66,6 +81,8 @@ void G_PlatformScale::Callback_Updater(float time)
             ch_d.scale_state = SS_scale_up;
             ch_d.scale_time -= seconds_pause;
             this->unColor = scale_color_packed;
+            // this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Stop);
+            this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Play);
         }
         else 
         {
@@ -83,9 +100,6 @@ void G_PlatformScale::Callback_Updater(float time)
                 //  update model matrix and radius for collision object
             ZC_Vec3<float> scale(scale_max, scale_max, scale_Z);
             this->platf_trans.Update_scale(scale, G_MN__Platform_cylinder_black);
-            // this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3])).Scale(scale));
-            // this->upCO->UpdateRadius(G_Models::CalculateRadius(G_MN__Platform_cylinder_black, scale));
-            
             CheckPlatformHabitability(scale_max);
         }
         else
@@ -94,8 +108,6 @@ void G_PlatformScale::Callback_Updater(float time)
             ZC_Vec3<float> scale(scale_coef, scale_coef, scale_Z);
                 //  update model matrix and radius for collision object
             this->platf_trans.Update_scale(scale, G_MN__Platform_cylinder_black);
-            // this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3])).Scale(scale));
-            // this->upCO->UpdateRadius(G_Models::CalculateRadius(G_MN__Platform_cylinder_black, scale));
         }
     } break;
     case SS_pause_on_up: 
@@ -105,6 +117,8 @@ void G_PlatformScale::Callback_Updater(float time)
             ch_d.scale_state = SS_scale_down;
             ch_d.scale_time -= seconds_pause;
             this->unColor = scale_color_packed;
+            // this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Stop);
+            this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Play);
         }
         else 
         {
@@ -124,8 +138,6 @@ void G_PlatformScale::Callback_Updater(float time)
             {
                 ZC_Vec3<float> scale(scale_max, scale_max, scale_Z);
                 this->platf_trans.Update_scale(scale, G_MN__Platform_cylinder_black);
-                // this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3])).Scale(scale));
-                // this->upCO->UpdateRadius(G_Models::CalculateRadius(G_MN__Platform_cylinder_black, scale));
             }
         }
         else
@@ -137,8 +149,6 @@ void G_PlatformScale::Callback_Updater(float time)
                 ZC_Vec3<float> scale(scale_coef, scale_coef, scale_Z);
                     //  update model matrix and radius for collision object
                 this->platf_trans.Update_scale(scale, G_MN__Platform_cylinder_black);
-                // this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3])).Scale(scale));
-                // this->upCO->UpdateRadius(G_Models::CalculateRadius(G_MN__Platform_cylinder_black, scale));
             }
             this->unColor = G_InterpolateColor(scale_color, G_Platform::color_default, time_coef);
         }
@@ -157,20 +167,7 @@ void G_PlatformScale::CheckPlatformHabitability(float scale_val)
         ch_d.scale_state = SS_end;
         ch_d.scale_time = 0.f;
         ch_d.deactivate_scale = scale_val;
+        this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Stop);
+        this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Play);
     }
 }
-
-
-            // for (auto iter = ch_d.objs.begin(); iter != ch_d.objs.end(); )   //  check is object still in platforms cylindric radius
-            // {
-            //     ZC_Vec4<float>& platform_pos = (*(this->upCO->GetModelMatrix()))[3];
-            //     ZC_Vec3<float> obj_pos = (*(iter))->VGetPosition_O();
-            //     float distance = ZC_Vec::Length(ZC_Vec3<float>(platform_pos[0], platform_pos[1], 0.f) - ZC_Vec3<float>(obj_pos[0], obj_pos[1], 0.f));
-            //     iter = distance < (*(iter))->upCO->GetFigure().radius + this->upCO->GetFigure().radius ? ++iter : ch_d.objs.erase(iter);   //  insecond case object out of cylindric radius of the platform, stop pushing them
-            // }
-            // if (ch_d.objs.size() == 0)      //  stop activity
-            // {
-            //     ch_d.scale_state = SS_end;
-            //     ch_d.scale_time = 0.f;
-            //     ch_d.deactivate_scale = scale_max;
-            // }

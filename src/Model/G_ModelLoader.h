@@ -25,13 +25,18 @@ private:
 		// texCoords
 		ZC_Vec2<ushort> texCoords;
 	};
+	struct VertNorm
+	{
+		G_ModelLoader::Vertex* pVert;
+		ZC_Vec3<float> normal;
+	};
 
 	static std::string GetPath(G_ModelName model_name);
 
 		// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
     static G_ModelSet ProcessNode(G_ModelName model_name, aiNode* pNode, const aiScene* pScene, const std::string& path);
 	static std::vector<ZC_CO_Surface<ZC_Vec3<float>>> LoadCollisionSurfaces(aiNode* pNode, const aiScene* pScene);
-	static ZC_DrawerSet CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path);
+	static ZC_DrawerSet CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path, bool smooth_normals, bool invert_normals);
 
 	// template <typename T>
 	// static void FillElements(T* pElementsHead, aiMesh* pMesh)

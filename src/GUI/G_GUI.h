@@ -26,7 +26,7 @@ private:
     G_GUI_W_RestartLevel w_restart_level;
     G_GUI_W_PlayerWin w_player_win;
 
-    G_SystemSound ss_open_window { G_SN__gui_button_clicked };
+    G_SystemSound ss_open_window { G_SN__gui_button_clicked, 100.f };
 
     void CloseSWindowButtonClicked();
     void EscapeeClicked(ZC_ButtonID,float);

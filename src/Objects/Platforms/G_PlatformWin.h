@@ -17,6 +17,7 @@ private:
         S_active,
         S_deactivate,
         S_win,
+        S_player_move_to_next_level
     };
     
     ZC_Function<void(G_Platform*)> func_change_pos;
@@ -31,5 +32,6 @@ private:
 
     void VAddObjectOnPlatform(G_Object* pObj_add) override;
     
+    std::vector<G_GameSound> GetSounds();
     void Callback_Updater(float time);
 };

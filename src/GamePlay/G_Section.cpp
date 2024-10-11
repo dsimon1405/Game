@@ -37,7 +37,7 @@ G_Section::~G_Section()
 ZC_uptr<G_Platform> G_Section::GetRandomPlatform(const ZC_Vec3<float>& translate)
 {
     return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
-    switch (ZC_Random::GetRandomInt(0, G_AP_Win))
+    switch (ZC_Random::GetRandomInt(0, G_AP_Win - 1))
     {
     case G_AP_Damage: return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
     case G_AP_Disapear: return new G_PlatformDisapear(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
@@ -96,21 +96,26 @@ void G_Section::Callback_Updater(float time)
 
 void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms)
 {
+    static const float rotation_speed_external = 5.f;      //  5 degrees per second
+    static const float rotation_speed_internal = 25.f;      //  25 degrees per second
+
     float angle = (rotate_set.is_internal_rotation ? rotation_speed_internal : rotation_speed_external) * time;
+    if (rotate_set.rotate_angle < 0.f) angle *= -1.f;
     rotate_set.cur_rotate_angle += angle;
     for (ZC_uptr<G_Platform>& upPlatf : platforms) rotate_set.is_internal_rotation ? upPlatf->RotateInternal(angle) : upPlatf->RotateExternal(angle);
-    if (rotate_set.cur_rotate_angle >= rotate_set.rotate_angle)     //  change rotation
+        //  check cur_rotate_angle limit, if overflow, randomize new angle. If rotation angle negative need check low border, otherwise top border
+    if (rotate_set.rotate_angle >= 0.f ? rotate_set.cur_rotate_angle >= rotate_set.rotate_angle : rotate_set.cur_rotate_angle <= rotate_set.rotate_angle)     //  change rotation
     {
         rotate_set.is_internal_rotation = !rotate_set.is_internal_rotation;
         rotate_set.cur_rotate_angle = 0.f;
-        if (rotate_set.is_internal_rotation) rotate_set.rotate_angle = ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i);  //  change angle for next internal-external phase
+        if (rotate_set.is_internal_rotation) rotate_set.rotate_angle = ZC_Random::GetRandomInt(-ZC_angle_360i, ZC_angle_360i);  //  change angle for next internal-external phase
     }
 }
 
 void G_Section::Callback_SwitchWinPlatfrom(G_Platform* pPlat_win)
 {
-    int new_pos_id = ZC_Random::GetRandomInt(0, platforms_on_circle.size() - 1);
-    ZC_uptr<G_Platform>& pPlat = platforms_on_circle[new_pos_id];
-    if (pPlat.Get() != pPlat_win && pPlat->SwitchWithWinPlatform(pPlat_win)) return;    //  found platform is not win platform and successfull switched
-    else Callback_SwitchWinPlatfrom(pPlat_win);    //  something go wrong, try again
+    // int new_pos_id = ZC_Random::GetRandomInt(0, platforms_on_circle.size() - 1);
+    // ZC_uptr<G_Platform>& pPlat = platforms_on_circle[new_pos_id];
+    // if (pPlat.Get() != pPlat_win && pPlat->SwitchWithWinPlatform(pPlat_win)) return;    //  found platform is not win platform and successfull switched
+    // else Callback_SwitchWinPlatfrom(pPlat_win);    //  something go wrong, try again
 }

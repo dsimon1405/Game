@@ -1,40 +1,29 @@
 #pragma once
 
 #include "G_GameSound.h"
-#include <ZC/Events/ZC_EC.h>
-#include <ZC/Tools/Function/ZC_Function.h>
-#include <ZC/Tools/Math/ZC_Vec3.h>
-
-#include <vector>
-#include <list>
 
 class G_GameSounds
 {
+    friend class G_GameSound;
 public:
-        //  _volume_change_on_scroll only for player
-    G_GameSounds(std::vector<G_GameSound>&& _sounds, bool _volume_change_on_scroll = false);
-    ~G_GameSounds();
-
-    void SetPosition(const ZC_Vec3<float>* _pPos);
-    void SetSoundState(G_SoundName sound_name, ZC_SoundState sound_state);
-        //  - volume - must be in range [0,1]. That range will be used as coef to adaptate max volume of the sound to current camera positoin and recalculate volume.
-    void SetVolume(G_SoundName sound_name, float volume);
-        //  set default volume for all sounds with request of camera postion. Delete sounds added with AddTempSound().
-    void SetDefaultState();
-        //  add sound wich will play one time and then delete
-    void AddTempSound(G_GameSound&& _sound);
-
+        //  stop/start playin all playing sound at current time (made to stop/start game sounds and avoid to stop audio steam for menu). If more then 1 stands 0.
+    static void ChangeSoundsPlayState(bool on);
+        //  calls from G_Config:: on users update volume
+    static void UpdateSoundsVolume();
+        //  don't sets to default state all sounds (bad idea but now. so...)! Set only static data to GameSound::sound_state_restore = ZC_SS__Stop and game_play_sounds_state = true. To have default behaviour on start.
+    static void SetDefaultSate();
+    
 private:
-    const ZC_Vec3<float>* pPos;
-    std::vector<G_GameSound> sounds;
-    std::list<G_GameSound> sounds_temp;
-    ZC_EC ecCamCangedPos;
-        //  data for player
-    static inline ZC_EC ecWheelScroll;
-    bool volume_change_on_scroll;
-    float dist_to_cam = 0.f;    //  store last calculated distance to came
+    struct GameSound
+    {
+        G_GameSound* pSound;
+        ZC_SoundState sound_state_restore = ZC_SS__Stop;    //  uses as temp storage on pause. When sets pause for game, here sets actual state from playing objects and nothing from other. When state restores, updates only sounds with => sound_state_restore != ZC_SS__Stop
 
-    void Callback_CameraChangedPosition(const ZC_Vec3<float>& cam_pos);
-        //  uses for player's object, need change volume only and check sound only on cahnging cam pos with scroll event
-    void MouseWheelScroll(float,float,float);
+        void ChangeState(bool on);
+    };
+    static inline std::list<GameSound> game_sounds;
+    static inline bool game_play_sounds_state = true;
+
+    static void AddSound(G_GameSound* pGS);
+    static void EraseSound(G_GameSound* pGS);
 };

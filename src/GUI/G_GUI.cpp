@@ -66,7 +66,8 @@ void G_GUI::GoBackToMainMenu()
     } break;
     case G_WN__main_menu:
     {
-        if (G_GameManager::pGM->GetGameState() == GS_Pause)
+        G_GameState game_state = G_GameManager::pGM->GetGameState();
+        if (game_state == GS_PausePlay || game_state == GS_PauseContinueWonGame)
         {
             G_GameManager::pGM->ContinueGame();
             CloseCurrentWindow();

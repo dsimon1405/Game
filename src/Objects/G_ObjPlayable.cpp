@@ -1,6 +1,6 @@
 #include "G_ObjPlayable.h"
 
-G_ObjPlayable::G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_GameSounds>&& _upSK)
+G_ObjPlayable::G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_GameSoundSet>&& _upSK)
     : G_Object(modelName, texSetId, std::move(_upCO), std::move(_upSK)),
     changable_data_op{ .health = health },
     max_hp(health)

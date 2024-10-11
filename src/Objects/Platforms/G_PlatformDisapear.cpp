@@ -8,7 +8,7 @@
 #include <System/G_Func.h>
 
 G_PlatformDisapear::G_PlatformDisapear(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr)
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()))
 {}
 
 void G_PlatformDisapear::VAddObjectOnPlatform(G_Object* pObj_add)
@@ -18,11 +18,28 @@ void G_PlatformDisapear::VAddObjectOnPlatform(G_Object* pObj_add)
     {
         ch_d.disapear_state = DS_start;
         ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformDisapear::Callback_Updater, this }, G_UL__game_play));   //  connect to update if it is not yet
+        this->upSK->SetSoundState(G_SN__platform_activation, ZC_SS__Play);
     }
+}
+
+std::vector<G_GameSound> G_PlatformDisapear::GetSounds()
+{
+    std::vector<G_GameSound> sounds;
+    sounds.reserve(2);
+    sounds.emplace_back(G_GameSound(G_SN__platform_activation));
+    sounds.emplace_back(G_GameSound(G_SN__platform_disapear));
+    return sounds;
 }
 
 void G_PlatformDisapear::Callback_Updater(float time)
 {
+    static const float seconds_phase = 1.f;
+    static const float seconds_half_phase = seconds_phase / 2.f;
+    static const float disapear_phase1_alpha = 0.5f;
+    static const float disapear_alpha_max = 1.f;
+    static const ZC_Vec3<float> disapear_color { 0.f, 0.f, 1.f };
+    static const uint disapear_color_packed = ZC_PackColorFloatToUInt_RGB(disapear_color[0], disapear_color[1], disapear_color[2]);
+
     ch_d.time += time;
     switch (ch_d.disapear_state)
     {
@@ -30,10 +47,11 @@ void G_PlatformDisapear::Callback_Updater(float time)
     {
         if (ch_d.time >= seconds_phase)
         {
-            ch_d.time -= seconds_phase;
+            ch_d.time = 0.f;
             ch_d.disapear_state = DS_phase1_disapear;
             this->unColor = disapear_color_packed;
-            this->dsCon.SwitchToDrawLvl(ZC_RL_Default, G_DL_AlphaBlending);
+            this->dsCon.SwitchToDrawLvl(ZC_RL_Default, G_DL_AlphaBlending_PlatformDisapear);
+            this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Play);
         }
         else this->unColor = G_InterpolateColor(G_Platform::color_white, disapear_color, ch_d.time / seconds_phase);
     } break;
@@ -72,6 +90,7 @@ void G_PlatformDisapear::Callback_Updater(float time)
             this->unAlpha = 0.f;
             ch_d.temp_mat_model = *(this->upCO->GetModelMatrix());  //  safe cur model matrix
             this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(0.f, 0.f, 1000.f));     //  set default model matrix to drop objects from platform
+            this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Pause);
         }
         else
         {
@@ -86,21 +105,24 @@ void G_PlatformDisapear::Callback_Updater(float time)
             ch_d.time = 0.f;
             ch_d.disapear_state = DS_phase2_apear;
             this->upCO->UpdateModelMatrix(ch_d.temp_mat_model);
+            this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Play);
         }
     } break;
     case DS_phase2_apear:
     {
-        if (ch_d.time >= seconds_phase)
+        static float seconds_apear = 1.5f;
+        if (ch_d.time >= seconds_apear)
         {
             this->unColor = 0;
             this->unAlpha = 1.f;
             this->dsCon.SwitchToDrawLvl(ZC_RL_Default, ZC_DL_Drawing);
             ch_d = {};
             ecUpdater.Disconnect();
+            // this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Stop);
         }
         else
         {
-            float time_coef = ch_d.time / seconds_phase;
+            float time_coef = ch_d.time / seconds_apear;
             this->unAlpha = disapear_phase1_alpha + (disapear_phase1_alpha * time_coef);
             this->unColor = G_InterpolateColor(disapear_color, G_Platform::color_default, time_coef);
         }

@@ -1,7 +1,9 @@
 #pragma once
 
 enum G_SoundName
-{       //  objects
+{
+    G_SN__main_theme,
+        //  objects
             //  sphere
     G_SN__sphere_move,
     G_SN__sphere_flight,
@@ -12,6 +14,13 @@ enum G_SoundName
 
             //  platform
     G_SN__platform_activation,
+    G_SN__platform_disapear,
+    G_SN__platform_scale,
+    G_SN__platform_wind,
+    G_SN__platform_win,
+                //  dmg
+    G_SN__platform_dmg_make_dmg,
+    G_SN__platform_dmg_load_dmg,
 
         //  gui
     G_SN__gui_start_timer,

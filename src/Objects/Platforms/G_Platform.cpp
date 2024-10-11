@@ -25,7 +25,7 @@ G_Platform::~G_Platform()
 void G_Platform::RotateInternal(float angle)
 {
     platf_trans.Update_rotate_angle_internal_Z(platf_trans.rotate_angle_internal_Z + angle);
-    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_O(platf_trans.translate, angle);
+    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_O(this->upCO->GetFigure().center_fact, angle);
 }
 
 bool G_Platform::SwitchWithWinPlatform(G_Platform* pPLat_win)
@@ -43,7 +43,7 @@ void G_Platform::RotateExternal(float angle)
     for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_O({ 0.f, 0.f, 0.f }, angle);
 }
 
-G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSounds>&& _upSK)
+G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSoundSet>&& _upSK)
     : G_Object(modelName, texSetId, new ZC_CollisionObject(G_Models::GetModel_COFigure(modelName, _plat_trans.scale), ZC_C0_Type::ZC_COT__StaticSoloCollision, this,
         { &G_Platform::Callback_Collision, this }, _plat_trans.CalculateModelMatrix()), std::move(_upSK)),
     platf_trans(_plat_trans)

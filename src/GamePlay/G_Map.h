@@ -7,9 +7,14 @@
 class G_Map
 {
 public:
+    static inline const float platform_model_radius_XY = 3.f;      //  loaded model radius radius
+    static inline const float platform_model_height_Z = 2.f;
+    static inline const float platform_model_half_height_Z = platform_model_height_Z / 2.f;      //  loaded model radius radius
+    
     static inline const float scaleXY_other_platforms = 2.5f;
+    static inline const float radiusXY_other_platforms = platform_model_radius_XY * scaleXY_other_platforms;
     static inline const float scaleZ_platform = 2.5f;
-    static inline const float platforms_model_radius = 3.f;      //  loaded model radius radius
+    static inline const float platforms_all_half_height_Z = platform_model_half_height_Z * scaleZ_platform;
     static inline const float scaleXY_start_platform = 4.f;
     static inline const float distance_between_platforms = 10.f;    //  distance between platform on lines and on circles
     static inline const ZC_Vec3<float> platforms_start_pos { 0.f, 0.f, -1.f };
@@ -26,6 +31,7 @@ public:
     G_Map();
 
     void CreateLevel(int _lvl);
+    float GetMapSphereScale() const noexcept;
 
 private:
     const int lines_count_in_first_level = 6;
@@ -33,4 +39,10 @@ private:
     
     G_Platform start_platform;
     std::list<G_Section> sections;
+
+    ZC_DSController dsCon_sphere_map;
+    ZC_Mat4<float> unModel { 1.f };
+    uint unColor = 0;
+    float unAlpha = 1.f;
+    float sphere_map_scale = 1.f;
 };

@@ -15,7 +15,7 @@ enum G_PlayerInfro
 class G_ObjPlayable : public G_Object
 {
 public:
-    G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_GameSounds>&& _upSK);
+    G_ObjPlayable(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, float health, ZC_uptr<G_GameSoundSet>&& _upSK);
     ~G_ObjPlayable();
 
         //  calls by owner (player...)

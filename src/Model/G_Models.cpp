@@ -10,7 +10,7 @@ void G_Models::LoadModels()
 	for (int i = 0.f; i < G_MN__Platform_cube; ++i)
 	{
 		auto& iter = models.emplace_back(G_ModelLoader::LoadModel((G_ModelName)i));
-		iter.radius = ZC_Vec::Length(GetFarestVertexOfSurface(iter.surfaces));	//	set radius
+		if ((G_ModelName)i != G_MN__SphereMap) iter.radius = ZC_Vec::Length(GetFarestVertexOfSurface(iter.surfaces));	//	set radius
 	}
 
 	// models.emplace_back(G_CubeModelCreator::LoadModel());	//	load quad platform, not from blender, hard coded vertices
@@ -18,7 +18,6 @@ void G_Models::LoadModels()
 
 ZC_DSController G_Models::GetModel_DSController(G_ModelName model_name, int texSetId, std::forward_list<ZC_uptr<ZC_RSPersonalData>>&& personalData)
 {
-	assert(model_name < G_ModelName::G_MN__sizeof);
 	return ZC_Find(models, model_name)->drawer_set.MakeZC_DSController(texSetId, std::move(personalData));
 }
 
@@ -41,14 +40,14 @@ float G_Models::GetRadius(G_ModelName model_name)
 
 const ZC_Vec3<float>& G_Models::GetFarestVertexOfSurface(const std::vector<ZC_CO_Surface<ZC_Vec3<float>>>& _surfaces)
 {
-	LengtheKeeper lengthes[]
+	LengthKeeper lengthes[]
 	{
-		LengtheKeeper{ .v = &(_surfaces[0].points[0]), .length = ZC_Vec::Length(_surfaces[0].points[0]) },
-		LengtheKeeper{ .v = &(_surfaces[0].points[1]), .length = ZC_Vec::Length(_surfaces[0].points[1]) },
-		LengtheKeeper{ .v = &(_surfaces[0].points[2]), .length = ZC_Vec::Length(_surfaces[0].points[2]) },
-		LengtheKeeper{ .v = &(_surfaces[0].points[3]), .length = ZC_Vec::Length(_surfaces[0].points[3]) }
+		LengthKeeper{ .v = &(_surfaces[0].points[0]), .length = ZC_Vec::Length(_surfaces[0].points[0]) },
+		LengthKeeper{ .v = &(_surfaces[0].points[1]), .length = ZC_Vec::Length(_surfaces[0].points[1]) },
+		LengthKeeper{ .v = &(_surfaces[0].points[2]), .length = ZC_Vec::Length(_surfaces[0].points[2]) },
+		LengthKeeper{ .v = &(_surfaces[0].points[3]), .length = ZC_Vec::Length(_surfaces[0].points[3]) }
 	};
-	std::sort(lengthes, lengthes + 3, [](LengtheKeeper& lk1, LengtheKeeper& lk2) { return lk1.length > lk2.length; });
+	std::sort(lengthes, lengthes + 3, [](LengthKeeper& lk1, LengthKeeper& lk2) { return lk1.length > lk2.length; });
 	return *(lengthes[0].v);
 }
 

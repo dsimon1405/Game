@@ -9,10 +9,10 @@ class G_Camera
 public:
     ZC_Camera cam;
 
-    G_Camera(ZC_Function<void(const ZC_Vec3<float>&)> _callback_camera_roatted);
+    G_Camera(ZC_Function<void(const ZC_Vec3<float>&)>&& _callback_camera_roatted, const ZC_Vec3<float>& look_on);
     ~G_Camera();
 
-    void SetDefaultState();
+    void SetDefaultState(const ZC_Vec3<float>& look_on);
     //  Change camera's look on. New position of camera save previous position's (camPos - lookOn) vector.
     void SetCameraLookOn(const ZC_Vec3<float>& lookOn);
     void MoveCamera(const ZC_Vec3<float>& lookOn);
@@ -31,7 +31,8 @@ private:
     bool isDirsActual = false;
 
     const float maxDistanceToObject = 40.f,
-        minDistanceToObject = 15.f,
+        minDistanceToObject = 1.f,
+        // minDistanceToObject = 15.f,
         sensivityScroll = 1.f;
     float distanceToObject = 20.f;
         //  rotation

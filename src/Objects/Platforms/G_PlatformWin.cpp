@@ -8,7 +8,7 @@
 #include <System/G_Func.h>
 
 G_PlatformWin::G_PlatformWin(const G_PlatformTransforms& _plat_trans, ZC_Function<void(G_Platform*)>&& _func_change_pos)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr),
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds())),
     func_change_pos(std::move(_func_change_pos))
 {
     ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformWin::Callback_Updater, this }, G_UL__game_play));
@@ -21,17 +21,28 @@ void G_PlatformWin::Update_func_change_pos(ZC_Function<void(G_Platform*)>&& _fun
 
 void G_PlatformWin::VAddObjectOnPlatform(G_Object* pObj_add)
 {
+    if (ch_d.state == S_player_move_to_next_level) return;
     if (pObj_add->VGetType_O() & G_OT__Player)
     {
         ch_d = { ch_d.state = S_win, ch_d.time = 0.f, ch_d.color = ZC_UnpackUINTtoFloat_RGB(this->unColor) };
         objects_on_platform.emplace_back(pObj_add);
+        this->upSK->SetSoundState(G_SN__platform_win, ZC_SS__Play);
     }
+}
+
+std::vector<G_GameSound> G_PlatformWin::GetSounds()
+{
+    std::vector<G_GameSound> sounds;
+    sounds.reserve(1);
+    // sounds.emplace_back(G_GameSound(G_SN__platform_activation));
+    sounds.emplace_back(G_GameSound(G_SN__platform_win));
+    return sounds;
 }
 
 void G_PlatformWin::Callback_Updater(float time)
 {
     static const float seconds_activate = 3.f;
-    static const float seconds_active = 20.f;
+    static const float seconds_active = 10.f;
     static const ZC_Vec3<float> color_win { 0.f, 1.f, 0.f };
     static const uint win_color_packed = ZC_PackColorFloatToUInt_RGB(color_win[0], color_win[1], color_win[2]);
 
@@ -74,10 +85,20 @@ void G_PlatformWin::Callback_Updater(float time)
                     break;
                 }
             }
-            if (pObj_player && this->IsObjectInPlatformRadiusXY(pObj_player)) G_GameManager::pGM->PlayerWin();
-            else ch_d = { .state = S_deactivate, .time = 0.f, .color = color_win };
+            if (pObj_player && this->IsObjectInPlatformRadiusXY(pObj_player))
+            {
+                G_GameManager::pGM->PlayerWin();
+                ch_d.state = S_player_move_to_next_level;
+                ecUpdater.Disconnect();
+            }
+            else
+            {
+                ch_d = { .state = S_deactivate, .time = 0.f, .color = color_win };
+                this->upSK->SetSoundState(G_SN__platform_win, ZC_SS__Play);
+            }
         }
         else this->unColor = G_InterpolateColor(ch_d.color, color_win, ch_d.time / seconds_win_activate);
     } break;
+    case S_player_move_to_next_level: break;
     }
 }

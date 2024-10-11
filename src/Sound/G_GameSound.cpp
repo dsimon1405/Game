@@ -3,6 +3,7 @@
 #include <ZC/Audio/ZC_Sounds.h>
 #include <System/G_Config.h>
 #include <GamePlay/G_Map.h>
+#include "G_GameSounds.h"
 
 G_GameSound::G_GameSound(G_SoundName _sound_name)
     : upSound(ZC_Sounds::GetSound(_sound_name)),
@@ -13,7 +14,7 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
     static const float max_dist_to_cam = 40.f;  //  max distance in G_Camera 49
     static const float min_dist_to_cam = 15.f;  //  max distance in G_Camera 15
 
-    // static const float platform_sound_radius_min = G_Map::scaleXY_other_platforms * G_Map::platforms_model_radius;
+    // static const float platform_sound_radius_min = G_Map::scaleXY_other_platforms * G_Map::platform_model_radius_XY;
     // static const float platform_sound_radius_max = platform_sound_radius_min * 2.f;
 
     switch (sound_name)
@@ -28,7 +29,14 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
     case G_SN__sphere_dmg_2: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; break;
 
             //  platform
-    case G_SN__platform_activation: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; break;
+    case G_SN__platform_activation: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+    case G_SN__platform_disapear: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+    case G_SN__platform_scale: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+    case G_SN__platform_wind: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+    case G_SN__platform_win: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+                //  dmg
+    case G_SN__platform_dmg_make_dmg: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+    case G_SN__platform_dmg_load_dmg: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
 
         //  gui
     case G_SN__gui_start_timer: volume_max = 100.f; volume_default = volume_max; distance_min = 0.f; distance_max = max_dist_to_cam; break;
@@ -42,7 +50,7 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
     volume_cur = volume_default;
     UpdateVolume();
 
-    all_game_sounds.emplace_back(Sound{ .pSound = this });
+    G_GameSounds::AddSound(this);
 }
 
 G_GameSound::G_GameSound(G_GameSound&& s)
@@ -56,19 +64,12 @@ G_GameSound::G_GameSound(G_GameSound&& s)
     distance_min(s.distance_min),
     distacne_pos_to_camera_coef(s.distacne_pos_to_camera_coef)
 {
-    all_game_sounds.emplace_back(Sound{ .pSound = this });
+    G_GameSounds::AddSound(this);
 }
 
 G_GameSound::~G_GameSound()
 {
-    for (auto iter = all_game_sounds.begin(); iter != all_game_sounds.end(); ++iter)
-    {
-        if (iter->pSound == this)
-        {
-            all_game_sounds.erase(iter);
-            break;
-        }
-    }
+    G_GameSounds::EraseSound(this);
 }
 
 bool G_GameSound::operator == (G_SoundName _sound_name) const noexcept
@@ -94,6 +95,11 @@ void G_GameSound::SetVolume(float volume)
     assert(volume <= 1.f);
     volume_cur = volume_max * volume;
     UpdateVolume();
+}
+
+float G_GameSound::GetVolume() const noexcept
+{
+    return volume_cur / volume_max;
 }
 
 bool G_GameSound::SetDefaultState(float dist_to_cam)
@@ -123,41 +129,4 @@ bool G_GameSound::SetSoundState(ZC_SoundState sound_state)
 ZC_SoundState G_GameSound::GetState()
 {
     return upSound->GetState();
-}
-
-void G_GameSound::ChangeSoundsPlayState(bool on)
-{
-    static bool game_play_sounds_state = true;
-    if (on == game_play_sounds_state) return;
-
-    for (Sound& ps : all_game_sounds) ps.ChangeState(on);
-    game_play_sounds_state = on;
-}
-
-void G_GameSound::UpdateSoundsVolume()
-{
-    for (Sound& s : all_game_sounds) s.pSound->UpdateVolume(); 
-}
-
-
-    //  G_GameSound::Sound
-
-void G_GameSound::Sound::ChangeState(bool on)
-{
-    if (on)
-    {
-        if (sound_state_restore != ZC_SS__Stop)
-        {
-            sound_state_restore == ZC_SS__Play ? pSound->upSound->Play() : pSound->upSound->PlayLoop();
-            sound_state_restore = ZC_SS__Stop;  //  back ZC_SS__Stop in restore state for next call ChangeState()
-        }
-    }
-    else
-    {
-        if (pSound->upSound->GetState() == ZC_SS__Play || pSound->upSound->GetState() == ZC_SS__PlayLoop)
-        {
-            sound_state_restore = pSound->upSound->GetState();
-            pSound->upSound->Pause();
-        }
-    }
 }

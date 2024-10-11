@@ -5,12 +5,12 @@
 #include <ZC/Tools/Math/ZC_Math.h>
 #include <System/G_UpdaterLevels.h>
 
-G_Camera::G_Camera(ZC_Function<void(const ZC_Vec3<float>&)> _callback_camera_rotated)
+G_Camera::G_Camera(ZC_Function<void(const ZC_Vec3<float>&)>&& _callback_camera_rotated, const ZC_Vec3<float>& look_on)
     : cam(CreateCamera()),
     callback_camera_roatted(std::move(_callback_camera_rotated))
 {
     cam.MakeActive();
-    SetDefaultState();
+    SetDefaultState(look_on);
     ec_updater = ZC_SWindow::ConnectToUpdater({ &G_Camera::Callback_Updater, this }, G_UL__camera);
 }
 
@@ -21,12 +21,13 @@ G_Camera::~G_Camera()
     ec_updater.Disconnect();
 }
 
-void G_Camera::SetDefaultState()
+void G_Camera::SetDefaultState(const ZC_Vec3<float>& look_on)
 {
     cur_horizontal_angle = 0.f;
     horizontal_angle_must_be = 0.1f;
     cur_vertical_angle = vertical_angle_start_pos;
     vertical_angle_must_be = vertical_angle_start_pos;
+    cam.SetLookOn(look_on);
     Callback_Updater(1.f);
 }
 
@@ -65,7 +66,7 @@ float G_Camera::GetHorizontalRotationAngle() const
 
 void G_Camera::RotateCameraHorizontal(float angle)
 {
-    cur_horizontal_angle += angle;
+    horizontal_angle_must_be += angle;
     RotateAroundObject();
     callback_camera_roatted(cam.GetPosition());
 }

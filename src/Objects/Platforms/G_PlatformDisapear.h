@@ -10,13 +10,6 @@ public:
     G_PlatformDisapear(const G_PlatformTransforms& _plat_trans);
 
 private:
-    static inline const float seconds_phase = 1.f;
-    static inline const float seconds_half_phase = seconds_phase / 2.f;
-    static inline const float disapear_phase1_alpha = 0.5f;
-    static inline const float disapear_phase2_alpha = 0.f;
-    static inline const float disapear_alpha_max = 1.f;
-    static inline const ZC_Vec3<float> disapear_color { 0.f, 0.f, 1.f };
-    static inline const uint disapear_color_packed = ZC_PackColorFloatToUInt_RGB(disapear_color[0], disapear_color[1], disapear_color[2]);
 
     enum DisapearState
     {
@@ -38,5 +31,6 @@ private:
     void VAddObjectOnPlatform(G_Object* pObj_add) override;
     //  don't use deactivation, make full disapear cycle
 
+    std::vector<G_GameSound> GetSounds();
     void Callback_Updater(float time);
 };

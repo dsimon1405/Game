@@ -31,7 +31,7 @@ public:
     bool SwitchWithWinPlatform(G_Platform* pPLat_win);
     
 protected:
-    static inline const ZC_Vec3<float> color_default { 0.3f, 0.3f, 0.3f };
+    static inline const ZC_Vec3<float> color_default { 0.01f, 0.01f, 0.01f };
     static inline const uint color_default_packed = ZC_PackColorFloatToUInt_RGB(color_default[0], color_default[1], color_default[2]);
     static inline const ZC_Vec3<float> color_white { 1.f, 1.f, 1.f };
     static inline const uint packed_active_color = ZC_PackColorFloatToUInt_RGB(color_white[0], color_white[1], color_white[2]);
@@ -41,7 +41,7 @@ protected:
     G_PlatformTransforms platf_trans;
     std::list<G_Object*> objects_on_platform;   //  pushable objectes wich had lust collision with that platform
 
-    G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSounds>&& _upSK);
+    G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSoundSet>&& _upSK);
 
     G_ObjectTypeMask VGetType_O() const override;
         //  start callback for all platforms

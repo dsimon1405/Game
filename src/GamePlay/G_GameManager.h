@@ -6,12 +6,17 @@
 #include "GUI/G_GUI_GM_W_LevelTimer.h"
 #include "GUI/G_GUI_GM_StartTimer.h"
 #include "GUI/G_GUI_GM_LevelNumber.h"
+#include <Model/G_CubeMap.h>
 
 enum G_GameState
 {
     GS_CreateLevel,
+        //  active phases
     GS_Play,
-    GS_Pause,
+    GS_ContinueWonGame,  //  finfished won game, moving camera into sphere then creates level and move camera on new level to player start pos
+        //  pauses
+    GS_PausePlay,
+    GS_PauseContinueWonGame
 };
 
 class G_GameManager
@@ -51,8 +56,16 @@ private:
     G_GUI_GM_W_LevelTimer gui_level_timer;
     G_GUI_GM_LevelNumber gui_level;
 
+    bool move_to_player_on_won_level = true;
+    ZC_Vec3<float> cam_move_dir_normallized;
+    float cam_move_speed = 0.f;
+
+    G_SystemSound ss_main_theme;
+
     void PrepareLevel();
 
     void Callback_Updater(float time);
     void ChangeGamePlayActivityState(bool on);
+    void ContinueGameUpdate(float time);
+    void ChangeGameLevelsUpdaterState(bool on);
 };

@@ -20,8 +20,9 @@ G_Window::G_Window()
     
     ZC_SWindow::MakeWindow(ZC_SWF__Multisampling_4 | ZC_SWF__Border | ZC_SWF__GUI, 800, 600, "SPHERUM");
     ZC_SWindow::SetMinSize(800, 600);
-    if (config.GetConfigData().fuull_screen) ZC_SWindow::SetFullScreen(true);
-    // ZC_SWindow::SetFPS(0);
+    // if (config.GetConfigData().fuull_screen) ZC_SWindow::SetFullScreen(true);
+    ZC_SWindow::GlEnablePointSize();    //  particle system
+    ZC_SWindow::SetFPS(0);
     
     ZC_SWindow::NeedDrawFPS(true);
     ZC_SWindow::SetFPSTimeMeasure(ZC_FPS_TM__Seconds);
@@ -44,7 +45,9 @@ void G_Window::RunMainCycle()
 void G_Window::LoadSounds()
 {
     ZC_FSPath path = ZC_FSPath(ZC_assetsDirPath).append("Game/sounds");
-
+    
+    //  load sounds
+    ZC_Sounds::LoadWAV(G_SN__main_theme, ZC_FSPath(path).append("main_theme.wav").string());
         //  objects
             //  sphere
     ZC_Sounds::LoadWAV(G_SN__sphere_move, ZC_FSPath(path).append("objects/sphere/sphere_move.wav").string());
@@ -53,8 +56,15 @@ void G_Window::LoadSounds()
     ZC_Sounds::LoadWAV(G_SN__sphere_lands, ZC_FSPath(path).append("objects/sphere/sphere_lands.wav").string());
     ZC_Sounds::LoadWAV(G_SN__sphere_dmg_1, ZC_FSPath(path).append("objects/sphere/sphere_dmg_1.wav").string());
     ZC_Sounds::LoadWAV(G_SN__sphere_dmg_2, ZC_FSPath(path).append("objects/sphere/sphere_dmg_2.wav").string());
-            //  platform win
+            //  platform
     ZC_Sounds::LoadWAV(G_SN__platform_activation, ZC_FSPath(path).append("objects/platforms/platform_activation.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__platform_disapear, ZC_FSPath(path).append("objects/platforms/platform_disapear.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__platform_scale, ZC_FSPath(path).append("objects/platforms/platform_scale.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__platform_wind, ZC_FSPath(path).append("objects/platforms/platform_wind.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__platform_win, ZC_FSPath(path).append("objects/platforms/platform_win.wav").string());
+                //  dmg
+    ZC_Sounds::LoadWAV(G_SN__platform_dmg_make_dmg, ZC_FSPath(path).append("objects/platforms/dmg/platform_dmg_make_dmg.wav").string());
+    ZC_Sounds::LoadWAV(G_SN__platform_dmg_load_dmg, ZC_FSPath(path).append("objects/platforms/dmg/platform_dmg_load_dmg.wav").string());
 
         //  gui
     ZC_Sounds::LoadWAV(G_SN__gui_start_timer, ZC_FSPath(path).append("gui/start_timer.wav").string());
