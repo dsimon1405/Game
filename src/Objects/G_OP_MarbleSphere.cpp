@@ -27,16 +27,16 @@ std::vector<G_GameSound> G_OP_MarbleSphere::GetSounds()
     return sounds;
 }
 
-G_ObjectTypeMask G_OP_MarbleSphere::VGetType_O() const
+G_ObjectTypeMask G_OP_MarbleSphere::VGetTypeMask_IO() const
 {
     return object_type | G_OT__Damageable | G_OT__Pushable;
 }
 
-void G_OP_MarbleSphere::VOnGroundRotateZ_O(const ZC_Vec3<float>& origin, float angle)
+void G_OP_MarbleSphere::VOnGroundRotateZ_IO(const ZC_Vec3<float>& origin, float angle)
 {
     if (ch_d.space_position != SP_Ground) return;   //  object not on the ground
 
-    const ZC_Vec3<float> cur_pos = this->VGetPosition_O();
+    const ZC_Vec3<float> cur_pos = this->VGetPosition_IO();
     ZC_Vec3<float> pos = cur_pos - origin;   //  pos in that origin space
     ZC_Vec3<float> rotated_pos = ZC_Vec::Vec4_to_Vec3(ZC_Mat4<float>(1.f).Rotate(angle, { 0.f, 0.f, 1.f }) * ZC_Vec4<float>(pos, 1.f));
     ZC_Vec3<float> dir_distance = rotated_pos - pos;    //  dir from prev pos to new pos in origin space
@@ -54,12 +54,19 @@ void G_OP_MarbleSphere::VOnGroundRotateZ_O(const ZC_Vec3<float>& origin, float a
     UpdateMatModel(new_pos);
 }
 
-void G_OP_MarbleSphere::VDamageObject_OP(float damage)
+void G_OP_MarbleSphere::VDamageObject_OP(float damage, G_ObjectType ot_damager)
 {
-    static const float max_dmg = 15.f;  //  it's max dmg in game (must not be define here, but so...)
+    static const float max_dmg = 15.f;  //  some dmg coef (max dmg of platform)
 
     ch_d.dmg_time = 0.f;
-    ch_d.dmg_color_start = damage / max_dmg;
+    float color_channel_value = damage / max_dmg;
+    if (color_channel_value > 1.f) color_channel_value = 1.f;   //  some move powerfull damager
+    switch (ot_damager)
+    {
+    case G_OT__Star: ch_d.dmg_color = ZC_Vec3<float>(color_channel_value, color_channel_value / 3.6f, 0.f); break;     //  orange color
+    case G_OT__Platform: ch_d.dmg_color = ZC_Vec3<float>(color_channel_value, 0.f, 0.f); break;  //  red color
+    default: assert(false); break;
+    }
 
     this->upSK->AddTempSound(G_GameSound(G_SoundName(G_SN__sphere_dmg_1 + ZC_Random::GetRandomInt(0, 1))));
 }
@@ -77,12 +84,12 @@ void G_OP_MarbleSphere::VMakeJump_OP()
     ch_d.space_position = SP_Jump;
 }
 
-void G_OP_MarbleSphere::VPushObjectInDirection_O(const G_PushSet& move_set)
+void G_OP_MarbleSphere::VPushObjectInDirection_IO(const G_PushSet& move_set)
 {
     ch_d.push_sets.emplace_back(move_set);
 }
 
-void G_OP_MarbleSphere::VMakeDefaultState_OP()
+void G_OP_MarbleSphere::VSetDefaultState_OP()
 {
     ch_d = {};
     this->unColor = 0;
@@ -90,12 +97,12 @@ void G_OP_MarbleSphere::VMakeDefaultState_OP()
 
 void G_OP_MarbleSphere::Callback_Updater(float time)
 {
-    if (this->VGetPosition_O()[2] < -30.f)
+    if (this->VGetPosition_IO()[2] < -30.f)
     {
         this->callback_player_info(G_PI__fall);
         return;
     }
-    // if (this->VGetPosition_O()[2] < -8.f) this->VSetPosition_O(ZC_Vec3<float>(0.f, 0.f, 10.f));  //  fall from platform,   TEST DELETE
+    // if (this->VGetPosition_IO()[2] < -8.f) this->VSetPosition_IO(ZC_Vec3<float>(0.f, 0.f, 10.f));  //  fall from platform,   TEST DELETE
 
         //  correct space posiition
     switch (ch_d.space_position)
@@ -109,7 +116,7 @@ void G_OP_MarbleSphere::Callback_Updater(float time)
     }
     ch_d.on_ground_collision_in_prev_frame = false;     //  must be after UpdateSound
 
-    ZC_Vec3<float> pos = this->VGetPosition_O();
+    ZC_Vec3<float> pos = this->VGetPosition_IO();
         //  make moves/pushes
     if (ch_d.space_position == SP_Jump) JumpMove(time, pos);
     else if (ch_d.move_dirs.empty()) InertionMove(time, pos);    //  no one effects the body, make inertion
@@ -296,42 +303,42 @@ void G_OP_MarbleSphere::JumpMove(float time, ZC_Vec3<float>& pos)
 
 void G_OP_MarbleSphere::Callback_Collision(const ZC_CO_CollisionResult& coll_result)
 {
-    ZC_Vec3<float> pos = this->VGetPosition_O();
+    if (!(static_cast<G_IObject*>(coll_result.pObj->GetHolder())->VGetTypeMask_IO() & G_OT__Ground)) return;
+
+    ZC_Vec3<float> pos = this->VGetPosition_IO();
     if (coll_result.pushback != ZC_Vec3<float>())
     {
         pos += coll_result.pushback;    //push out of the object
         UpdateMatModel(pos);
     }
 
-    if (static_cast<G_Object*>(coll_result.pObj->GetHolder())->VGetType_O() == G_OT__Ground)
-    {       
-        if (!(coll_result.is_your_surface) && (*(coll_result.pSurf->normal))[2] == 0.f)   //  collision with the side surface of the platform
+    if (!(coll_result.is_your_surface) && (*(coll_result.pSurf->normal))[2] == 0.f)   //  collision with the side surface of the platform
+    {
+        ch_d.on_ground_collision_in_prev_frame = false;
+        if (!ch_d.pushed_from_platform)
         {
+            this->upSK->SetVolume(G_SN__sphere_lands, ch_d.cur_move_speed / max_move_speed);    //  jump length dependth on speed, so landing sound power too
+            this->upSK->SetSoundState(G_SN__sphere_lands, ZC_SS__Play);
+        }
+    }
+    else    //  collision with up/down side of the platform
+    {       //  determine, are sphere still on the platform (sphere's collision model not so spheric)
+        const ZC_CO_FigureSphere& pFig_platform = coll_result.pObj->GetFigure();
+        ZC_Vec3<float> dir_platform_center_to_shpere = pos - pFig_platform.center_fact;    //  vector from center of the platform to the center of the sphere
+        ZC_Vec3<float> dir_platform_center_to_shpere_XY(dir_platform_center_to_shpere[0], dir_platform_center_to_shpere[1], 0.f);
+        float centers_distance_XY = ZC_Vec::Length<float>(dir_platform_center_to_shpere_XY);  //  XY distance between platform and sphere
+            //  find platform radius xy
+        const ZC_Vec3<float>& surf_point = *((*(pFig_platform.GetSurfacesFact()))[0].points[0]);
+        // const ZC_Vec3<float>& surf_point = *(pFig_platform.surfaces_fact[0].points[0]);     //  no metter wich point to take each will have same XY distance to platform center
+        ZC_Vec3<float> point_center_dir = surf_point - pFig_platform.center_fact;   //  ditance vector from point to center (dir no metter it for length)
+        float platfoorm_radius_XY = ZC_Vec::Length<float>({ point_center_dir[0], point_center_dir[1], 0.f });      //  not same radius as in pO_platform.radius!!!
+        if (centers_distance_XY > platfoorm_radius_XY)   //  sphere out of platform but sphere's collision model don't get it to down, make some push
+        {
+            VPushObjectInDirection_IO(G_PushSet(dir_platform_center_to_shpere_XY, 1.f));
             ch_d.on_ground_collision_in_prev_frame = false;
-            if (!ch_d.pushed_from_platform)
-            {
-                this->upSK->SetVolume(G_SN__sphere_lands, ch_d.cur_move_speed / max_move_speed);    //  jump length dependth on speed, so landing sound power too
-                this->upSK->SetSoundState(G_SN__sphere_lands, ZC_SS__Play);
-            }
+            ch_d.pushed_from_platform = true;
         }
-        else    //  collision with up/down side of the platform
-        {       //  determine, are sphere still on the platform (sphere's collision model not so spheric)
-            const ZC_CO_Figure& pFig_platform = coll_result.pObj->GetFigure();
-            ZC_Vec3<float> dir_platform_center_to_shpere = pos - pFig_platform.center_fact;    //  vector from center of the platform to the center of the sphere
-            ZC_Vec3<float> dir_platform_center_to_shpere_XY(dir_platform_center_to_shpere[0], dir_platform_center_to_shpere[1], 0.f);
-            float centers_distance_XY = ZC_Vec::Length<float>(dir_platform_center_to_shpere_XY);  //  XY distance between platform and sphere
-                //  find platform radius xy
-            const ZC_Vec3<float>& surf_point = *(pFig_platform.surfaces_fact[0].points[0]);     //  no metter wich point to take each will have same XY distance to platform center
-            ZC_Vec3<float> point_center_dir = surf_point - pFig_platform.center_fact;   //  ditance vector from point to center (dir no metter it for length)
-            float platfoorm_radius_XY = ZC_Vec::Length<float>({ point_center_dir[0], point_center_dir[1], 0.f });      //  not same radius as in pO_platform.radius!!!
-            if (centers_distance_XY > platfoorm_radius_XY)   //  sphere out of platform but sphere's collision model don't get it to down, make some push
-            {
-                VPushObjectInDirection_O(G_PushSet(dir_platform_center_to_shpere_XY, 1.f));
-                ch_d.on_ground_collision_in_prev_frame = false;
-                ch_d.pushed_from_platform = true;
-            }
-            else ch_d.on_ground_collision_in_prev_frame = true;
-        }
+        else ch_d.on_ground_collision_in_prev_frame = true;
     }
 
 
@@ -339,7 +346,7 @@ void G_OP_MarbleSphere::Callback_Collision(const ZC_CO_CollisionResult& coll_res
     // {
     //     ch_d.space_position = SP_Ground;
     //         //  check is sphere out of the platform
-    //     if (static_cast<G_Object*>(coll_result.pObj->GetHolder())->VGetType_O() == G_OT__Ground)
+    //     if (static_cast<G_Object*>(coll_result.pObj->GetHolder())->VGetTypeMask_IO() & G_OT__Ground)
     //     {       //  check by radius
     //             //  find distance between platform center and sphere center
     //         const ZC_CO_Figure& pFig_platform = coll_result.pObj->GetFigure();
@@ -351,7 +358,7 @@ void G_OP_MarbleSphere::Callback_Collision(const ZC_CO_CollisionResult& coll_res
     //         ZC_Vec3<float> point_center_dir = surf_point - pFig_platform.center_fact;   //  ditance vector from point to center (dir no metter it for length)
     //         float platfoorm_radius_XY = ZC_Vec::Length<float>({ point_center_dir[0], point_center_dir[1], 0.f });      //  not same radius as in pO_platform.radius!!!
     //         if (centers_distance_XY > platfoorm_radius_XY)   //  sphere out of platform but spheres collision model don't get it to down, make some push
-    //             VPushObjectInDirection_O(G_PushSet(dir_platform_center_to_shpere_XY, 1.f));
+    //             VPushObjectInDirection_IO(G_PushSet(dir_platform_center_to_shpere_XY, 1.f));
 
     //             //  for quad platform
     //         // if (ZC_Vec::Length<float>({ plat_shpere_centers_dir[0], plat_shpere_centers_dir[1], 0.f }) > 0.7f)    //  sphere's center may be out of one of the platform edges
@@ -372,7 +379,7 @@ void G_OP_MarbleSphere::Callback_Collision(const ZC_CO_CollisionResult& coll_res
 
 void G_OP_MarbleSphere::UpdateMatModel(const ZC_Vec3<float>& pos)
 {
-    this->VSetPosition_O(pos);
+    this->VSetPosition_IO(pos);
 
     ZC_Mat4<float> model(1.f);
     model.Translate(pos);
@@ -488,19 +495,16 @@ void G_OP_MarbleSphere::UpdateColorDMG(float time)
 {
     static const float seconds_dmg_phase = 2.f;
 
-    if (ch_d.dmg_color_start == 0.f || this->changable_data_op.health <= 0.f) return;
+    if (ch_d.dmg_color == ZC_Vec3<float>() || this->changable_data_op.health <= 0.f) return;
 
     ch_d.dmg_time += time;
     if (ch_d.dmg_time >= seconds_dmg_phase)
     {
         ch_d.dmg_time = 0.f;
         this->unColor = 0.f;
-        ch_d.dmg_color_start = 0.f;
+        ch_d.dmg_color = {};
     }
-    else
-    {
-        this->unColor = G_InterpolateColor({ ch_d.dmg_color_start, 0.f, 0.f }, { 0.f, 0.f, 0.f }, ch_d.dmg_time / seconds_dmg_phase);
-    }
+    else this->unColor = G_InterpolateColor(ch_d.dmg_color, { 0.f, 0.f, 0.f }, ch_d.dmg_time / seconds_dmg_phase);
 }
 
 void G_OP_MarbleSphere::UpdateSound()

@@ -22,7 +22,7 @@ void G_PlatformWin::Update_func_change_pos(ZC_Function<void(G_Platform*)>&& _fun
 void G_PlatformWin::VAddObjectOnPlatform(G_Object* pObj_add)
 {
     if (ch_d.state == S_player_move_to_next_level) return;
-    if (pObj_add->VGetType_O() & G_OT__Player)
+    if (pObj_add->VGetTypeMask_IO() & G_OT__Player)
     {
         ch_d = { ch_d.state = S_win, ch_d.time = 0.f, ch_d.color = ZC_UnpackUINTtoFloat_RGB(this->unColor) };
         objects_on_platform.emplace_back(pObj_add);
@@ -79,7 +79,7 @@ void G_PlatformWin::Callback_Updater(float time)
             G_Object* pObj_player = nullptr;
             for (G_Object* pObj : objects_on_platform)
             {
-                if (pObj->VGetType_O() & G_OT__Player)
+                if (pObj->VGetTypeMask_IO() & G_OT__Player)
                 {
                     pObj_player = pObj;
                     break;

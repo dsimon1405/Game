@@ -11,7 +11,7 @@ G_Player::G_Player(ZC_uptr<G_ObjPlayable>&& _upObj)
     gui_w_health(upObj->GetHealth())
 {
     upObj->SetPlayersCallback({ &G_Player::CallbackPlayerInfo, this });
-    upObj->VSetPosition_O({ 0.f, 0.f, upObj->GetRadius() });  //  move sphere to {0,0,0} position of the bottom on radius 1.f
+    upObj->VSetPosition_IO({ 0.f, 0.f, upObj->GetRadius() });  //  move sphere to {0,0,0} position of the bottom on radius 1.f
 }
 
 G_Player::~G_Player()
@@ -59,8 +59,8 @@ void G_Player::ChangeCameraState(bool on)
 
 void G_Player::SetDefaultState()
 {
-    camera.SetDefaultState({ 0.f, 0.f, upObj->GetRadius() });   //  must be before upObj, caurse G_Object::upSK need updated camera on SetDefaultState()
     upObj->SetDefaultState();
+    camera.SetDefaultState({ 0.f, 0.f, upObj->GetRadius() });   //  must be before after upObj, caurse G_Object::upSK (scroll system volume), if cam updated before, cam will have pos on start while player there where dead
     gui_w_health.SetDefaultState();
 }
 
@@ -113,7 +113,7 @@ void G_Player::RecalculateDirection()
     if (dirs_actual) return;
     static const ZC_Vec3<float> world_up(0.f,0.f,1.f);
 
-    ZC_Vec3<float> cam_dir_front = ZC_Vec::Normalize(upObj->VGetPosition_O() - camera.cam.GetPosition());
+    ZC_Vec3<float> cam_dir_front = ZC_Vec::Normalize(upObj->VGetPosition_IO() - camera.cam.GetPosition());
     dir_right = ZC_Vec::Normalize(ZC_Vec::Cross(cam_dir_front, world_up));
     dir_front = ZC_Vec::Normalize(ZC_Vec::Cross(world_up, dir_right));
 
@@ -124,18 +124,18 @@ void G_Player::CallbackPlayerInfo(G_PlayerInfro player_info)
 {
     switch (player_info)
     {
-    case G_PI__position: camera.SetCameraLookOn(upObj->VGetPosition_O()); break;
+    case G_PI__position: camera.SetCameraLookOn(upObj->VGetPosition_IO()); break;
     case G_PI__health:
     {
         if (ec_updater.IsConnected()) return;
         float health = upObj->GetHealth();
         if (health <= 0.f)
         {
-            gui_w_health.UpdateHealth(0.f);
+            gui_w_health.UpdateHealth(0.f, upObj->GetTypeOfLastDamager());
             ChangeMoveState(false);
             ec_updater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_Player::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_play));
         }
-        else gui_w_health.UpdateHealth(health);
+        else gui_w_health.UpdateHealth(health, upObj->GetTypeOfLastDamager());
     } break;
     case G_PI__cam_rotate_angle_z: camera.RotateCameraHorizontal(upObj->GetRotateAngle()); break;
     case G_PI__fall: if (!ec_updater.IsConnected()) G_GameManager::pGM->PlayerDead(); break;

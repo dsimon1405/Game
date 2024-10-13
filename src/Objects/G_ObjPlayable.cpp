@@ -11,21 +11,22 @@ G_ObjPlayable::~G_ObjPlayable()
     ecUpdater.Disconnect();
 }
 
-ZC_Vec3<float> G_ObjPlayable::VGetPosition_O() noexcept
+ZC_Vec3<float> G_ObjPlayable::VGetPosition_IO() noexcept
 {
     return changable_data_op.position;
 }
 
-void G_ObjPlayable::VSetPosition_O(const ZC_Vec3<float>& _position)
+void G_ObjPlayable::VSetPosition_IO(const ZC_Vec3<float>& _position)
 {
     changable_data_op.position = _position;
     if (callback_player_info) callback_player_info(G_PI__position);
 }
 
-void G_ObjPlayable::VDamagerObject_O(float damage)
+void G_ObjPlayable::VDamageObject_IO(float damage, G_ObjectType ot_damager)
 {
     changable_data_op.health -= damage;
-    VDamageObject_OP(damage);
+    VDamageObject_OP(damage, ot_damager);
+    changable_data_op.ot_last_damager = ot_damager;
     if (callback_player_info) callback_player_info(G_PI__health);
 }
 
@@ -45,8 +46,13 @@ float G_ObjPlayable::GetRotateAngle()
     return changable_data_op.rotate_angle_z;
 }
 
+G_ObjectType G_ObjPlayable::GetTypeOfLastDamager()
+{
+    return changable_data_op.ot_last_damager;
+}
+
 void G_ObjPlayable::VSetDefaultState_O()
 {
     changable_data_op = { .health = max_hp };
-    VMakeDefaultState_OP();
+    VSetDefaultState_OP();
 }

@@ -35,7 +35,7 @@ void G_GUI_P_W_Health::SetDefaultState()
     cur_hp = hp_default;
 }
 
-void G_GUI_P_W_Health::UpdateHealth(int hp_new)
+void G_GUI_P_W_Health::UpdateHealth(int hp_new, G_ObjectType ot_damager)
 {
     int subtract_hp = 0;
     if (new_hps.empty())
@@ -61,7 +61,12 @@ void G_GUI_P_W_Health::UpdateHealth(int hp_new)
     // ZC_SWindow::GetSize(swindow_width, swindow_height);
     // float tw_indent_right = swindow_width - tw_X;
     // tw_subtract->SetNewIndentParams(tw_indent_right, tw_Y, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel);
-    tw_subtract->SetColorFloat(color_hp_min[0], color_hp_min[1], color_hp_min[2]);
+    switch (ot_damager)
+    {
+    case G_OT__Star: tw_subtract->SetColorFloat(0.8f, 0.22f, 0.f); break;   //  orange color
+    case G_OT__Platform: tw_subtract->SetColorFloat(color_hp_min[0], color_hp_min[1], color_hp_min[2]); break;  //  red color
+    default: assert(false); break;
+    }
 
     new_hps.emplace_back(hp_new);
 }
@@ -79,7 +84,7 @@ void G_GUI_P_W_Health::Callback_Updater(float time)
             minus_hp_fractional = std::modf(minus_hp_fractional, &minus_hp_integral);   //  store fractionral part of  minus_hp
                 //  find correct hp
             int new_hp = cur_hp - minus_hp_integral;
-            int must_be_hp = new_hp;    //  will store correct h[]
+            int must_be_hp = new_hp;    //  will store correct hp
             for (auto iter = new_hps.begin(); iter != new_hps.end();)
             {
                 if (new_hp <= *iter)

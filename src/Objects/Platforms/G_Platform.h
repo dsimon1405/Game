@@ -43,7 +43,7 @@ protected:
 
     G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSoundSet>&& _upSK);
 
-    G_ObjectTypeMask VGetType_O() const override;
+    G_ObjectTypeMask VGetTypeMask_IO() const override;
         //  start callback for all platforms
     void Callback_Collision(const ZC_CO_CollisionResult& coll_result);
     bool IsObjectInPlatformRadiusXY(G_Object* pObj);

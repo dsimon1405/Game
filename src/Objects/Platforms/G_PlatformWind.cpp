@@ -15,7 +15,7 @@ G_PlatformWind::G_PlatformWind(const G_PlatformTransforms& _plat_trans)
     if (!upPS_wind)     //  create wind particles one for all wind platforms
     {
         float wind_width = G_Map::radiusXY_other_platforms * 2.f;
-        float wind_length = wind_width * 2.f;
+        float wind_length = wind_width * 3.f;
         upPS_wind = new G_PS_Wind(10000, {}, wind_width, 6.f, {}, wind_length);
     }
 }
@@ -81,8 +81,8 @@ void G_PlatformWind::Callback_Updater(float time)
     static const float sound_wind_max = 1.f;
     static const float sound_wind_range_min_max = sound_wind_max - sound_wind_min;
 
-    static const float particles_speed_min = 20.f;
-    static const float particles_speed_max = 50.f;
+    static const float particles_speed_min = 40.f;
+    static const float particles_speed_max = 60.f;
     static const float particles_speed_range_min_max = particles_speed_max - particles_speed_min;
     static const float particles_alpha_min = 0.6f;
     static const float particles_alpha_max = 1.f;
@@ -226,11 +226,11 @@ void G_PlatformWind::Callback_Updater(float time)
         for (auto iter = this->objects_on_platform.begin(); iter != this->objects_on_platform.end(); )
         {
             ZC_Vec4<float>& platform_pos = (*(this->upCO->GetModelMatrix()))[3];
-            ZC_Vec3<float> obj_pos = (*(iter))->VGetPosition_O();
+            ZC_Vec3<float> obj_pos = (*(iter))->VGetPosition_IO();
             float distance = ZC_Vec::Length(ZC_Vec3<float>(platform_pos[0], platform_pos[1], 0.f) - ZC_Vec3<float>(obj_pos[0], obj_pos[1], 0.f));
             if (distance < (*(iter))->upCO->GetFigure().radius + this->upCO->GetFigure().radius)
             {
-                (*(iter))->VPushObjectInDirection_O(G_PushSet(ch_d.wind_dir_cur, ch_d.wind_power));    //  push object
+                (*(iter))->VPushObjectInDirection_IO(G_PushSet(ch_d.wind_dir_cur, ch_d.wind_power));    //  push object
                 ++iter;
             }
             else iter = this->objects_on_platform.erase(iter);   //  object out of cylindric radius of the platform, stop pushing them
@@ -244,7 +244,7 @@ void G_PlatformWind::Callback_Updater(float time)
         ZC_Vec3<float> platform_center_top(platform_center[0], platform_center[1], particles_start_Z);
 
         ZC_Vec3<float> particles_start_pos = ZC_Vec::MoveByLength(platform_center_top, ch_d.wind_dir_cur * -1.f, particles_distance_to_start_pos);
-        upPS_wind->SetStartPosition(particles_start_pos);
+        upPS_wind->SetPosition(particles_start_pos);
         upPS_wind->SetWindDiraction(platform_center_top - particles_start_pos);
     }
 }

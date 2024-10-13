@@ -25,7 +25,7 @@ G_Platform::~G_Platform()
 void G_Platform::RotateInternal(float angle)
 {
     platf_trans.Update_rotate_angle_internal_Z(platf_trans.rotate_angle_internal_Z + angle);
-    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_O(this->upCO->GetFigure().center_fact, angle);
+    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_IO(this->upCO->GetFigure().center_fact, angle);
 }
 
 bool G_Platform::SwitchWithWinPlatform(G_Platform* pPLat_win)
@@ -40,7 +40,7 @@ bool G_Platform::SwitchWithWinPlatform(G_Platform* pPLat_win)
 void G_Platform::RotateExternal(float angle)
 {
     platf_trans.Update_rotate_angle_external_Z(platf_trans.rotate_angle_external_Z + angle);
-    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_O({ 0.f, 0.f, 0.f }, angle);
+    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_IO({ 0.f, 0.f, 0.f }, angle);
 }
 
 G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSoundSet>&& _upSK)
@@ -51,15 +51,15 @@ G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName mode
     platf_trans.pCO = this->upCO.Get();
 }
 
-G_ObjectTypeMask G_Platform::VGetType_O() const
+G_ObjectTypeMask G_Platform::VGetTypeMask_IO() const
 {
-    return G_OT__Ground;
+    return G_OT__Ground | G_OT__Platform;
 }
 
 void G_Platform::Callback_Collision(const ZC_CO_CollisionResult& coll_result)
 {
     G_Object* pObj_new = static_cast<G_Object*>(coll_result.pObj->GetHolder());
-    if (pObj_new->VGetType_O() & G_OT__Pushable)   //  object is pushable may be added to object on platform
+    if (pObj_new->VGetTypeMask_IO() & G_OT__Pushable)   //  object is pushable may be added to object on platform
     {
         for (ObjAndPlatform& op : objAndPlatforms)
         {
@@ -87,7 +87,7 @@ void G_Platform::Callback_Collision(const ZC_CO_CollisionResult& coll_result)
 bool G_Platform::IsObjectInPlatformRadiusXY(G_Object* pObj)
 {
     ZC_Vec3<float> platform_center = this->upCO->GetFigure().center_fact;   //  PLATFORM POS HERE, NOT IN platf_trans.translate, rotation chage position of the platform too
-    ZC_Vec3<float> obj_pos = pObj->VGetPosition_O();
+    ZC_Vec3<float> obj_pos = pObj->VGetPosition_IO();
     float distance = ZC_Vec::Length(ZC_Vec3<float>(platform_center[0], platform_center[1], 0.f) - ZC_Vec3<float>(obj_pos[0], obj_pos[1], 0.f));
     return distance <= pObj->upCO->GetFigure().radius + this->upCO->GetFigure().radius;
 }

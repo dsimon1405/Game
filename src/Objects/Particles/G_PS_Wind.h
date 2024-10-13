@@ -1,8 +1,9 @@
 #pragma once
 
-#include "G_Particles.h"
+#include "G_ParticlesDrawer.h"
+#include "G_ParticleMoveForward.h"
 
-class G_PS_Wind : public G_ParticleDrawer<ZC_Vec3<float>*>
+class G_PS_Wind : public G_ParticlesDrawer
 {
 public:
     /*
@@ -21,14 +22,19 @@ public:
         float _speed = 1.f, const ZC_Vec3<unsigned char>& _color_start = { 175, 238, 238 }, const ZC_Vec3<unsigned char>& _color_end = { 0, 206, 209 });
 
         // - _start_sphere_radius - radius in wich start to apear particles (only half of start sphere are in _length).
-    void SetStartPosition(const ZC_Vec3<float>& _start_pos);
+    void SetPosition(const ZC_Vec3<float>& _start_pos);
         // - _wind_dir - wind direction (may be not normalized).
     void SetWindDiraction(const ZC_Vec3<float>& _wind_dir);
+        // - speed - speed coef, default (1 meter(float) / 1 second).
+    void SetSpeed(float speed);
 
 private:
-    ZC_Vec3<float> start_pos;   //  position of sphere in wich apears particles on start, calculates in OriginUpdated()
+    std::vector<G_ParticleMoveForward<ZC_Vec3<float>*>> particles;
+    ZC_Vec3<float> wind_pos;   //  position of quad in wich apears particles on start, calculates in OriginUpdated()
     ZC_Vec3<float> wind_dir;
     float length;
+    float speed;
 
-    std::vector<G_ParticleSet<ZC_Vec3<float>*>> CreateParticlesVector(unsigned long particles_count, float _length);
+    bool UpdateParticlesPositions(float time) override;
+    void DrawingStopped() override;
 };

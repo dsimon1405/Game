@@ -107,6 +107,7 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/Objects/G_ObjPlayable.cpp    
     ${PROJECT_SOURCE_DIR}/src/Objects/G_OP_MarbleSphere.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/G_PushSet.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/G_Star.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_Platform.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformWind.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformDamage.cpp
@@ -114,8 +115,11 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformDisapear.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformTransforms.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformWin.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_ParticlesDrawer.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_PS_Wind.cpp
-    
+    ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_ParticleMoveCircle.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_PS_Star.cpp
+
     ${PROJECT_SOURCE_DIR}/src/Model/G_Assimp_ZC_Converter.cpp
     ${PROJECT_SOURCE_DIR}/src/Model/G_ModelLoader.cpp
     ${PROJECT_SOURCE_DIR}/src/Model/G_ModelSet.cpp

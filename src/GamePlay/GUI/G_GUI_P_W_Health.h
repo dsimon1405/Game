@@ -4,6 +4,7 @@
 #include <ZC/GUI/ZC_GUI__Text.h>
 #include <ZC/Events/ZC_EC.h>
 #include <ZC/Objects/Text/ZC_TextWindow.h>
+#include <Objects/G_ObjectType.h>
 
 class G_GUI_P_W_Health
 {
@@ -12,7 +13,7 @@ public:
     ~G_GUI_P_W_Health();
 
     void SetDefaultState();
-    void UpdateHealth(int hp_new);
+    void UpdateHealth(int hp_new, G_ObjectType ot_damager);
 
 private:
     const ZC_Vec3<float> color_hp_max { 0.f, 0.8f, 0.f };

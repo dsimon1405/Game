@@ -21,10 +21,10 @@ ZC_DSController G_Models::GetModel_DSController(G_ModelName model_name, int texS
 	return ZC_Find(models, model_name)->drawer_set.MakeZC_DSController(texSetId, std::move(personalData));
 }
 
-ZC_CO_Figure G_Models::GetModel_COFigure(G_ModelName model_name, const ZC_Vec3<float>& scale)
+ZC_uptr<ZC_CO_FigureSphere> G_Models::GetModel_COFigure(G_ModelName model_name, const ZC_Vec3<float>& scale)
 {
  	G_ModelSet* pMS = ZC_Find(models, model_name);
-	return ZC_CO_Figure({ 0.f, 0.f, 0.f }, scale == ZC_Vec3<float>(1.f, 1.f, 1.f) ? pMS->radius : CalculateScaledRadius(GetFarestVertexOfSurface(pMS->surfaces), scale),
+	return new ZC_CO_Figure({ 0.f, 0.f, 0.f }, scale == ZC_Vec3<float>(1.f, 1.f, 1.f) ? pMS->radius : CalculateScaledRadius(GetFarestVertexOfSurface(pMS->surfaces), scale),
 		pMS->surfaces);
 }
 

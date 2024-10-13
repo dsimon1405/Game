@@ -31,6 +31,7 @@ void G_GameSoundSet::SetSoundState(G_SoundName sound_name, ZC_SoundState sound_s
 
 void G_GameSoundSet::SetDefaultState()
 {
+    // if (!volume_change_on_scroll) 
     dist_to_cam = ZC_Vec::Length(ZC_Camera::GetActiveCamera()->GetPosition() - *pPos);
     for (G_GameSound& sound : sounds) sound.SetDefaultState(dist_to_cam);
     sounds_temp.clear();

@@ -1,6 +1,7 @@
 #include "G_Map.h"
 
 #include <Model/G_Models.h>
+#include <System/G_RenderLevel.h>
 
 G_Map::G_Map()
     : start_platform(G_PlatformTransforms{ .translate = platforms_start_pos, .scale = { scaleXY_start_platform, scaleXY_start_platform, scaleZ_platform } }),
@@ -9,7 +10,7 @@ G_Map::G_Map()
     dsCon_sphere_map.SetUniformsData(ZC_UN_unModel, &unModel);
     dsCon_sphere_map.SetUniformsData(ZC_UN_unColor, &unColor);
     dsCon_sphere_map.SetUniformsData(ZC_UN_unAlpha, &unAlpha);
-    dsCon_sphere_map.SwitchToDrawLvl(ZC_RL_Default, ZC_DL_Drawing);
+    dsCon_sphere_map.SwitchToDrawLvl(ZC_RL_Default, G_DL_CubeMap);
 
         //  calculate positions of the platforms on the lines
     float other_platforms_diameter = (platform_model_radius_XY * 2.f) * scaleXY_other_platforms;
@@ -19,6 +20,7 @@ G_Map::G_Map()
         //  it is equal to the distance of the platform position from the first circle
     first_section_lenght = dist_to_first_platform + (dist_between_other_platforms * platforms_on_line);
     other_section_length = dist_between_other_platforms * (platforms_on_line + 1);    //  distance from circle of previous section to circle of current section (1 is platform from circle)
+
 }
 
 void G_Map::CreateLevel(int _lvl)
@@ -51,6 +53,9 @@ void G_Map::CreateLevel(int _lvl)
     // unModel = ZC_Mat4<float>(1.f).Translate({0.f, 0.f, 4.f}).
     // Rotate(-90.f, {1.f, 0.f, 0.f}).
     // Scale(2, 2, 2);
+
+    float dist_to_star = map_radius + dist_between_other_platforms;
+    star.SetNewPosition(dist_to_star);
 }
 
 float G_Map::GetMapSphereScale() const noexcept

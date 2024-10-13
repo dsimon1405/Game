@@ -1,6 +1,7 @@
 #pragma once
 
 #include "G_Section.h"
+#include <Objects/G_Star.h>
 
 #include <list>
 
@@ -45,4 +46,6 @@ private:
     uint unColor = 0;
     float unAlpha = 1.f;
     float sphere_map_scale = 1.f;
+
+    G_Star star;
 };

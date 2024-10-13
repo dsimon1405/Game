@@ -18,7 +18,7 @@ G_PlatformDamage::G_PlatformDamage(const G_PlatformTransforms& _plat_trans)
 
 void G_PlatformDamage::VAddObjectOnPlatform(G_Object* pObj_add)
 {
-    if (pObj_add->VGetType_O() & G_OT__Damageable)
+    if (pObj_add->VGetTypeMask_IO() & G_OT__Damageable)
     {
         this->objects_on_platform.emplace_back(pObj_add);
         if (objects_on_platform.size() == 1)
@@ -86,7 +86,7 @@ void G_PlatformDamage::Callback_Updater(float time)
             {
                 if (this->IsObjectInPlatformRadiusXY(*iter))
                 {
-                    // (*(iter))->VDamagerObject_O(damage);
+                    // (*(iter))->VDamageObject_IO(damage, G_OT__Platform);
                     ++iter;
                 }
                 else iter = this->objects_on_platform.erase(iter);   //  object out of cylindric radius of the platform, erase them

@@ -40,7 +40,7 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
         bool on_ground_collision_in_prev_frame = true;
 
         float dmg_time = 0.f;
-        float dmg_color_start = 0.f;   //  color for rgb red channal [0,1] to wich need to move
+        ZC_Vec3<float> dmg_color;   //  rgb from wich to move to {0,0,0} color
 
         bool pushed_from_platform = false;
     } ch_d;
@@ -61,11 +61,11 @@ struct G_OP_MarbleSphere : public G_ObjPlayable
 
     void VMoveInDirection_OP(const ZC_Vec3<float>& dir) override;
     void VMakeJump_OP() override;
-    void VPushObjectInDirection_O(const G_PushSet& move_set) override;
-    void VMakeDefaultState_OP() override;
-    G_ObjectTypeMask VGetType_O() const override;
-    void VOnGroundRotateZ_O(const ZC_Vec3<float>& origin, float angle) override;
-    void VDamageObject_OP(float damage) override;
+    void VPushObjectInDirection_IO(const G_PushSet& move_set) override;
+    void VSetDefaultState_OP() override;
+    G_ObjectTypeMask VGetTypeMask_IO() const override;
+    void VOnGroundRotateZ_IO(const ZC_Vec3<float>& origin, float angle) override;
+    void VDamageObject_OP(float damage, G_ObjectType ot_damager) override;
 
     void Callback_Updater(float time);
 
