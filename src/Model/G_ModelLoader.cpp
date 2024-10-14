@@ -185,7 +185,6 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 			else vertex.position = G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]);
 				//	normal
 			aiVector3D& normal = pMesh->mNormals[vert_i];
-			float q = ZC_Vec::Dot(ZC_Vec::Normalize(ZC_Vec3<float>(normal.x, normal.y, normal.z)), ZC_Vec::Normalize(vertex.position));
 			if (invert_normals) normal *= -1.f;		//	invert if need
 			if (!smooth_normals)	//	set normal if don't need make smoth (later)
 			{
