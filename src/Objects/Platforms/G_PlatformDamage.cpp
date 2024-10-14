@@ -86,7 +86,7 @@ void G_PlatformDamage::Callback_Updater(float time)
             {
                 if (this->IsObjectInPlatformRadiusXY(*iter))
                 {
-                    // (*(iter))->VDamageObject_IO(damage, G_OT__Platform);
+                    (*(iter))->VDamageObject_IO(damage, G_OT__Platform);
                     ++iter;
                 }
                 else iter = this->objects_on_platform.erase(iter);   //  object out of cylindric radius of the platform, erase them

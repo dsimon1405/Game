@@ -11,15 +11,17 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
 {
                     //      volume_max(100)       volume_default       distance_max(not 0)        distance_min
     
-    static const float max_dist_to_cam = 40.f;  //  max distance in G_Camera 49
+    static const float max_dist_to_cam = 29.f;  //  max distance in G_Camera 49
     static const float min_dist_to_cam = 15.f;  //  max distance in G_Camera 15
 
     // static const float platform_sound_radius_min = G_Map::scaleXY_other_platforms * G_Map::platform_model_radius_XY;
     // static const float platform_sound_radius_max = platform_sound_radius_min * 2.f;
 
+
     switch (sound_name)
     {
         //  objects
+    case G_SN__star: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 4.f; break;
             //  sphere
     case G_SN__sphere_move: volume_max = 30.f; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; sound_state_default = ZC_SS__PlayLoop; break;
     case G_SN__sphere_flight: volume_max = 100.f; volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; break;
@@ -27,7 +29,7 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
     case G_SN__sphere_lands: volume_max = 30.f; volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; break;
     case G_SN__sphere_dmg_1: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; break;
     case G_SN__sphere_dmg_2: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; break;
-
+    case G_SN__sphere_arson: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam; break;
             //  platform
     case G_SN__platform_activation: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
     case G_SN__platform_disapear: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;

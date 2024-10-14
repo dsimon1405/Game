@@ -25,7 +25,8 @@ private:
     {
         DisapearState disapear_state = DS_start;
         float time = 0.f;
-        ZC_Mat4<float> temp_mat_model;
+        ZC_Vec3<float> temp_translate;
+        // ZC_Mat4<float> temp_mat_model;
     } ch_d;
 
     void VAddObjectOnPlatform(G_Object* pObj_add) override;

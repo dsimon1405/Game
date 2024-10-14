@@ -4,23 +4,6 @@
 #include <System/G_UpdaterLevels.h>
 #include <ZC/Tools/ZC_Random.h>
 
-G_ParticlesDrawer::G_ParticlesDrawer(unsigned long particles_count, ZC_DrawerLevel _drawer_level)
-    : drawer_set(CreateDrawerSet(particles_count)),
-    ds_con(drawer_set.MakeZC_DSController()),
-    drawer_level(_drawer_level)
-{
-        //  just reserve place, fill in AddPosition(), AddColor()
-    particle_positions.reserve(particles_count);
-    particle_colors.reserve(particles_count);
-        //  fill particle_sets with pointers
-    // unsigned long container_index = 0;    //  index from particle_positions and particle_colors
-    // for (G_ParticleSet<TDir>& ps : particle_sets)
-    //     for (unsigned long particle_index = 0; particle_index < ps.particles.capacity(); ++particle_index, ++container_index)     //  set pointers on vertices and colors
-    //         ps.particles.emplace_back(&(particle_positions[container_index]), &(particle_colors[container_index]));
-
-    ds_con.SetUniformsData(ZC_UN_unAlpha, &unAlpha);
-}
-
 G_ParticlesDrawer::~G_ParticlesDrawer()
 {
     ec_updater.Disconnect();
@@ -56,6 +39,19 @@ float G_ParticlesDrawer::GetAlpha() const noexcept
 bool G_ParticlesDrawer::IsDrawing()
 {
     return ds_con.GetDrawingLevel(ZC_RL_Default) == drawer_level;
+}
+
+G_ParticlesDrawer::G_ParticlesDrawer(unsigned long particles_count, ZC_DrawerLevel _drawer_level, int point_size)
+    : drawer_set(CreateDrawerSet(particles_count)),
+    ds_con(drawer_set.MakeZC_DSController()),
+    drawer_level(_drawer_level)
+{
+        //  just reserve place, fill in AddPosition(), AddColor()
+    particle_positions.reserve(particles_count);
+    particle_colors.reserve(particles_count);
+
+    ds_con.SetUniformsData(ZC_UN_unAlpha, &unAlpha);
+    ds_con.SetUniformsData(G_UN_unPointSize, &point_size);
 }
 
 void G_ParticlesDrawer::AddPositionAndColor(const ZC_Vec4<float>& pos, const ZC_Vec3<unsigned char>& color, ZC_Vec4<float>*& rpPos, ZC_Vec3<unsigned char>*& rpColor)

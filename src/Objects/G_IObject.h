@@ -19,4 +19,5 @@ public:
     virtual void VSetPosition_IO(const ZC_Vec3<float>& _position) {}
         //  overrides by movable object for changindg pos while on ground (ground is move and object with it). origin for rotation somewhere on map, angle to rotate around Z axis
     virtual void VOnGroundRotateZ_IO(const ZC_Vec3<float>& origin, float angle) {}
+    virtual void VSetDefaultState_IO() {}
 };

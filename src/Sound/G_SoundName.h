@@ -4,6 +4,7 @@ enum G_SoundName
 {
     G_SN__main_theme,
         //  objects
+    G_SN__star,
             //  sphere
     G_SN__sphere_move,
     G_SN__sphere_flight,
@@ -11,6 +12,7 @@ enum G_SoundName
     G_SN__sphere_lands,
     G_SN__sphere_dmg_1,
     G_SN__sphere_dmg_2,
+    G_SN__sphere_arson,
 
             //  platform
     G_SN__platform_activation,

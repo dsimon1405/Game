@@ -13,7 +13,8 @@
 G_Section::G_Section(int lines_count, int platforms_on_line, float dist_to_first_platform_in_section, float distance_to_circle_platform, bool is_last_section)
     : ecUpdater(ZC_SWindow::ConnectToUpdater({ &G_Section::Callback_Updater, this }, G_UL__game_play)),
     rotSet_lines{ .rotate_angle = float(ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i)) },
-    rotSet_circle{ .rotate_angle = float(ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i)) }
+    rotSet_circle{ .rotate_angle = float(ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i)) },
+    last_section(is_last_section)
 {
     FillPlatforms(lines_count, platforms_on_line, dist_to_first_platform_in_section, distance_to_circle_platform, is_last_section);
 }
@@ -32,11 +33,12 @@ G_Section::G_Section(G_Section&& s)
 G_Section::~G_Section()
 {
     ecUpdater.Disconnect();
+    if (last_section) pPlat_win = nullptr;
 }
 
 ZC_uptr<G_Platform> G_Section::GetRandomPlatform(const ZC_Vec3<float>& translate)
 {
-    return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
+    // return new G_PlatformWind(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
     switch (ZC_Random::GetRandomInt(0, G_AP_Win - 1))
     {
     case G_AP_Damage: return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
@@ -90,13 +92,15 @@ void G_Section::FillPlatforms(int lines_count, int platforms_on_line, float dist
 
 void G_Section::Callback_Updater(float time)
 {
-    // RotatePlatforms(rotSet_lines, time, platforms_on_lines);
-    // RotatePlatforms(rotSet_circle, time, platforms_on_circle);
+    static const float rotation_speed_external_lines = 5.f;      //  5 degrees per second
+    static const float rotation_speed_external_circle = 2.5f;      //  5 degrees per second
+
+    RotatePlatforms(rotSet_lines, time, platforms_on_lines, rotation_speed_external_lines);
+    RotatePlatforms(rotSet_circle, time, platforms_on_circle, rotation_speed_external_circle);
 }
 
-void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms)
+void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms, float rotation_speed_external)
 {
-    static const float rotation_speed_external = 5.f;      //  5 degrees per second
     static const float rotation_speed_internal = 25.f;      //  25 degrees per second
 
     float angle = (rotate_set.is_internal_rotation ? rotation_speed_internal : rotation_speed_external) * time;
@@ -114,8 +118,8 @@ void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<Z
 
 void G_Section::Callback_SwitchWinPlatfrom(G_Platform* pPlat_win)
 {
-    // int new_pos_id = ZC_Random::GetRandomInt(0, platforms_on_circle.size() - 1);
-    // ZC_uptr<G_Platform>& pPlat = platforms_on_circle[new_pos_id];
-    // if (pPlat.Get() != pPlat_win && pPlat->SwitchWithWinPlatform(pPlat_win)) return;    //  found platform is not win platform and successfull switched
-    // else Callback_SwitchWinPlatfrom(pPlat_win);    //  something go wrong, try again
+    int new_pos_id = ZC_Random::GetRandomInt(0, platforms_on_circle.size() - 1);
+    ZC_uptr<G_Platform>& pPlat = platforms_on_circle[new_pos_id];
+    if (pPlat.Get() != pPlat_win && pPlat->SwitchWithWinPlatform(pPlat_win)) return;    //  found platform is not win platform and successfull switched
+    else Callback_SwitchWinPlatfrom(pPlat_win);    //  something go wrong, try again
 }

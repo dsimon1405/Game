@@ -4,10 +4,11 @@
 #include <GamePlay/G_GameManager.h>
 #include <ZC/Video/ZC_SWindow.h>
 #include <System/G_UpdaterLevels.h>
+#include <Objects/G_OP_MarbleSphere.h>
 
-G_Player::G_Player(ZC_uptr<G_ObjPlayable>&& _upObj)
-    : upObj(std::move(_upObj)),
-    camera({ &G_Player::Callback_CameraRotated, this }, { 0.f, 0.f, upObj->GetRadius() }),
+G_Player::G_Player()
+    : camera({ &G_Player::Callback_CameraRotated, this }, { 0.f, 0.f, 1.f }),
+    upObj(new G_OP_MarbleSphere(true)),
     gui_w_health(upObj->GetHealth())
 {
     upObj->SetPlayersCallback({ &G_Player::CallbackPlayerInfo, this });
@@ -59,7 +60,7 @@ void G_Player::ChangeCameraState(bool on)
 
 void G_Player::SetDefaultState()
 {
-    upObj->SetDefaultState();
+    upObj->VSetDefaultState_IO();
     camera.SetDefaultState({ 0.f, 0.f, upObj->GetRadius() });   //  must be before after upObj, caurse G_Object::upSK (scroll system volume), if cam updated before, cam will have pos on start while player there where dead
     gui_w_health.SetDefaultState();
 }

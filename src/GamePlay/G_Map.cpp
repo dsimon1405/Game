@@ -48,14 +48,12 @@ void G_Map::CreateLevel(int _lvl)
             section_i == sections_count - 1));
     }
         //  scale sphere
-    sphere_map_scale = map_radius * 1.5f;
+    sphere_map_scale = map_radius * 2.f;
     unModel = ZC_Mat4<float>(1.f).Rotate(-45.f, {1.f, 0.f, 0.f}).Scale(sphere_map_scale, sphere_map_scale, sphere_map_scale);
-    // unModel = ZC_Mat4<float>(1.f).Translate({0.f, 0.f, 4.f}).
-    // Rotate(-90.f, {1.f, 0.f, 0.f}).
-    // Scale(2, 2, 2);
 
-    float dist_to_star = map_radius + dist_between_other_platforms;
+    float dist_to_star = map_radius + dist_between_other_platforms * 1.5;
     star.SetNewPosition(dist_to_star);
+    star.VSetDefaultState_IO();
 }
 
 float G_Map::GetMapSphereScale() const noexcept

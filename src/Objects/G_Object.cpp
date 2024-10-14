@@ -16,7 +16,7 @@ G_Object::G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObje
     if (upSK) upSK->SetPosition(&(upCO->GetFigure().center_fact));
 }
 
-void G_Object::SetDefaultState()
+void G_Object::VSetDefaultState_IO()
 {
     VSetDefaultState_O();
     if (upSK) upSK->SetDefaultState();

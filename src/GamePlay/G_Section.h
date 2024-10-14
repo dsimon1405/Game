@@ -26,6 +26,7 @@ private:
 
     RotateSet rotSet_lines;
     RotateSet rotSet_circle;
+    bool last_section;
 
     static inline G_Platform* pPlat_win = nullptr;
 
@@ -34,7 +35,7 @@ private:
     void FillPlatforms(int lines_count, int platforms_on_line, float dist_to_first_platform_in_section, float distance_to_circle_platform, bool is_last_section);
     
     void Callback_Updater(float time);
-    void RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms);
+    void RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms, float rotation_speed_external);
 
         //  find new place for win platform on the outer circle
     void Callback_SwitchWinPlatfrom(G_Platform* pPlat_win);

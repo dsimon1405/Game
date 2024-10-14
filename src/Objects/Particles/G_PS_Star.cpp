@@ -8,7 +8,7 @@
 
 G_PS_Star::G_PS_Star(unsigned long particles_count, const ZC_Vec3<float>& _star_pos, float _radius, float _speed, const ZC_Vec3<float>& rotate_axises,
         const ZC_Vec3<unsigned char>& color_start, const ZC_Vec3<unsigned char>& color_end)
-    : G_ParticlesDrawer(particles_count, G_DL_AlphaBlending_ParticleStar),
+    : G_ParticlesDrawer(particles_count, G_DL_AlphaBlending_ParticleStar, 3),
     star_pos(_star_pos),
     speed(_speed)
 {
@@ -22,13 +22,12 @@ G_PS_Star::G_PS_Star(unsigned long particles_count, const ZC_Vec3<float>& _star_
         particles_sphere.emplace_back(pPos_alpha, pColor, &star_pos, rotate_axises, particle_speed);      //  add particle
     };
 
-    // const float radius_min = _radius * 0.9 * 100.f;
-    // const float radius_max = _radius * 1.1 * 100.f;
-    // auto lamb_GetStartPos = [radius_min, radius_max, _radius]()
-    // {
-    //     return ZC_Vec4<float>(0.f, float(ZC_Random::GetRandomInt(radius_min, radius_max)) / 100.f, 0.f, 1.f);
-    // };
-    const ZC_Vec4<float> start_pos(0.f, _radius, 0.f, 1.f);
+    const float radius_min = _radius * 1 * 100.f;
+    const float radius_max = _radius * 1.4 * 100.f;
+    auto lamb_GetStartPos = [radius_min, radius_max, _radius]()
+    {
+        return ZC_Vec4<float>(0.f, float(ZC_Random::GetRandomInt(radius_min, radius_max)) / 100.f, 0.f, 1.f);
+    };
 
     float rot_angle = ZC_angle_360f / std::floor(std::sqrt(particles_count));   //  round to ineger count of particles in mesh
     particles_sphere.reserve(particles_count);
@@ -39,14 +38,14 @@ G_PS_Star::G_PS_Star(unsigned long particles_count, const ZC_Vec3<float>& _star_
             ZC_Mat4<float> model(1.f);
             if (cur_angle_X != 0.f) model.Rotate(cur_angle_X, { 1.f, 0.f, 0.f});
             if (cur_angle_Z != 0.f) model.Rotate(cur_angle_Z, { 0.f, 0.f, 1.f});
-            lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(model * start_pos));
-            // lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(model * lamb_GetStartPos()));
+            // lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(model * start_pos));
+            lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(model * lamb_GetStartPos()));
         }
     }
     size_t rest_sphere_particles = particles_sphere.capacity() - particles_sphere.size();
     for (size_t i = 0; i < rest_sphere_particles; i++)  //  sphere mesh may not be edeal, so rest particles add with random rotation
-        lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(ZC_Mat4(1.f).Rotate(ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i), {1.f, 1.f, 1.f}) * start_pos));
-        // lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(ZC_Mat4(1.f).Rotate(ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i), {1.f, 1.f, 1.f}) * lamb_GetStartPos()));
+        // lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(ZC_Mat4(1.f).Rotate(ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i), {1.f, 1.f, 1.f}) * start_pos));
+        lamb_AddParticleToCircle(ZC_Vec::Vec4_to_Vec3(ZC_Mat4(1.f).Rotate(ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i), {1.f, 1.f, 1.f}) * lamb_GetStartPos()));
     
 }
 

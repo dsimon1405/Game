@@ -6,7 +6,7 @@
 
 G_PS_Wind::G_PS_Wind(unsigned long particles_count, const ZC_Vec3<float>& _start_pos, float start_width, float start_height,
         const ZC_Vec3<float>& _wind_dir, float _length, float _speed, const ZC_Vec3<unsigned char>& color_start, const ZC_Vec3<unsigned char>& color_end)
-    : G_ParticlesDrawer(particles_count, G_DL_AlphaBlending_ParticlesWind),
+    : G_ParticlesDrawer(particles_count, G_DL_AlphaBlending_ParticlesWind, 3),
     wind_pos(_start_pos),
     wind_dir(_wind_dir == ZC_Vec3<float>() ? ZC_Vec3<float>() : ZC_Vec::Normalize(_wind_dir)),
     length(_length),

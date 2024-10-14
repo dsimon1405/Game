@@ -19,8 +19,8 @@ void G_GUI::OpenWindow(G_WindowName win)
     ChangeOpenedWindowDrawState(false);
     if (opened_window == G_WN__none)
     {
-        // ZC_SWindow::ShowCursor();
-        // ZC_SWindow::UnlimitCursor();
+        ZC_SWindow::ShowCursor();
+        ZC_SWindow::UnlimitCursor();
     }
     opened_window = win;
     ChangeOpenedWindowDrawState(true);
@@ -32,8 +32,8 @@ void G_GUI::CloseCurrentWindow()
 {
     if (opened_window == G_WN__main_menu) try_close_game = false;
     ChangeOpenedWindowDrawState(false);
-    // ZC_SWindow::HideCursor();
-    // ZC_SWindow::LimitCursor();
+    ZC_SWindow::HideCursor();
+    ZC_SWindow::LimitCursor();
     opened_window = G_WN__none;
 
     ss_open_window.upSound->Play();

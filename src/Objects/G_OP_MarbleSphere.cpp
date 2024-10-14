@@ -8,7 +8,7 @@
 #include <ZC/Tools/ZC_Random.h>
 
 G_OP_MarbleSphere::G_OP_MarbleSphere(bool is_player)
-    : G_ObjPlayable(G_ModelName::G_MN__Sphere, 0, new ZC_CollisionObject(G_Models::GetModel_COFigure(G_MN__Sphere), ZC_C0_Type::ZC_COT__DynamicPushback,
+    : G_ObjPlayable(G_ModelName::G_MN__SphereMarble, 0, new ZC_CollisionObject(G_Models::GetModel_COFigure(G_MN__SphereMarble), ZC_C0_Type::ZC_COT__DynamicPushback,
         this, { &G_OP_MarbleSphere::Callback_Collision, this }), max_health, ZC_uptr<G_GameSoundSet>(new G_GameSoundSet(GetSounds(), is_player)))
 {
     ch_d.move_dirs.reserve(2);   //  max pressed button for dir change in one frame 2
@@ -19,11 +19,12 @@ G_OP_MarbleSphere::G_OP_MarbleSphere(bool is_player)
 std::vector<G_GameSound> G_OP_MarbleSphere::GetSounds()
 {
     std::vector<G_GameSound> sounds;
-    sounds.reserve(4);
+    sounds.reserve(5);
     sounds.emplace_back(G_GameSound(G_SN__sphere_move));
     sounds.emplace_back(G_GameSound(G_SN__sphere_flight));
     sounds.emplace_back(G_GameSound(G_SN__sphere_jump));
     sounds.emplace_back(G_GameSound(G_SN__sphere_lands));
+    sounds.emplace_back(G_GameSound(G_SN__sphere_arson));
     return sounds;
 }
 
@@ -63,12 +64,19 @@ void G_OP_MarbleSphere::VDamageObject_OP(float damage, G_ObjectType ot_damager)
     if (color_channel_value > 1.f) color_channel_value = 1.f;   //  some move powerfull damager
     switch (ot_damager)
     {
-    case G_OT__Star: ch_d.dmg_color = ZC_Vec3<float>(color_channel_value, color_channel_value / 3.6f, 0.f); break;     //  orange color
-    case G_OT__Platform: ch_d.dmg_color = ZC_Vec3<float>(color_channel_value, 0.f, 0.f); break;  //  red color
+    case G_OT__Star:
+    {
+        ch_d.dmg_color = ZC_Vec3<float>(color_channel_value, color_channel_value / 3.6f, 0.f);     //  orange color
+        this->upSK->AddTempSound(G_GameSound(G_SoundName(G_SN__sphere_arson)));
+    } break;
+    case G_OT__Platform:
+    {
+        ch_d.dmg_color = ZC_Vec3<float>(color_channel_value, 0.f, 0.f);  //  red color
+        this->upSK->AddTempSound(G_GameSound(G_SoundName(G_SN__sphere_dmg_1 + ZC_Random::GetRandomInt(0, 1))));
+    } break;
     default: assert(false); break;
     }
 
-    this->upSK->AddTempSound(G_GameSound(G_SoundName(G_SN__sphere_dmg_1 + ZC_Random::GetRandomInt(0, 1))));
 }
 
 void G_OP_MarbleSphere::VMoveInDirection_OP(const ZC_Vec3<float>& dir)

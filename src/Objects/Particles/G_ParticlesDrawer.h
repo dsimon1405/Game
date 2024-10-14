@@ -6,7 +6,6 @@ class G_ParticlesDrawer
 {
 public:
         //  - particles_count - will reserved place in particle_positions and particle_colors vectors
-    G_ParticlesDrawer(unsigned long particles_count, ZC_DrawerLevel _drawer_level);
     virtual ~G_ParticlesDrawer();
     
         //  start/stop drawing
@@ -16,6 +15,8 @@ public:
     bool IsDrawing();
 
 protected:
+    G_ParticlesDrawer(unsigned long particles_count, ZC_DrawerLevel _drawer_level, int point_size);
+    
         //  emplace in vectors: particle_positions pos, in particle_colors color. In reference on pointers (rpPos, rpColor) sets relevant pointers from vectors.
     void AddPositionAndColor(const ZC_Vec4<float>& pos, const ZC_Vec3<unsigned char>& color, ZC_Vec4<float>*& rpPos, ZC_Vec3<unsigned char>*& rpColor);
     

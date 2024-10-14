@@ -17,7 +17,7 @@ struct G_Object : public G_IObject
     G_Object(G_ModelName modelName, int texSetId, ZC_uptr<ZC_CollisionObject>&& _upCO, ZC_uptr<G_GameSoundSet>&& _upSK);
     virtual ~G_Object() = default;
 
-    void SetDefaultState();
+    void VSetDefaultState_IO() override;
     void SetSoundSetToDefault();
     float GetRadius();
 

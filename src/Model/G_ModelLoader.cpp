@@ -29,8 +29,9 @@ std::string G_ModelLoader::GetPath(G_ModelName model_name)
 	static ZC_FSPath model_dir_path = ZC_FSPath(ZC_assetsDirPath).append("Game/models");
 	switch (model_name)
 	{
-	case G_MN__Sphere: return ZC_FSPath(model_dir_path).append("sphere/sphere.dae").string();
-	case G_MN__SphereMap: return ZC_FSPath(model_dir_path).append("sphere/sphere.dae").string();
+	case G_MN__SphereMarble: return ZC_FSPath(model_dir_path).append("sphere/sphere_marble.dae").string();
+	case G_MN__SphereStar: return ZC_FSPath(model_dir_path).append("sphere/sphere_star.dae").string();
+	case G_MN__SphereMap: return ZC_FSPath(model_dir_path).append("sphere/sphere_marble.dae").string();
 	case G_MN__Platform_cylinder_black: return ZC_FSPath(model_dir_path).append("cylinder_black/cylinder_black.dae").string();
 	default: assert(false); return {};
 	}
@@ -68,10 +69,10 @@ G_ModelSet G_ModelLoader::ProcessNode(G_ModelName model_name, aiNode* pNode, con
 	}
 
 	std::vector<ZC_CO_Surface<ZC_Vec3<float>>> co_surfs;
-	if (model_name != G_MN__SphereMap) co_surfs = LoadCollisionSurfaces(pNode->mChildren[collision_index], pScene);	
+	if (model_name != G_MN__SphereMap && model_name != G_MN__SphereStar) co_surfs = LoadCollisionSurfaces(pNode->mChildren[collision_index], pScene);	
 	
 	return G_ModelSet{ .model_name = model_name, .drawer_set = CreateDrawerSet(pNode->mChildren[draw_index], pScene, path,
-		(model_name == G_MN__Sphere || model_name == G_MN__SphereMap), model_name == G_MN__SphereMap),
+		(model_name == G_MN__SphereMarble || model_name == G_MN__SphereMap), model_name == G_MN__SphereMap, model_name),
 		.surfaces = std::move(co_surfs) } ;
 
 	// static const aiMatrix4x4 model_one;
@@ -152,8 +153,8 @@ std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(
 	return surfaces;
 }
 
-ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path, bool smooth_normals, bool invert_normals)
-{		
+ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path, bool smooth_normals, bool invert_normals, G_ModelName model_name)
+{
 		//	get model matrix if it is
 	static const aiMatrix4x4 model_one;
 	aiMatrix4x4* pModel = model_one != pNode->mTransformation ? &(pNode->mTransformation) : nullptr;
@@ -184,6 +185,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 			else vertex.position = G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]);
 				//	normal
 			aiVector3D& normal = pMesh->mNormals[vert_i];
+			float q = ZC_Vec::Dot(ZC_Vec::Normalize(ZC_Vec3<float>(normal.x, normal.y, normal.z)), ZC_Vec::Normalize(vertex.position));
 			if (invert_normals) normal *= -1.f;		//	invert if need
 			if (!smooth_normals)	//	set normal if don't need make smoth (later)
 			{
@@ -194,6 +196,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 				}
 				else vertex.normal = ZC_Pack_INT_2_10_10_10_REV(normal.x, normal.y, normal.z);
 			}
+
 				//	tex coords
 			if (pMesh->mTextureCoords[0])
 			{
@@ -226,6 +229,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 			for (VertNorm& v : same_verts) smooth_normal += v.normal;
 			smooth_normal /= same_verts.size();
 			int normal_int = 0;
+			
 			if (pModel)		//	need rotate and scale with pModel
 			{
 				ZC_Vec3<float> new_normal = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(model_scale_rotate * ZC_Vec4<float>(smooth_normal, 1.f)));
@@ -273,7 +277,17 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, verts_count, elementsType, 0);
 
 		//	ShPInitSet
-	typename ZC_ShProgs::ShPInitSet* pShPIS = ZC_ShProgs::Get(ShPN_Game_PlayerSphere);
+	typename ZC_ShProgs::ShPInitSet* pShPIS = nullptr;
+	if (model_name == G_MN__SphereStar) pShPIS = ZC_ShProgs::Get(ShPN_Game_Star);
+	else pShPIS = ZC_ShProgs::Get(ShPN_Game_PlayerSphere);
+
+	// switch (model_name)
+	// {
+	// case : break;
+	
+	// default:
+	// 	break;
+	// }
 
 		//	vao
 	ZC_VAO vao;

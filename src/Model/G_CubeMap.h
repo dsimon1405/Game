@@ -30,7 +30,7 @@
 
 
 
-// #include "System/G_Window.h"
+// #include "System/G_System.h"
 // #include "GamePlay/G_GameManager.h"
 
 // #include <ZC/Audio/ZC_Sounds.h>
@@ -85,7 +85,7 @@
 // void Func(const ZC_Vec3<float> &) {}
 // int main(int argv, char** args)
 // {
-//     G_Window window;
+//     G_System window;
 //     // G_GameManager gm;
     
     

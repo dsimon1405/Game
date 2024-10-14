@@ -1,6 +1,5 @@
 #include "G_GameManager.h"
 
-#include <Objects/G_OP_MarbleSphere.h>
 #include <ZC/Video/ZC_SWindow.h>
 #include <System/G_Config.h>
 #include <System/G_UpdaterLevels.h>
@@ -9,7 +8,7 @@
 #include <Objects/Platforms/G_PlatformWind.h>
 
 G_GameManager::G_GameManager()
-    : player((new G_OP_MarbleSphere(true))),
+    : player(),
     ss_main_theme(G_SN__main_theme, 30.f)
 {
     pGM = this;
@@ -137,6 +136,7 @@ void G_GameManager::PrepareLevel()
     G_GameSounds::SetDefaultSate();
         //  preapare
     map.CreateLevel(level);
+    // map.CreateLevel(level);
     player.ChangeCameraState(true);
     if (!ecUpdater.IsConnected()) ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GameManager::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_play));
     ChangeGamePlayActivityState(true);
@@ -146,25 +146,21 @@ void G_GameManager::PrepareLevel()
 
 void G_GameManager::Callback_Updater(float time)
 {
-    // if (game_state == GS_ContinueWonGame) ContinueGameUpdate(time);     //  continue won game phase
-    // else    //  level start timer, then text Level number change scale and pos
-    // {
-    //         //  at first will calls gui_start_timer.Update() (gui_start_timer.Update and gui_start_timer.IsFinished return same value), if return true start calls gui_level.Update()
-    //     if (gui_start_timer.IsFinished())
-    //     {
-    //         if (gui_level.Update(time)) ecUpdater.Disconnect();     //  process level number up and scale
-    //     }
-    //     else if (gui_start_timer.Update(time))  //  process start timer
-    //     {
-    //         player.SetSoundSetToDefault();
-    //         player.ChangeMoveState(true);
-    //         gui_level_timer.Start();
-    //     }
-    // }
-
-
-        player.ChangeMoveState(true);
-
+    if (game_state == GS_ContinueWonGame) ContinueGameUpdate(time);     //  continue won game phase
+    else    //  level start timer, then text Level number change scale and pos
+    {
+            //  at first will calls gui_start_timer.Update() (gui_start_timer.Update and gui_start_timer.IsFinished return same value), if return true start calls gui_level.Update()
+        if (gui_start_timer.IsFinished())
+        {
+            if (gui_level.Update(time)) ecUpdater.Disconnect();     //  process level number up and scale
+        }
+        else if (gui_start_timer.Update(time))  //  process start timer
+        {
+            player.SetSoundSetToDefault();
+            player.ChangeMoveState(true);
+            gui_level_timer.Start();
+        }
+    }
 }
 
 void G_GameManager::ChangeGamePlayActivityState(bool on)

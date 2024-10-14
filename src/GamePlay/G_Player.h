@@ -9,7 +9,7 @@
 class G_Player
 {
 public:
-    G_Player(ZC_uptr<G_ObjPlayable>&& _upObj);
+    G_Player();
     ~G_Player();
     
     void ChangeActivityState(bool on);
@@ -20,8 +20,8 @@ public:
     float GetRadius();
 
 private:
-    ZC_uptr<G_ObjPlayable> upObj;
     G_Camera camera;
+    ZC_uptr<G_ObjPlayable> upObj;
 
     ZC_EC ec_W;
     ZC_EC ec_S;

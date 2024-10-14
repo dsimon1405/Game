@@ -88,8 +88,8 @@ void G_PlatformDisapear::Callback_Updater(float time)
             ch_d.time = 0.f;
             ch_d.disapear_state = DS_phase2_wait;
             this->unAlpha = 0.f;
-            ch_d.temp_mat_model = *(this->upCO->GetModelMatrix());  //  safe cur model matrix
-            this->upCO->UpdateModelMatrix(ZC_Mat4<float>(1.f).Translate(0.f, 0.f, 1000.f));     //  set default model matrix to drop objects from platform
+            ch_d.temp_translate = this->platf_trans.translate;
+            this->platf_trans.Update_translate({ 0.f, 0.f, 1000.f });
             this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Pause);
         }
         else
@@ -104,7 +104,7 @@ void G_PlatformDisapear::Callback_Updater(float time)
         {
             ch_d.time = 0.f;
             ch_d.disapear_state = DS_phase2_apear;
-            this->upCO->UpdateModelMatrix(ch_d.temp_mat_model);
+            this->platf_trans.Update_translate(ch_d.temp_translate);
             this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Play);
         }
     } break;
@@ -118,7 +118,7 @@ void G_PlatformDisapear::Callback_Updater(float time)
             this->dsCon.SwitchToDrawLvl(ZC_RL_Default, ZC_DL_Drawing);
             ch_d = {};
             ecUpdater.Disconnect();
-            // this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Stop);
+            this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Stop);
         }
         else
         {

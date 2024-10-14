@@ -18,9 +18,9 @@ ZC_uptr<ZC_Drawer> G_DrawerCreator::GetRendererLevelDrawer(ZC_DrawerLevel lvl)
     case G_DL_AlphaBlending_ParticleStar: return
         { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>(0, false, false, false, ZC_GLBlend(GL_SRC_ALPHA, GL_ONE)) };
     case G_DL_AlphaBlending_ParticlesWind: return
-        { new ZC_DrawerFL<const ZC_ShProg*, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>(0, true, false, false, ZC_GLBlend(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)) };
+        { new ZC_DrawerFL<const ZC_ShProg*, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>(0, true, true, false, ZC_GLBlend(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)) };
     case G_DL_AlphaBlending_PlatformDisapear: return
-        { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>(0, true, false, false, ZC_GLBlend(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)) };
+        { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>(0, true, true, false, ZC_GLBlend(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)) };
     default: assert(false); return nullptr;
     }
 }
