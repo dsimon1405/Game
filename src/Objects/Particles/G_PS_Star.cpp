@@ -6,7 +6,7 @@
 #include <ZC/Tools/Math/ZC_Math.h>
 #include <ZC/Tools/Math/ZC_Mat4.h>
 
-G_PS_Star::G_PS_Star(unsigned long particles_count, const ZC_Vec3<float>& _star_pos, float _radius, float _speed, const ZC_Vec3<float>& rotate_axises,
+G_PS_Star::G_PS_Star(unsigned long long particles_count, const ZC_Vec3<float>& _star_pos, float _radius, float _speed, const ZC_Vec3<float>& rotate_axises,
         const ZC_Vec3<unsigned char>& color_start, const ZC_Vec3<unsigned char>& color_end)
     : G_ParticlesDrawer(particles_count, G_DL_AlphaBlending_ParticleStar, 3),
     star_pos(_star_pos),

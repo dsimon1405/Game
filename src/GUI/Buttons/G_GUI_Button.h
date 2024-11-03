@@ -8,7 +8,7 @@
 class G_GUI_Button
 {
 public:
-    G_GUI_Button(bool use_focus_changed_sound);
+    G_GUI_Button(bool _use_focuse_changed_sound);
     G_GUI_Button(G_GUI_Button&) = delete;
     G_GUI_Button(G_GUI_Button&&) = delete;
     virtual ~G_GUI_Button() = default;
@@ -19,5 +19,7 @@ public:
     static float GetLongestName(const std::forward_list<G_LangText>& _lang_texts);
 
 private:
-    G_SystemSound ss_button_focused;
+    static inline G_SystemSound ss_button_focused;
+    
+    bool use_focuse_changed_sound;
 };

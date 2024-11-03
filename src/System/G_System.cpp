@@ -26,7 +26,7 @@ G_System::G_System()
     
     // ZC_SWindow::NeedDrawFPS(true);
     ZC_SWindow::SetFPSTimeMeasure(ZC_FPS_TM__Seconds);
-    ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
+    // ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
 
     config.CreateGUI();
         //      models
@@ -117,8 +117,9 @@ void G_System::SetUpGUI()
     ZC_GUI_Colors::number_button = ZC_GUI_Colors::button;
     ZC_GUI_Colors::number_button_under_cursor = ZC_GUI_Colors::button_under_cursor;
     ZC_GUI_Colors::number_button_pressed = ZC_GUI_Colors::button_pressed;
+    ZC_GUI_Colors::number_text_number = 0;
         //  text
-    ZC_GUI_Colors::number_text = ZC_GUI_Colors::window_text;
+    ZC_GUI_Colors::number_text_name = ZC_GUI_Colors::window_text;
         //  arrows
     ZC_GUI_Colors::number_arrow = 0;
     ZC_GUI_Colors::number_arrow_under_cursor = ZC_PackColorUCharToUInt_RGB(10, 10, 10);

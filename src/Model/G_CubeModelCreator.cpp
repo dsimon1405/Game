@@ -37,7 +37,7 @@ G_ModelSet G_CubeModelCreator::LoadModel()
         //	texture
     std::forward_list<ZC_TexturesSet> tex_sets;
         // retrieve the directory path of the filepath
-    std::string tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/models/platform/stone.jpg");
+    std::string tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/models/platform/stone.jpg").string();
 
     std::vector<ZC_Texture> textures;
     ZC_TexSets::VectorOfTexturesCreator texCreator = pShPIS->texSets.GetCreator();

@@ -72,5 +72,5 @@ void G_GUI_W_MainMenu::OpenOptions(float)
 
 void G_GUI_W_MainMenu::ExitGame(float)
 {
-    ZC_SWindow::CloseWindow();
+    ZC_SWindow::BreakMainCycle();
 }

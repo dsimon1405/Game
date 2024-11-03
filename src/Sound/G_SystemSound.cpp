@@ -14,6 +14,7 @@ G_SystemSound& G_SystemSound::operator = (G_SystemSound&& ss)
 {
     upSound = std::move(ss.upSound);
     volume = ss.volume;
+    system_sounds.emplace_back(this)->upSound->SetVolume(volume * G_Config::GetConfigData().volume_coef);
     return *this;
 }
 

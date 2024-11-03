@@ -43,6 +43,7 @@ void G_PlatformWind::VAddObjectOnPlatform(G_Object* pObj_add)
         this->upSK->SetSoundState(G_SN__platform_activation, ZC_SS__Play);
         this->upSK->SetVolume(G_SN__platform_wind, sound_wind_start);
         this->upSK->SetSoundState(G_SN__platform_wind, ZC_SS__PlayLoop);
+        ch_d = {};
             //  first wind diraction
         ch_d.wind_dir_cur = ZC_Vec::Vec4_to_Vec3(ZC_Mat4<float>(1.f).Rotate(ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i),
             { 0.f, 0.f, 1.f }) * G_start_front_pos_v4);
@@ -205,9 +206,12 @@ void G_PlatformWind::Callback_Updater(float time)
                 ecUpdater.Disconnect();
                 this->unColor = 0;  //  default color
                 this->upSK->SetSoundState(G_SN__platform_wind, ZC_SS__Stop);
-                upPS_wind->SetAlpha(0.f);
-                upPS_wind->SetDrawState(false);
-                pParticles_holder = nullptr;
+                if (pParticles_holder == this)
+                {
+                    upPS_wind->SetAlpha(0.f);
+                    upPS_wind->SetDrawState(false);
+                    pParticles_holder = nullptr;
+                }
             }
             else
             {

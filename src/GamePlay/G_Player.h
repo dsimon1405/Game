@@ -18,6 +18,7 @@ public:
     void SetDefaultState();
     void SetSoundSetToDefault();
     float GetRadius();
+    float GetHealth();
 
 private:
     G_Camera camera;

@@ -23,7 +23,8 @@ G_Config::G_Config()
 
     in_file.read(reinterpret_cast<char*>(&config_data), sizeof(config_data));
     
-    const char must_be_name[] { 'G', 'A', 'M', 'E' };
+    const char must_be_name[] {"GAME"};
+    // const char must_be_name[] { 'G', 'A', 'M', 'E',  };
     if (!ConstCharEqual(must_be_name, config_data.name))
         config_data = {};
 }

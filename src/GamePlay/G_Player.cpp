@@ -75,6 +75,11 @@ float G_Player::GetRadius()
     return upObj->GetRadius();
 }
 
+float G_Player::GetHealth()
+{
+    return upObj->GetHealth();
+}
+
 void G_Player::Callback_CameraRotated(const ZC_Vec3<float>& cam_pos)
 {
     dirs_actual = false;

@@ -1,6 +1,7 @@
 #include "System/G_System.h"
 #include "GamePlay/G_GameManager.h"
 
+#include <iostream>
 
 int main(int argv, char** args)
 {

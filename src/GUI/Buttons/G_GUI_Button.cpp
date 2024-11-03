@@ -4,14 +4,15 @@
 #include <ZC/Audio/ZC_Sounds.h>
 #include <Sound/G_SoundName.h>
 
-G_GUI_Button::G_GUI_Button(bool use_focus_changed_sound)
+G_GUI_Button::G_GUI_Button(bool _use_focuse_changed_sound)
+    : use_focuse_changed_sound(_use_focuse_changed_sound)
 {
-    if (use_focus_changed_sound) ss_button_focused = G_SystemSound(G_SN__gui_button_focused, 100.f);
+    if (!(ss_button_focused.upSound) && use_focuse_changed_sound) ss_button_focused = G_SystemSound(G_SN__gui_button_focused, 100.f);
 }
 
 void G_GUI_Button::ButtonFocusChanged(bool is_on)
 {
-    if (!is_on) return;
+    if (!is_on || !use_focuse_changed_sound) return;
     if (ss_button_focused.upSound->GetState() == ZC_SS__Play) ss_button_focused.upSound->Stop();
     ss_button_focused.upSound->Play();
 }

@@ -15,7 +15,7 @@ public:
     bool IsDrawing();
 
 protected:
-    G_ParticlesDrawer(unsigned long particles_count, ZC_DrawerLevel _drawer_level, int point_size);
+    G_ParticlesDrawer(unsigned long long particles_count, ZC_DrawerLevel _drawer_level, int point_size);
     
         //  emplace in vectors: particle_positions pos, in particle_colors color. In reference on pointers (rpPos, rpColor) sets relevant pointers from vectors.
     void AddPositionAndColor(const ZC_Vec4<float>& pos, const ZC_Vec3<unsigned char>& color, ZC_Vec4<float>*& rpPos, ZC_Vec3<unsigned char>*& rpColor);
@@ -38,7 +38,7 @@ private:
     virtual bool UpdateParticlesColors(float time) { return false; }
     virtual void DrawingStopped() {}
 
-    ZC_DrawerSet CreateDrawerSet(unsigned long particles_count);
+    ZC_DrawerSet CreateDrawerSet(unsigned long long particles_count);
 
     void Callback_Updater(float time);
 

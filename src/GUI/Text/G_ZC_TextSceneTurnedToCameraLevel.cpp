@@ -4,7 +4,7 @@
 
 G_ZC_TextSceneTurnedToCameraLevel::G_ZC_TextSceneTurnedToCameraLevel()
     : G_LanguageDependent({ G_LangText{ .lang = G_L_Russian, .text = L"Уровень " }, { G_L_English, L"Level " } }),
-    ZC_TextSceneTurnedToCamera(G_FontData::fd_Arial_200, L"", ZC_TA_Left, {}, true),
+    ZC_TextSceneTurnedToCamera(G_FontData::fd_Arial_200, L"0", ZC_TA_Left, {}, true),
     pText_level(&(this->GetCurrentLanguageText(this->lang_texts)))
 {
     this->SetColorUChar(200, 200, 200);

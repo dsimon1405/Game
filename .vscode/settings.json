@@ -78,6 +78,7 @@
         "*.cp": "c",
         "g_soundname.h": "c",
         "zc_sound.h": "c",
-        "g_sound.h": "c"
+        "g_sound.h": "c",
+        "xlocale": "cpp"
     }
 }

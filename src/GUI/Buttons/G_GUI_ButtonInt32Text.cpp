@@ -15,7 +15,7 @@ G_GUI_ButtonInt32Text::G_GUI_ButtonInt32Text(int _number, int _number_min, int _
                     false,
                     GetLongestWidth(_lang_texts),
                     ZC_GUI_TextAlignment::Left,
-                    colorsButtonNumber.color_text)
+                    ZC_GUI_TFB_Colors(ZC_GUI_Colors::number_text_name))
             ),
         std::move(_lang_texts)),
     G_GUI_Button(use_sound)

@@ -35,13 +35,12 @@ float G_ParticlesDrawer::GetAlpha() const noexcept
     return unAlpha;
 }
 
-
 bool G_ParticlesDrawer::IsDrawing()
 {
     return ds_con.GetDrawingLevel(ZC_RL_Default) == drawer_level;
 }
 
-G_ParticlesDrawer::G_ParticlesDrawer(unsigned long particles_count, ZC_DrawerLevel _drawer_level, int point_size)
+G_ParticlesDrawer::G_ParticlesDrawer(unsigned long long particles_count, ZC_DrawerLevel _drawer_level, int point_size)
     : drawer_set(CreateDrawerSet(particles_count)),
     ds_con(drawer_set.MakeZC_DSController()),
     drawer_level(_drawer_level)
@@ -79,7 +78,7 @@ ZC_Vec3<unsigned char> G_ParticlesDrawer::CalculateColor(const ZC_Vec3<unsigned 
         };
 }
 
-ZC_DrawerSet G_ParticlesDrawer::CreateDrawerSet(unsigned long particles_count)
+ZC_DrawerSet G_ParticlesDrawer::CreateDrawerSet(unsigned long long particles_count)
 {
 	ZC_Buffer vbo(GL_ARRAY_BUFFER);
 	vbo.GLNamedBufferStorage((particles_count * sizeof(ZC_Vec4<float>)) + (particles_count * sizeof(ZC_Vec3<unsigned char>)), nullptr, GL_DYNAMIC_STORAGE_BIT);
