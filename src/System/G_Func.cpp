@@ -4,13 +4,18 @@
 
 #include <cassert>
 
-unsigned int G_InterpolateColor(const ZC_Vec3<float>& start_color, const ZC_Vec3<float>& end_color, float growing_coef)
+ZC_Vec3<float> G_InterpolateColor(const ZC_Vec3<float>& start_color, const ZC_Vec3<float>& end_color, float growing_coef)
 {
     auto lamb_Calc = [growing_coef](float start, float end)
     {
         return start > end ? start - ((start - end) * growing_coef) : start + ((end - start) * growing_coef);
     };
-    uint res = ZC_PackColorFloatToUInt_RGB(lamb_Calc(start_color[0], end_color[0]), lamb_Calc(start_color[1], end_color[1]), lamb_Calc(start_color[2], end_color[2]));
-    // assert(res != 0);
+    return { lamb_Calc(start_color[0], end_color[0]), lamb_Calc(start_color[1], end_color[1]), lamb_Calc(start_color[2], end_color[2]) };
+}
+
+unsigned int G_InterpolateColor_PackToUInt(const ZC_Vec3<float>& start_color, const ZC_Vec3<float>& end_color, float growing_coef)
+{
+    uint res = ZC_PackColorFloatToUInt_RGB(G_InterpolateColor(start_color, end_color, growing_coef));
+    // assert(end_color != ZC_Vec3<float>() && res != 0u);
     return res;
 }

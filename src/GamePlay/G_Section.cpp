@@ -1,17 +1,17 @@
 #include "G_Section.h"
 
 #include "G_Map.h"
-#include <Objects/Platforms/G_PlatformDisapear.h>
+#include <Objects/Platforms/G_PlatformDisappear.h>
 #include <Objects/Platforms/G_PlatformWin.h>
 #include <Objects/Platforms/G_PlatformScale.h>
 #include <Objects/Platforms/G_PlatformWind.h>
 #include <Objects/Platforms/G_PlatformDamage.h>
 #include <ZC/Tools/ZC_Random.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 
 G_Section::G_Section(int lines_count, int platforms_on_line, float dist_to_first_platform_in_section, float distance_to_circle_platform, bool is_last_section)
-    : ecUpdater(ZC_SWindow::ConnectToUpdater({ &G_Section::Callback_Updater, this }, G_UL__game_play)),
+    : ecUpdater(ZC__Updater::Connect({ &G_Section::Callback_Updater, this }, G_UL__game_play)),
     rotSet_lines{ .rotate_angle = float(ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i)) },
     rotSet_circle{ .rotate_angle = float(ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i)) },
     last_section(is_last_section)
@@ -22,7 +22,7 @@ G_Section::G_Section(int lines_count, int platforms_on_line, float dist_to_first
 G_Section::G_Section(G_Section&& s)
     : platforms_on_lines(std::move(s.platforms_on_lines)),
     platforms_on_circle(std::move(s.platforms_on_circle)),
-    ecUpdater(ZC_SWindow::ConnectToUpdater({ &G_Section::Callback_Updater, this }, G_UL__game_play)),
+    ecUpdater(ZC__Updater::Connect({ &G_Section::Callback_Updater, this }, G_UL__game_play)),
     rotSet_lines(s.rotSet_lines),
     rotSet_circle(s.rotSet_circle)
 {
@@ -38,13 +38,13 @@ G_Section::~G_Section()
 
 ZC_uptr<G_Platform> G_Section::GetRandomPlatform(const ZC_Vec3<float>& translate)
 {
-    // return new G_PlatformWind(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
-    switch (ZC_Random::GetRandomInt(0, G_AP_Win - 1))
+    // return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
+    switch (ZC_Random::GetRandomInt(G_PT__Damage, G_PT__Wind))
     {
-    case G_AP_Damage: return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
-    case G_AP_Disapear: return new G_PlatformDisapear(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
-    case G_AP_Scale: return new G_PlatformScale(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
-    case G_AP_Wind: return new G_PlatformWind(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
+    case G_PT__Damage: return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
+    case G_PT__Disapear: return new G_PlatformDisappear(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
+    case G_PT__Scale: return new G_PlatformScale(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
+    case G_PT__Wind: return new G_PlatformWind(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
     default: assert(false); return nullptr;
     }
 }

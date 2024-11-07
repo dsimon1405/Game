@@ -1,6 +1,6 @@
 #include "G_System.h"
 
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <ZC/File/ZC_File.h>
 #include <ZC/GUI/ZC__GUI.h>
 #include <Model/G_Models.h>
@@ -12,22 +12,24 @@
 #include <Sound/G_SoundName.h>
 #include <ZC/GUI/Backend/Config/ZC_GUI_IconUV.h>
 #include <ZC/GUI/Backend/Config/ZC_GUI_Colors.h>
+#include "G_LightUBO.h"
 
 G_System::G_System()
 {
     LoadSounds();
     SetUpGUI();
         //  create window
-    ZC_SWindow::MakeWindow(ZC_SWF__Multisampling_4 | ZC_SWF__Border | ZC_SWF__GUI, 800, 600, "SPHERUM");
-    ZC_SWindow::SetMinSize(800, 600);
-    if (config.GetConfigData().fuull_screen) ZC_SWindow::SetFullScreen(true);
-    ZC_SWindow::GlEnablePointSize();    //  particle system
-    // ZC_SWindow::SetFPS(0);
-    
-    // ZC_SWindow::NeedDrawFPS(true);
-    ZC_SWindow::SetFPSTimeMeasure(ZC_FPS_TM__Seconds);
+    ZC__System::Init(ZC_SF__Collision | ZC_SF__GUI | ZC_SF__Updater, ZC_SWF__Multisampling_4 | ZC_SWF__Border, 800, 600, "SPHERUM");
+    ZC__Window::SetMinSize(800, 600);
+    if (config.GetConfigData().fuull_screen) ZC__Window::SetFullScreen(true);
+    ZC__System::GlEnablePointSize();    //  particle system
     // ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
 
+    ZC__FPS::SetTimeMeasure(ZC_FPS_TM__Seconds);
+    // ZC__FPS::SetLimit(0);
+    ZC__FPS::NeedDraw(true);
+    
+    
     config.CreateGUI();
         //      models
     G_Models::LoadModels();
@@ -35,11 +37,18 @@ G_System::G_System()
     G_FontData::LoadFonts();
         //  open audio stream
     ZC_Audio::OpenAudioStream(ZC_AudioSet(ZC_Sounds::GetSound(0)->GetAudioSet()));
+        //  crete lights ubo
+    G_LightUBO::Init();
+}
+
+G_System::~G_System()
+{
+    G_LightUBO::Destroy();
 }
 
 void G_System::RunMainCycle()
 {
-    ZC_SWindow::RunMainCycle();
+    ZC__System::RunMainCycle();
 }
 
 void G_System::LoadSounds()
@@ -131,4 +140,7 @@ void G_System::SetUpGUI()
     ZC_GUI_Colors::dropDownSwitch_button_pressed = ZC_PackColorUCharToUInt_RGB(100, 100, 100);
     ZC_GUI_Colors::dropDownSwitch_text = 0;
     ZC_GUI_Colors::dropDownSwitch_arrow = 0;
+
+
+    // ZC__GUI::SetFontHeight(20);                                                                            //  TEST SETUP
 }

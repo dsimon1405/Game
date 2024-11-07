@@ -1,7 +1,7 @@
 #include "G_GUI_W_MainMenu.h"
 
 #include <GamePlay/G_GameManager.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_Config.h>
 
 G_GUI_W_MainMenu::G_GUI_W_MainMenu()
@@ -72,5 +72,5 @@ void G_GUI_W_MainMenu::OpenOptions(float)
 
 void G_GUI_W_MainMenu::ExitGame(float)
 {
-    ZC_SWindow::BreakMainCycle();
+    ZC__System::BreakMainCycle();
 }

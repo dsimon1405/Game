@@ -12,7 +12,7 @@ set(Game_ASSETS_DIRECTORY_NAME assets)
 set(Game_ASSETS_DESTINATION_PATH 
     ${PROJECT_BINARY_DIR}/$<$<PLATFORM_ID:Windows>:$<IF:$<CONFIG:Debug>,Debug/,Release/>>${Game_ASSETS_DIRECTORY_NAME})   #   windows?
 
-set(Game_MY_DEBUG 0)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
+set(Game_MY_DEBUG 1)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
 
 #========================= external libs
 #   add submodules
@@ -70,7 +70,8 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/System/G_Time.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_Func.cpp
     ${PROJECT_SOURCE_DIR}/src/System/G_FontData.cpp
-
+    ${PROJECT_SOURCE_DIR}/src/System/G_LightUBO.cpp
+    
     ${PROJECT_SOURCE_DIR}/src/Sound/G_GameSound.cpp
     ${PROJECT_SOURCE_DIR}/src/Sound/G_GameSoundSet.cpp
     ${PROJECT_SOURCE_DIR}/src/Sound/G_SystemSound.cpp
@@ -107,11 +108,12 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/Objects/G_OP_MarbleSphere.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/G_PushSet.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/G_Star.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformLightHolder.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_Platform.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformWind.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformDamage.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformScale.cpp
-    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformDisapear.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformDisappear.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformTransforms.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformWin.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_ParticlesDrawer.cpp

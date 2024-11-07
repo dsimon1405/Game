@@ -31,7 +31,8 @@ private:
     bool isDirsActual = false;
 
     const float maxDistanceToObject = 30.f,
-        minDistanceToObject = 15.f,
+        // minDistanceToObject = 0.1f,
+        minDistanceToObject = 10.f,
         sensivityScroll = 1.f;
     float distanceToObject = 20.f;
         //  rotation

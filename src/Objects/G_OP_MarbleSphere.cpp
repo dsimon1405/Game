@@ -1,6 +1,6 @@
 #include "G_OP_MarbleSphere.h"
 
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <Model/G_Models.h>
 #include <System/G_UpdaterLevels.h>
 #include <System/G_Func.h>
@@ -13,7 +13,7 @@ G_OP_MarbleSphere::G_OP_MarbleSphere(bool is_player)
 {
     ch_d.move_dirs.reserve(2);   //  max pressed button for dir change in one frame 2
 
-    this->ecUpdater = ZC_SWindow::ConnectToUpdater({ &G_OP_MarbleSphere::Callback_Updater, this }, G_UL__game_play);
+    this->ecUpdater = ZC__Updater::Connect({ &G_OP_MarbleSphere::Callback_Updater, this }, G_UL__game_play);
 }
 
 std::vector<G_GameSound> G_OP_MarbleSphere::GetSounds()
@@ -512,7 +512,7 @@ void G_OP_MarbleSphere::UpdateColorDMG(float time)
         this->unColor = 0.f;
         ch_d.dmg_color = {};
     }
-    else this->unColor = G_InterpolateColor(ch_d.dmg_color, { 0.f, 0.f, 0.f }, ch_d.dmg_time / seconds_dmg_phase);
+    else this->unColor = G_InterpolateColor_PackToUInt(ch_d.dmg_color, { 0.01f, 0.01f, 0.01f }, ch_d.dmg_time / seconds_dmg_phase);
 }
 
 void G_OP_MarbleSphere::UpdateSound()

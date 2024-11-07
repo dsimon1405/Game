@@ -1,6 +1,6 @@
 #include "G_GameManager.h"
 
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_Config.h>
 #include <System/G_UpdaterLevels.h>
 #include <ZC/Events/ZC_Events.h>
@@ -14,7 +14,7 @@ G_GameManager::G_GameManager()
     pGM = this;
 
     ChangeGameLevelsUpdaterState(false);
-    // ZC_SWindow::ChangeUpdaterLevelState(G_UpdaterLevels::G_UL__game_play, false);
+    // ZC_SWindow::ChangeLevelState(G_UpdaterLevels::G_UL__game_play, false);
     ss_main_theme.upSound->PlayLoop();
 }
 
@@ -69,15 +69,15 @@ void G_GameManager::ContinueGame()
     } break;
     case GS_PauseContinueWonGame:
     {
-        ZC_SWindow::ChangeUpdaterLevelState(G_UL__game_manager, true);
+        ZC__Updater::ChangeLevelState(G_UL__game_manager, true);
         G_GameSounds::ChangeSoundsPlayState(!move_to_player_on_won_level);
         game_state = GS_ContinueWonGame;
     } break;
     case GS_CreateLevel: PrepareLevel(); break;
     case GS_ContinueWonGame:
     {
-        if (!ecUpdater.IsConnected()) ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GameManager::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_manager));
-        ZC_SWindow::ChangeUpdaterLevelState(G_UL__game_manager, true);
+        if (!ecUpdater.IsConnected()) ecUpdater.NewConnection(ZC__Updater::Connect({ &G_GameManager::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_manager));
+        ZC__Updater::ChangeLevelState(G_UL__game_manager, true);
         G_GameSounds::ChangeSoundsPlayState(!move_to_player_on_won_level);
         move_to_player_on_won_level = true;
             //  calculate cam move dir and speed
@@ -135,10 +135,10 @@ void G_GameManager::PrepareLevel()
     gui_level.SetDefaultState(level);
     G_GameSounds::SetDefaultSate();
         //  preapare
+    // map.CreateLevel(14);
     map.CreateLevel(level);
-    // map.CreateLevel(level);
     player.ChangeCameraState(true);
-    if (!ecUpdater.IsConnected()) ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GameManager::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_manager));
+    if (!ecUpdater.IsConnected()) ecUpdater.NewConnection(ZC__Updater::Connect({ &G_GameManager::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_manager));
     ChangeGamePlayActivityState(true);
 
     game_state = GS_Play;
@@ -165,16 +165,16 @@ void G_GameManager::Callback_Updater(float time)
 
 void G_GameManager::ChangeGamePlayActivityState(bool on)
 {
-    ZC_SWindow::ChangeUpdaterLevelState(G_UL__game_manager, on);
-    ZC_SWindow::ChangeUpdaterLevelState(G_UL__camera, on);
+    ZC__Updater::ChangeLevelState(G_UL__game_manager, on);
+    ZC__Updater::ChangeLevelState(G_UL__camera, on);
     ChangeGameLevelsUpdaterState(on);
     G_GameSounds::ChangeSoundsPlayState(on);
 }
 
 void G_GameManager::ChangeGameLevelsUpdaterState(bool on)
 {
-    ZC_SWindow::ChangeUpdaterLevelState(G_UL__game_play, on);
-    ZC_SWindow::ChangeUpdaterLevelState(G_UL__game_particles, on);
+    ZC__Updater::ChangeLevelState(G_UL__game_play, on);
+    ZC__Updater::ChangeLevelState(G_UL__game_particles, on);
 }
 
 void G_GameManager::ContinueGameUpdate(float time)
@@ -221,7 +221,7 @@ void G_GameManager::ContinueGameUpdate(float time)
         {
             game_state = GS_Play;
             player.ChangeCameraState(true);
-            ZC_SWindow::ChangeUpdaterLevelState(G_UL__camera, true);
+            ZC__Updater::ChangeLevelState(G_UL__camera, true);
             pActiveCamera->SetPosition(must_be_cam_pos);
         }
         else pActiveCamera->SetPosition(new_cam_pos);

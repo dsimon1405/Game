@@ -11,11 +11,8 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
 {
                     //      volume_max(100)       volume_default       distance_max(not 0)        distance_min
     
-    static const float max_dist_to_cam = 29.f;  //  max distance in G_Camera 49
-    static const float min_dist_to_cam = 15.f;  //  max distance in G_Camera 15
-
-    // static const float platform_sound_radius_min = G_Map::scaleXY_other_platforms * G_Map::platform_model_radius_XY;
-    // static const float platform_sound_radius_max = platform_sound_radius_min * 2.f;
+    static const float max_dist_to_cam = 32.f;  //  max distance in G_Camera 39
+    static const float min_dist_to_cam = 10.f;  //  max distance in G_Camera 10
 
 
     switch (sound_name)

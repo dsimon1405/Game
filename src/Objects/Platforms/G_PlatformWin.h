@@ -30,7 +30,7 @@ private:
         ZC_Vec3<float> color = G_Platform::color_default;
     } ch_d;
 
-    void VAddObjectOnPlatform(G_Object* pObj_add) override;
+    void VAddObjectOnPlatform_P(G_Object* pObj_add) override;
     
     std::vector<G_GameSound> GetSounds();
     void Callback_Updater(float time);

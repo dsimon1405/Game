@@ -1,7 +1,7 @@
 #include "G_GUI_W_Options.h"
 
 #include <GamePlay/G_GameManager.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_Config.h>
 #include <ZC/GUI/ZC__GUI.h>
 

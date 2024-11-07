@@ -10,6 +10,7 @@ void G_GUI_GM_LevelNumber::SetDefaultState(int level)
     tstc_level.UpdateLevelText(level);
     tstc_level.SetPosition({ 0.f, 0.f, tstc_level_start_Z });
     tstc_level.SetScale(tstc_level_start_scale);
+    tstc_level.SetColorUChar(130, 130, 130);
 }
 
 bool G_GUI_GM_LevelNumber::Update(float time)

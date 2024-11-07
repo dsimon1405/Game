@@ -2,7 +2,7 @@
 
 #include <ZC/File/ZC_File.h>
 #include <GUI/Text/G_LanguageDependent.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <Sound/G_GameSounds.h>
 #include <Sound/G_SystemSound.h>
 
@@ -61,7 +61,7 @@ void G_Config::Update_language(unsigned int language)
 void G_Config::Update_full_screen(bool full_screen)
 {
     pConfig->config_data.fuull_screen = full_screen;
-    ZC_SWindow::SetFullScreen(full_screen);
+    ZC__Window::SetFullScreen(full_screen);
     pConfig->config_data_changed = true;
 }
 

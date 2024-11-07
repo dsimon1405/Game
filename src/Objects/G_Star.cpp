@@ -1,31 +1,26 @@
 #include "G_Star.h"
 
 #include <GamePlay/G_Map.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <ZC/Tools/ZC_Random.h>
 #include <ZC/Tools/Container/ZC_ContFunc.h>
-#include <ZC/Video/OpenGL/Buffer/ZC_UBOs.h>
 #include <Model/G_Models.h>
 #include <System/G_RenderLevel.h>
+#include <System/G_LightUBO.h>
 
 G_Star::G_Star()
     : particles_star(1000, {}, star_scale + 1.f, 30.f),
-    ec_updater(ZC_SWindow::ConnectToUpdater({ &G_Star::Callback_Updater, this }, G_UL__game_play)),
+    ec_updater(ZC__Updater::Connect({ &G_Star::Callback_Updater, this }, G_UL__game_play)),
     collision_object(new ZC_CO_FigureSphere({0,0,0}, 10), ZC_COT__Static, this, { &G_Star::Callback_Collision, this }),
-    ubo_light(ZC_UBO_BP__Light),
     ss_star(GetSoundsVector()),
     ds_con(G_Models::GetModel_DSController(G_MN__SphereStar, 0))
 {
     ds_con.SetUniformsData(ZC_UN_unModel, collision_object.GetModelMatrix());
     ds_con.SwitchToDrawLvl(ZC_RL_Default, G_DL_AlphaBlending_ParticleStar);
     
-    particles_star.SetDrawState(true);
-
-    ubo_light.GLNamedBufferStorage(sizeof(light_set_gpu), &light_set_gpu, GL_DYNAMIC_STORAGE_BIT);
-    ZC_UBOs::AddUpdateFunction(&ubo_light, { &G_Star::Callback_UBOLightUpdate, this }, ZC_AddToRenderer);
-
     particles_star.SetAlpha(0.1);
+    particles_star.SetDrawState(true);
 }
 
 G_Star::~G_Star()
@@ -85,11 +80,6 @@ void G_Star::Callback_Collision(const ZC_CO_CollisionResult& coll_result)
         objects_dmg.emplace_back(pObject_dmg);
 }
 
-void G_Star::Callback_UBOLightUpdate()
-{
-    ubo_light.GLNamedBufferSubData(0, sizeof(ZC_Vec3<float>), &light_set_gpu);  //  update only position
-}
-
 void G_Star::UpdateDMG(float time)
 {
     static const float seconds_between_dmg = 1.f;
@@ -132,10 +122,11 @@ void G_Star::CalculateModelMatrix(float time)
     cur_angle_Z += rot_speed_Z * time;
     ZC_Mat4<float> model = ZC_Mat4<float>(1.f).Rotate(cur_angle_Z, {0.f, 0.f, 1.f}).Translate({ 0.f, dist_to_center, 10.f })
         .Rotate(cur_angle_XY, { 1.f, 1.f, 0.f }).Scale(star_scale, star_scale, star_scale);
-    auto pos = model * ZC_Vec4<float>(0,0,0,1);
+    ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, 0.f, 0.f, 1.f));
     
         //  update pos in collisoin and particles
     collision_object.UpdateModelMatrix(model);
-    particles_star.SetPosition(ZC_Vec::Vec4_to_Vec3(pos));
-    light_set_gpu.pos = pos;
+    particles_star.SetPosition(pos);
+    static const uint color_packed = ZC_PackColorFloatToUInt_RGB(1.f, 0.86f, 0.55f);    //  peach color
+    G_LightUBO::UpdateLightData(G_LN__Star, G_LightSet{ .pos = pos, .color = color_packed });
 }

@@ -39,7 +39,7 @@ private:
     static inline ZC_uptr<G_PS_Wind> upPS_wind;
     static inline G_PlatformWind* pParticles_holder = nullptr;    //  current holder of the particles
 
-    void VAddObjectOnPlatform(G_Object* pObj_add) override;
+    void VAddObjectOnPlatform_P(G_Object* pObj_add) override;
     void VDeactivatePlatform_P() override;
 
     std::vector<G_GameSound> GetSounds();

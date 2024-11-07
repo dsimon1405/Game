@@ -1,6 +1,6 @@
 #include "G_GUI_W_ConfigSaveLevel.h"
 
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <ZC/GUI/ZC__GUI.h>
 #include <System/G_UpdaterLevels.h>
 #include <ZC/GUI/Backend/Config/ZC_GUI_Colors.h>
@@ -35,7 +35,7 @@ void G_GUI_W_ConfigSaveLevel::ShowSavedData(int level, G_Time time)
 
     cur_time = 0.f;
     wait_to_show = true;
-    ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GUI_W_ConfigSaveLevel::Callback_Updater, this }, G_UpdaterLevels::G_UL__w_player_win));
+    ecUpdater.NewConnection(ZC__Updater::Connect({ &G_GUI_W_ConfigSaveLevel::Callback_Updater, this }, G_UpdaterLevels::G_UL__w_player_win));
 }
 
 void G_GUI_W_ConfigSaveLevel::Callback_Updater(float time)

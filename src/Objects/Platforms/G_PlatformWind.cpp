@@ -2,7 +2,7 @@
 
 #include <Model/G_Models.h>
 #include <ZC/Tools/Container/ZC_ContFunc.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <ZC/Tools/ZC_Random.h>
 #include <System/G_Func.h>
@@ -10,7 +10,7 @@
 #include <ZC/Tools/Math/ZC_Math.h>
 
 G_PlatformWind::G_PlatformWind(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()))
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()), G_PT__Win)
 {
     if (!upPS_wind)     //  create wind particles one for all wind platforms
     {
@@ -34,12 +34,12 @@ void G_PlatformWind::FreeParticles()
     upPS_wind = nullptr;
 }
 
-void G_PlatformWind::VAddObjectOnPlatform(G_Object* pObj_add)
+void G_PlatformWind::VAddObjectOnPlatform_P(G_Object* pObj_add)
 {
     this->objects_on_platform.emplace_back(pObj_add);
     if (objects_on_platform.size() == 1)
     {
-        ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformWind::Callback_Updater, this }, G_UL__game_play));   //  connect to update if it is not yet
+        ecUpdater.NewConnection(ZC__Updater::Connect({ &G_PlatformWind::Callback_Updater, this }, G_UL__game_play));   //  connect to update if it is not yet
         this->upSK->SetSoundState(G_SN__platform_activation, ZC_SS__Play);
         this->upSK->SetVolume(G_SN__platform_wind, sound_wind_start);
         this->upSK->SetSoundState(G_SN__platform_wind, ZC_SS__PlayLoop);
@@ -107,7 +107,7 @@ void G_PlatformWind::Callback_Updater(float time)
             static const float azure_g_b = wind_push_power_min / wind_push_power_max;
 
             float time_coef = ch_d.cur_time / seconds_to_start_wind;
-            this->unColor = G_InterpolateColor(G_Platform::color_white, { 0.f, azure_g_b, azure_g_b }, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_white, { 0.f, azure_g_b, azure_g_b }, time_coef);
             this->upSK->SetVolume(G_SN__platform_wind, sound_wind_min * time_coef);
 
                 //  particles proccess
@@ -216,7 +216,7 @@ void G_PlatformWind::Callback_Updater(float time)
             else
             {
                 float time_coef = ch_d.cur_time / seconds_deactivate;
-                this->unColor = G_InterpolateColor(ch_d.deactivate_color, G_Platform::color_default, time_coef);
+                this->unColor = G_InterpolateColor_PackToUInt(ch_d.deactivate_color, G_Platform::color_default, time_coef);
                 this->upSK->SetVolume(G_SN__platform_wind, ch_d.deactivate_sound_wind - (ch_d.deactivate_sound_wind * time_coef));
                 upPS_wind->SetAlpha(ch_d.deactivate_particles_alpha - (ch_d.deactivate_particles_alpha * time_coef));
             }
@@ -237,7 +237,7 @@ void G_PlatformWind::Callback_Updater(float time)
                 (*(iter))->VPushObjectInDirection_IO(G_PushSet(ch_d.wind_dir_cur, ch_d.wind_power));    //  push object
                 ++iter;
             }
-            else iter = this->objects_on_platform.erase(iter);   //  object out of cylindric radius of the platform, stop pushing them
+            else iter = this->EraseObjectFromPlatform(iter);   //  object out of cylindric radius of the platform, stop pushing them
         }
     }
 

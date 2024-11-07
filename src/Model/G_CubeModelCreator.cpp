@@ -25,7 +25,7 @@ G_ModelSet G_CubeModelCreator::LoadModel()
         //  draw
     auto upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, elementsCount, elementsType, 0);
         //  shProg
-    typename ZC_ShProgs::ShPInitSet* pShPIS = ZC_ShProgs::Get(ShPN_Game_PlayerSphere);
+    typename ZC_ShProgs::ShPInitSet* pShPIS = ZC_ShProgs::Get(ShPN_Game_Sphere);
         //  vao
     ZC_VAO vao;
     vao.Config(pShPIS->vaoConfigData, vbo, &ebo, 0, quads.size() * 4);   //  vertices count in vbo (in one quad 4)

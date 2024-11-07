@@ -1,6 +1,6 @@
 #include "G_ParticlesDrawer.h"
 
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <ZC/Tools/ZC_Random.h>
 
@@ -21,7 +21,7 @@ void G_ParticlesDrawer::SetDrawState(bool need_draw)
         DrawingStopped();
     }
     else if (!ec_updater.IsConnected())
-        ec_updater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_ParticlesDrawer::Callback_Updater, this }, G_UL__game_particles));   //  connect to update if it is not yet
+        ec_updater.NewConnection(ZC__Updater::Connect({ &G_ParticlesDrawer::Callback_Updater, this }, G_UL__game_particles));   //  connect to update if it is not yet
 }
 
 void G_ParticlesDrawer::SetAlpha(float alpha)

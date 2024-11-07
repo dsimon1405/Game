@@ -1,7 +1,7 @@
 #include "G_Camera.h"
 
 #include <ZC/Events/ZC_Events.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <ZC/Tools/Math/ZC_Math.h>
 #include <System/G_UpdaterLevels.h>
 
@@ -11,7 +11,7 @@ G_Camera::G_Camera(ZC_Function<void(const ZC_Vec3<float>&)>&& _callback_camera_r
 {
     cam.MakeActive();
     SetDefaultState(look_on);
-    ec_updater = ZC_SWindow::ConnectToUpdater({ &G_Camera::Callback_Updater, this }, G_UL__camera);
+    ec_updater = ZC__Updater::Connect({ &G_Camera::Callback_Updater, this }, G_UL__camera);
 }
 
 G_Camera::~G_Camera()
@@ -74,7 +74,7 @@ void G_Camera::RotateCameraHorizontal(float angle)
 ZC_Camera G_Camera::CreateCamera()
 {
     int width, height;
-    ZC_SWindow::GetSize(width, height);
+    ZC__Window::GetSize(width, height);
             //  no metter what sets in cam pos here. Camera position sets throught MouseMoveCallback() rotation, and MouseWheelScroll() distance
     return ZC_Camera({ 0, 5, 0 }, {0.f, 0.f, 0.f}, {0.f, 0.f, 1.f}, ZC_Perspective(45.f, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.f),
         ZC_Ortho(0.f, static_cast<float>(width), 0.f, static_cast<float>(height)), true);

@@ -6,6 +6,7 @@ class G_System
 {
 public:
     G_System();
+    ~G_System();
 
     void RunMainCycle();
 

@@ -1,6 +1,6 @@
 #include "G_GUI.h"
 
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <ZC/Events/ZC_Events.h>
 #include <GamePlay/G_GameManager.h>
 
@@ -19,8 +19,8 @@ void G_GUI::OpenWindow(G_WindowName win)
     ChangeOpenedWindowDrawState(false);
     if (opened_window == G_WN__none)
     {
-        ZC_SWindow::ShowCursor();
-        ZC_SWindow::UnlimitCursor();
+        ZC__Window::ShowCursor();
+        ZC__Window::UnlimitCursor();
     }
     opened_window = win;
     ChangeOpenedWindowDrawState(true);
@@ -32,8 +32,8 @@ void G_GUI::CloseCurrentWindow()
 {
     if (opened_window == G_WN__main_menu) try_close_game = false;
     ChangeOpenedWindowDrawState(false);
-    ZC_SWindow::HideCursor();
-    ZC_SWindow::LimitCursor();
+    ZC__Window::HideCursor();
+    ZC__Window::LimitCursor();
     opened_window = G_WN__none;
 
     ss_open_window.upSound->Play();

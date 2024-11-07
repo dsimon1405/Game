@@ -1,7 +1,7 @@
 #include "G_GUI_P_W_Health.h"
 
 #include <ZC/GUI/ZC__GUI.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <System/G_Func.h>
 #include <System/G_FontData.h>
@@ -40,7 +40,7 @@ void G_GUI_P_W_Health::UpdateHealth(int hp_new, G_ObjectType ot_damager)
     int subtract_hp = 0;
     if (new_hps.empty())
     {
-        ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GUI_P_W_Health::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_play));
+        ecUpdater.NewConnection(ZC__Updater::Connect({ &G_GUI_P_W_Health::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_play));
         subtract_hp = hp_new - cur_hp;
         minus_hp_fractional = 0.f;
     }
@@ -106,8 +106,8 @@ void G_GUI_P_W_Health::Callback_Updater(float time)
             static const uint color_midle_packed = ZC_PackColorFloatToUInt_RGB(color_midle);
             
             static const float half_hp = hp_default / 2;
-            if (cur_hp > half_hp) text_health.SetColor(G_InterpolateColor(color_hp_max, color_midle, 1.f - ((float(cur_hp) - half_hp) / half_hp)));
-            else if (cur_hp < half_hp) text_health.SetColor(G_InterpolateColor(color_midle, color_hp_min, 1.f - (float(cur_hp) / half_hp)));
+            if (cur_hp > half_hp) text_health.SetColor(G_InterpolateColor_PackToUInt(color_hp_max, color_midle, 1.f - ((float(cur_hp) - half_hp) / half_hp)));
+            else if (cur_hp < half_hp) text_health.SetColor(G_InterpolateColor_PackToUInt(color_midle, color_hp_min, 1.f - (float(cur_hp) / half_hp)));
             else text_health.SetColor(color_midle_packed);
         }
     }

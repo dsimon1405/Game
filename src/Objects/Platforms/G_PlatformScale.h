@@ -2,7 +2,6 @@
 
 #include "G_Platform.h"
 #include <ZC/Events/ZC_EC.h>
-
 #include <GamePlay/G_Map.h>
 
 class G_PlatformScale : public G_Platform
@@ -11,6 +10,9 @@ public:
     G_PlatformScale(const G_PlatformTransforms& _plat_trans);
     
 private:
+    static inline const float scale_xy_min = G_Map::scaleXY_other_platforms * 0.2f;
+    static inline const float scale_xy_max = G_Map::scaleXY_other_platforms;
+
     enum ScaleState
     {
         SS_start,
@@ -28,7 +30,8 @@ private:
         float deactivate_scale = 0.f;
     } ch_d;
 
-    void VAddObjectOnPlatform(G_Object* pObj_add) override;
+    void VAddObjectOnPlatform_P(G_Object* pObj_add) override;
+    G_LightSet GetLightSet_P() override;
     
     std::vector<G_GameSound> GetSounds();
     void Callback_Updater(float time);

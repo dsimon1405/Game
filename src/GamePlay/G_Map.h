@@ -9,7 +9,7 @@ class G_Map
 {
 public:
     static inline const float platform_model_radius_XY = 3.f;      //  loaded model radius radius
-    static inline const float platform_model_height_Z = 2.f;
+    static inline const float platform_model_height_Z = 1.f;
     static inline const float platform_model_half_height_Z = platform_model_height_Z / 2.f;      //  loaded model radius radius
     
     static inline const float scaleXY_other_platforms = 2.5f;

@@ -2,13 +2,13 @@
 
 #include <Model/G_Models.h>
 #include <ZC/Tools/Container/ZC_ContFunc.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <GamePlay/G_Map.h>
 #include <System/G_Func.h>
 
 G_PlatformDamage::G_PlatformDamage(const G_PlatformTransforms& _plat_trans)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()))
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()), G_PT__Damage)
 {
     float dist_to_plat = ZC_Vec::Length(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3]));    //  distance from {0,0,0} to platform center
     const float min_dmg = 5.f;
@@ -16,7 +16,7 @@ G_PlatformDamage::G_PlatformDamage(const G_PlatformTransforms& _plat_trans)
     damage = std::round(min_dmg + ((max_dmg - min_dmg) * (dist_to_plat / G_Map::map_radius)));
 }
 
-void G_PlatformDamage::VAddObjectOnPlatform(G_Object* pObj_add)
+void G_PlatformDamage::VAddObjectOnPlatform_P(G_Object* pObj_add)
 {
     if (pObj_add->VGetTypeMask_IO() & G_OT__Damageable)
     {
@@ -24,7 +24,7 @@ void G_PlatformDamage::VAddObjectOnPlatform(G_Object* pObj_add)
         if (objects_on_platform.size() == 1)
         {
             ch_d.is_active = true;
-            ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformDamage::Callback_Updater, this }, G_UL__game_play));   //  connect to update if it is not yet
+            ecUpdater.NewConnection(ZC__Updater::Connect({ &G_PlatformDamage::Callback_Updater, this }, G_UL__game_play));   //  connect to update if it is not yet
             this->upSK->SetSoundState(G_SN__platform_activation, ZC_SS__Play);
             this->upSK->SetSoundState(G_SN__platform_dmg_load_dmg, ZC_SS__PlayLoop);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, 0.f);
@@ -63,19 +63,19 @@ void G_PlatformDamage::Callback_Updater(float time)
         if (ch_d.is_first_dmg)  //  on first dmg need to change dmg color from color_white to dmg_color full dmg_time, in other case: first half to deactivate, second half time to activate
         {
             float time_coef = ch_d.dmg_time > seconds_to_dmg ? 1.f : ch_d.dmg_time / seconds_to_dmg;
-            this->unColor = G_InterpolateColor(G_Platform::color_white, dmg_color, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_white, dmg_color, time_coef);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, time_coef);
             if (ch_d.dmg_time >= seconds_to_dmg) ch_d.is_first_dmg = false;     //  first dmg reached
         }
         else if (ch_d.dmg_time >= half_seconds_between_dmg)    //  activate
         {
             float time_coef = ch_d.dmg_time > seconds_to_dmg ? 1.f : (ch_d.dmg_time - half_seconds_between_dmg) / half_seconds_between_dmg;
-            this->unColor = G_InterpolateColor(G_Platform::color_default, dmg_color, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_default, dmg_color, time_coef);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, time_coef);
         }
         else   //  deactivate
         {
-            this->unColor = G_InterpolateColor(dmg_color, G_Platform::color_default, ch_d.dmg_time);
+            this->unColor = G_InterpolateColor_PackToUInt(dmg_color, G_Platform::color_default, ch_d.dmg_time);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, 1.f - ch_d.dmg_time);
         }
 
@@ -89,7 +89,7 @@ void G_PlatformDamage::Callback_Updater(float time)
                     (*(iter))->VDamageObject_IO(damage, G_OT__Platform);
                     ++iter;
                 }
-                else iter = this->objects_on_platform.erase(iter);   //  object out of cylindric radius of the platform, erase them
+                else iter = this->EraseObjectFromPlatform(iter);   //  object out of cylindric radius of the platform, erase them
             }
             if (this->objects_on_platform.size() == 0) VDeactivatePlatform_P();
             this->upSK->SetSoundState(G_SN__platform_dmg_make_dmg, ZC_SS__Play);
@@ -109,7 +109,7 @@ void G_PlatformDamage::Callback_Updater(float time)
         }
         else
         {
-            this->unColor = G_InterpolateColor(ch_d.deactivate_color, G_Platform::color_default, ch_d.dmg_time);
+            this->unColor = G_InterpolateColor_PackToUInt(ch_d.deactivate_color, G_Platform::color_default, ch_d.dmg_time);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, 1.f - ch_d.dmg_time);
         }
     }

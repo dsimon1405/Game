@@ -2,16 +2,16 @@
 
 #include <Model/G_Models.h>
 #include <ZC/Tools/Container/ZC_ContFunc.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <GamePlay/G_GameManager.h>
 #include <System/G_Func.h>
 
 G_PlatformWin::G_PlatformWin(const G_PlatformTransforms& _plat_trans, ZC_Function<void(G_Platform*)>&& _func_change_pos)
-    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds())),
+    : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()), G_PT__Wind),
     func_change_pos(std::move(_func_change_pos))
 {
-    ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_PlatformWin::Callback_Updater, this }, G_UL__game_play));
+    ecUpdater.NewConnection(ZC__Updater::Connect({ &G_PlatformWin::Callback_Updater, this }, G_UL__game_play));
 }
 
 void G_PlatformWin::Update_func_change_pos(ZC_Function<void(G_Platform*)>&& _func_change_pos)
@@ -19,7 +19,7 @@ void G_PlatformWin::Update_func_change_pos(ZC_Function<void(G_Platform*)>&& _fun
     func_change_pos = std::move(_func_change_pos);
 }
 
-void G_PlatformWin::VAddObjectOnPlatform(G_Object* pObj_add)
+void G_PlatformWin::VAddObjectOnPlatform_P(G_Object* pObj_add)
 {
     if (ch_d.state == S_player_move_to_next_level) return;
     if (pObj_add->VGetTypeMask_IO() & G_OT__Player)
@@ -56,7 +56,7 @@ void G_PlatformWin::Callback_Updater(float time)
             ch_d = { .state = S_active, .time = 0.f, .color = G_Platform::color_white };
             this->unColor = packed_active_color;
         }
-        else this->unColor = G_InterpolateColor(ch_d.color, G_Platform::color_white, ch_d.time / seconds_activate);
+        else this->unColor = G_InterpolateColor_PackToUInt(ch_d.color, G_Platform::color_white, ch_d.time / seconds_activate);
     } break;
     case S_active: if (ch_d.time >= seconds_active) ch_d = { .state = S_deactivate, .time = 0.f, .color = G_Platform::color_white }; break;
     case S_deactivate:
@@ -67,7 +67,7 @@ void G_PlatformWin::Callback_Updater(float time)
             this->unColor = G_Platform::color_default_packed;
             func_change_pos(this);  //  switch to new position
         }
-        else this->unColor = G_InterpolateColor(ch_d.color, G_Platform::color_default, ch_d.time / seconds_activate);
+        else this->unColor = G_InterpolateColor_PackToUInt(ch_d.color, G_Platform::color_default, ch_d.time / seconds_activate);
     } break;
     case S_win:
     {
@@ -97,7 +97,7 @@ void G_PlatformWin::Callback_Updater(float time)
                 this->upSK->SetSoundState(G_SN__platform_win, ZC_SS__Play);
             }
         }
-        else this->unColor = G_InterpolateColor(ch_d.color, color_win, ch_d.time / seconds_win_activate);
+        else this->unColor = G_InterpolateColor_PackToUInt(ch_d.color, color_win, ch_d.time / seconds_win_activate);
     } break;
     case S_player_move_to_next_level: break;
     }

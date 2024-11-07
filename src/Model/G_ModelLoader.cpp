@@ -167,6 +167,14 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	for(uint i = 0; i < pNode->mNumMeshes; i++)
 		verts_count += pScene->mMeshes[pNode->mMeshes[i]]->mNumVertices;
 
+	char gpu_object_id_for_lightning = 0;
+	switch (model_name)
+	{
+	case G_MN__SphereMarble: gpu_object_id_for_lightning = 2; break;	//	will be convert to -1 in GL_INT_2_10_10_10_REV
+	case G_MN__Platform_cylinder_black: gpu_object_id_for_lightning = 0; break;
+	case G_MN__SphereMap: gpu_object_id_for_lightning = 1; break;
+	default: break;
+	}
 		//	vbo
 	std::list<std::list<VertNorm>> verts_to_smooth;
 	std::vector<Vertex> vertices;
@@ -191,9 +199,9 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 				if (pModel)		//	need rotate and scale with pModel
 				{
 					ZC_Vec3<float> new_normal = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(model_scale_rotate * ZC_Vec4<float>(normal.x, normal.y, normal.z, 1.f)));
-					vertex.normal = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2]);
+					vertex.normal = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2], gpu_object_id_for_lightning);
 				}
-				else vertex.normal = ZC_Pack_INT_2_10_10_10_REV(normal.x, normal.y, normal.z);
+				else vertex.normal = ZC_Pack_INT_2_10_10_10_REV(normal.x, normal.y, normal.z, gpu_object_id_for_lightning);
 			}
 
 				//	tex coords
@@ -216,7 +224,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 						break;
 					}
 				}
-				if (new_vertex) verts_to_smooth.emplace_back(std::list<VertNorm>{ VertNorm{ .pVert = &v } });
+				if (new_vertex) verts_to_smooth.emplace_back(std::list<VertNorm>{ VertNorm{ .pVert = &v, .normal = ZC_Vec::Normalize<float>({ normal.x, normal.y, normal.z }) } });
 			}
 		}
 	}
@@ -232,13 +240,12 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 			if (pModel)		//	need rotate and scale with pModel
 			{
 				ZC_Vec3<float> new_normal = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(model_scale_rotate * ZC_Vec4<float>(smooth_normal, 1.f)));
-				normal_int = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2]);
+				normal_int = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2], gpu_object_id_for_lightning);
 			}
-			else normal_int = ZC_Pack_INT_2_10_10_10_REV(smooth_normal[0], smooth_normal[1], smooth_normal[2]);
+			else normal_int = ZC_Pack_INT_2_10_10_10_REV(smooth_normal[0], smooth_normal[1], smooth_normal[2], gpu_object_id_for_lightning);
 			for (VertNorm& v :same_verts) v.pVert->normal = normal_int;		//change normal for vertices
 		}
 	}
-
 	ZC_Buffer vbo(GL_ARRAY_BUFFER);
 	vbo.GLNamedBufferStorage(vertices.size() * sizeof(Vertex), vertices.data(), 0);
 
@@ -276,9 +283,10 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, verts_count, elementsType, 0);
 
 		//	ShPInitSet
-	typename ZC_ShProgs::ShPInitSet* pShPIS = nullptr;
-	if (model_name == G_MN__SphereStar) pShPIS = ZC_ShProgs::Get(ShPN_Game_Star);
-	else pShPIS = ZC_ShProgs::Get(ShPN_Game_PlayerSphere);
+	typename ZC_ShProgs::ShPInitSet* pShPIS =
+		model_name == G_MN__SphereMarble || model_name == G_MN__SphereMap || model_name == G_MN__Platform_cylinder_black ? ZC_ShProgs::Get(ShPN_Game_Sphere) 
+		: model_name == G_MN__SphereStar ? ZC_ShProgs::Get(ShPN_Game_Star)
+		: nullptr;
 
 	// switch (model_name)
 	// {

@@ -2,7 +2,7 @@
     
 #include <GamePlay/G_GameManager.h>
 #include <ZC/GUI/ZC__GUI.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 
 G_GUI_W_PlayerWin::G_GUI_W_PlayerWin()
@@ -51,7 +51,7 @@ void G_GUI_W_PlayerWin::OpenWindow()
 
     text_level_time.UpdateText(CreateNumberWstr(time_level), true);
     text_total_time.UpdateText(CreateNumberWstr(time_total), true);
-    ecUpdater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_GUI_W_PlayerWin::Callback_Updater, this }, G_UpdaterLevels::G_UL__w_player_win));
+    ecUpdater.NewConnection(ZC__Updater::Connect({ &G_GUI_W_PlayerWin::Callback_Updater, this }, G_UpdaterLevels::G_UL__w_player_win));
 
     sound_win.SetSoundState(ZC_SS__Play);
 }

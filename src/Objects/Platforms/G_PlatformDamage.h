@@ -21,7 +21,7 @@ private:
 
     float damage = 0.f;     //  calculates in ctr
 
-    void VAddObjectOnPlatform(G_Object* pObj_add) override;
+    void VAddObjectOnPlatform_P(G_Object* pObj_add) override;
     void VDeactivatePlatform_P() override;
 
     std::vector<G_GameSound> GetSounds();

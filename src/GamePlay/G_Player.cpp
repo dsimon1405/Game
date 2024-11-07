@@ -2,7 +2,7 @@
 
 #include <ZC/Events/ZC_Events.h>
 #include <GamePlay/G_GameManager.h>
-#include <ZC/Video/ZC_SWindow.h>
+#include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <Objects/G_OP_MarbleSphere.h>
 
@@ -139,7 +139,7 @@ void G_Player::CallbackPlayerInfo(G_PlayerInfro player_info)
         {
             gui_w_health.UpdateHealth(0.f, upObj->GetTypeOfLastDamager());
             ChangeMoveState(false);
-            ec_updater.NewConnection(ZC_SWindow::ConnectToUpdater({ &G_Player::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_play));
+            ec_updater.NewConnection(ZC__Updater::Connect({ &G_Player::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_play));
         }
         else gui_w_health.UpdateHealth(health, upObj->GetTypeOfLastDamager());
     } break;
