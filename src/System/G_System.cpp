@@ -26,7 +26,7 @@ G_System::G_System()
     // ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
 
     ZC__FPS::SetTimeMeasure(ZC_FPS_TM__Seconds);
-    // ZC__FPS::SetLimit(0);
+    ZC__FPS::SetLimit(0);
     ZC__FPS::NeedDraw(true);
     
     

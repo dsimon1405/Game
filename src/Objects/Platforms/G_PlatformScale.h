@@ -2,7 +2,7 @@
 
 #include "G_Platform.h"
 #include <ZC/Events/ZC_EC.h>
-#include <GamePlay/G_Map.h>
+#include <Map/G_Map.h>
 
 class G_PlatformScale : public G_Platform
 {

@@ -2,7 +2,7 @@
 
 #include <ZC/Audio/ZC_Sounds.h>
 #include <System/G_Config.h>
-#include <GamePlay/G_Map.h>
+#include <Map/G_Map.h>
 #include "G_GameSounds.h"
 
 G_GameSound::G_GameSound(G_SoundName _sound_name)

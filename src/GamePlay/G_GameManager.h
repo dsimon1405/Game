@@ -1,7 +1,7 @@
 #pragma once
 
 #include "G_Player.h"
-#include "G_Map.h"
+#include <Map/G_Map.h>
 #include <GUI/G_GUI.h>
 #include "GUI/G_GUI_GM_W_LevelTimer.h"
 #include "GUI/G_GUI_GM_StartTimer.h"

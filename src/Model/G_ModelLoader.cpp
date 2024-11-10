@@ -175,6 +175,9 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	case G_MN__SphereMap: gpu_object_id_for_lightning = 1; break;
 	default: break;
 	}
+
+// std::vector<aiVector2D> tc;
+
 		//	vbo
 	std::list<std::list<VertNorm>> verts_to_smooth;
 	std::vector<Vertex> vertices;
@@ -209,6 +212,8 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 			{
 				aiVector3D& tex_coords = pMesh->mTextureCoords[0][vert_i];
 				vertex.texCoords = ZC_Vec2<ushort>(ZC_PackTexCoordFloatToUShort(tex_coords.x), ZC_PackTexCoordFloatToUShort(tex_coords.y));
+
+				// tc.emplace_back(aiVector2D(tex_coords.x, tex_coords.y));
 			}
 			Vertex& v = vertices.emplace_back(vertex);
 			

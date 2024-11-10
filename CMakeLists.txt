@@ -99,9 +99,11 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/GamePlay/GUI/G_GUI_GM_StartTimer.cpp
     ${PROJECT_SOURCE_DIR}/src/GamePlay/G_GameManager.cpp
     ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Player.cpp
-    ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Map.cpp
-    ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Section.cpp
     ${PROJECT_SOURCE_DIR}/src/GamePlay/G_Camera.cpp
+
+    ${PROJECT_SOURCE_DIR}/src/Map/G_Map.cpp
+    ${PROJECT_SOURCE_DIR}/src/Map/G_Section.cpp
+    ${PROJECT_SOURCE_DIR}/src/Map/G_MapSphere.cpp
 
     ${PROJECT_SOURCE_DIR}/src/Objects/G_Object.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/G_ObjPlayable.cpp    

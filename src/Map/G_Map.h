@@ -2,6 +2,7 @@
 
 #include "G_Section.h"
 #include <Objects/G_Star.h>
+#include "G_MapSphere.h"
 
 #include <list>
 
@@ -27,7 +28,7 @@ public:
     static inline float half_dist_between_other_platforms = 0.f;
     static inline float first_section_lenght = 0.f;
     static inline float other_section_length = 0.f;
-    static inline float map_radius = 0.f;   //  distance to center of platform from last cyrcle
+    static inline float dist_to_last_platform_center = 0.f;   //  distance to center of platform from last circle
 
     G_Map();
 
@@ -41,11 +42,6 @@ private:
     G_Platform start_platform;
     std::list<G_Section> sections;
 
-    ZC_DSController dsCon_sphere_map;
-    ZC_Mat4<float> unModel { 1.f };
-    uint unColor = 0;
-    float unAlpha = 1.f;
-    float sphere_map_scale = 1.f;
-
+    G_MapSphere map_sphere;
     G_Star star;
 };

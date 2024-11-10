@@ -28,6 +28,9 @@ private:
     RotateSet rotSet_circle;
     bool last_section;
 
+    float rotation_angle_external_lines = 0.f;
+    float rotation_angle_external_circle = 0.f;
+
     static inline G_Platform* pPlat_win = nullptr;
 
     static ZC_uptr<G_Platform> GetRandomPlatform(const ZC_Vec3<float>& translate);

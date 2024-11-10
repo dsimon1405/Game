@@ -31,8 +31,8 @@ private:
     bool isDirsActual = false;
 
     const float maxDistanceToObject = 30.f,
-        // minDistanceToObject = 0.1f,
-        minDistanceToObject = 10.f,
+        minDistanceToObject = 0.1f,
+        // minDistanceToObject = 10.f,
         sensivityScroll = 1.f;
     float distanceToObject = 20.f;
         //  rotation
@@ -42,8 +42,10 @@ private:
     float cur_horizontal_angle = 0.f;
     float horizontal_angle_must_be = 0.1f;
             //  rotate around X
-    const float vertical_angle_max = 30.f;
-    const float vertical_angle_min = 10.f;
+    // const float vertical_angle_max = 30.f;
+    // const float vertical_angle_min = 10.f;
+    const float vertical_angle_max = 89.f;
+    const float vertical_angle_min = -89.f;
     const float vertical_angle_start_pos = vertical_angle_min + ((vertical_angle_max - vertical_angle_min) / 2.f);
     float cur_vertical_angle = vertical_angle_start_pos;
     float vertical_angle_must_be = vertical_angle_start_pos;

@@ -16,6 +16,25 @@ G_Section::G_Section(int lines_count, int platforms_on_line, float dist_to_first
     rotSet_circle{ .rotate_angle = float(ZC_Random::GetRandomInt(- ZC_angle_360i, ZC_angle_360i)) },
     last_section(is_last_section)
 {
+    //     //  calculation of the rotation speeds (example to rememner). Calculation and speed correct for sections with 3 platforms at the line.
+    // const float rotation_angle_external_lines = 5.f;      //  5 degrees per second
+    // const float rotation_angle_external_circle = 1.f;      //  5 degrees per second
+    // const float dist_to_last_platfrom = 104.5f;   //  dist to last platfrom of the first section
+    // const float dist_between_other_platforms = 25.f;     //  other platfroms is all platfrom among first (latge) platform
+    // float last_platform_at_line_circle_length = 2.f * ZC_PI * (dist_to_last_platfrom - dist_between_other_platforms);     //  length of the circle formed by last platform of the line
+    // float speed_dist_rotation_for_lines = last_platform_at_line_circle_length / (360.f / rotation_angle_external_lines); //  6.94
+    // float circle_length = 2.f * ZC_PI * dist_to_last_platfrom;     //  length of the circle 
+    // float rot_lenght_lines = circle_length / (360.f / rotation_angle_external_circle);   //  1.82
+    
+        //  Speed correct for sections with 3 platforms at the line.
+    static const float speed_dist_rotation_for_lines = 6.94f;   //  length / second -> external rotation speed for platforms of the lines
+    static const float speed_dist_rotation_for_circle = 1.82f;  //  lenfth / second -> external rotation speed for platfroms of the circle
+    
+    float last_platform_at_line_circle_length = 2.f * ZC_PI * (distance_to_circle_platform - G_Map::dist_between_other_platforms);
+    rotation_angle_external_lines = ZC_angle_360f / (last_platform_at_line_circle_length / speed_dist_rotation_for_lines);
+    float circle_length = 2.f * ZC_PI * distance_to_circle_platform;
+    rotation_angle_external_circle = ZC_angle_360f / (circle_length / speed_dist_rotation_for_circle);
+
     FillPlatforms(lines_count, platforms_on_line, dist_to_first_platform_in_section, distance_to_circle_platform, is_last_section);
 }
 
@@ -24,7 +43,9 @@ G_Section::G_Section(G_Section&& s)
     platforms_on_circle(std::move(s.platforms_on_circle)),
     ecUpdater(ZC__Updater::Connect({ &G_Section::Callback_Updater, this }, G_UL__game_play)),
     rotSet_lines(s.rotSet_lines),
-    rotSet_circle(s.rotSet_circle)
+    rotSet_circle(s.rotSet_circle),
+    rotation_angle_external_lines(s.rotation_angle_external_lines),
+    rotation_angle_external_circle(s.rotation_angle_external_circle)
 {
     s.ecUpdater.Disconnect();
     if (pPlat_win) dynamic_cast<G_PlatformWin*>(pPlat_win)->Update_func_change_pos({ &G_Section::Callback_SwitchWinPlatfrom, this });
@@ -92,11 +113,9 @@ void G_Section::FillPlatforms(int lines_count, int platforms_on_line, float dist
 
 void G_Section::Callback_Updater(float time)
 {
-    static const float rotation_speed_external_lines = 5.f;      //  5 degrees per second
-    static const float rotation_speed_external_circle = 2.5f;      //  5 degrees per second
 
-    RotatePlatforms(rotSet_lines, time, platforms_on_lines, rotation_speed_external_lines);
-    RotatePlatforms(rotSet_circle, time, platforms_on_circle, rotation_speed_external_circle);
+    RotatePlatforms(rotSet_lines, time, platforms_on_lines, rotation_angle_external_lines);
+    RotatePlatforms(rotSet_circle, time, platforms_on_circle, rotation_angle_external_circle);
 }
 
 void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms, float rotation_speed_external)

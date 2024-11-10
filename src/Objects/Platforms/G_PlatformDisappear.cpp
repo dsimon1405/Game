@@ -6,7 +6,7 @@
 #include <System/G_UpdaterLevels.h>
 #include <System/G_RenderLevel.h>
 #include <System/G_Func.h>
-#include <GamePlay/G_Map.h>
+#include <Map/G_Map.h>
 
 G_PlatformDisappear::G_PlatformDisappear(const G_PlatformTransforms& _plat_trans)
     : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, new G_GameSoundSet(GetSounds()), G_PT__Disapear)

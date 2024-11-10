@@ -1,6 +1,6 @@
 #include "G_Star.h"
 
-#include <GamePlay/G_Map.h>
+#include <Map/G_Map.h>
 #include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
 #include <ZC/Tools/ZC_Random.h>
@@ -27,6 +27,7 @@ G_Star::~G_Star()
 {
     ec_updater.Disconnect();
 }
+
 void G_Star::SetNewPosition(float dist_to_star)
 {
     dist_to_center = dist_to_star;
@@ -122,11 +123,11 @@ void G_Star::CalculateModelMatrix(float time)
     cur_angle_Z += rot_speed_Z * time;
     ZC_Mat4<float> model = ZC_Mat4<float>(1.f).Rotate(cur_angle_Z, {0.f, 0.f, 1.f}).Translate({ 0.f, dist_to_center, 10.f })
         .Rotate(cur_angle_XY, { 1.f, 1.f, 0.f }).Scale(star_scale, star_scale, star_scale);
-    ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, 0.f, 0.f, 1.f));
-    
-        //  update pos in collisoin and particles
+    ZC_Vec3<float> star_center = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, 0.f, 0.f, 1.f));
+
+        //  update pos in collision, particles, and light
     collision_object.UpdateModelMatrix(model);
-    particles_star.SetPosition(pos);
+    particles_star.SetPosition(star_center);
     static const uint color_packed = ZC_PackColorFloatToUInt_RGB(1.f, 0.86f, 0.55f);    //  peach color
-    G_LightUBO::UpdateLightData(G_LN__Star, G_LightSet{ .pos = pos, .color = color_packed });
+    G_LightUBO::UpdateLightData(G_LN__Star, G_LightSet{ .pos = star_center, .color = color_packed });
 }

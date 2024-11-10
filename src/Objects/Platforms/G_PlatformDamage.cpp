@@ -4,7 +4,7 @@
 #include <ZC/Tools/Container/ZC_ContFunc.h>
 #include <ZC/ZC__System.h>
 #include <System/G_UpdaterLevels.h>
-#include <GamePlay/G_Map.h>
+#include <Map/G_Map.h>
 #include <System/G_Func.h>
 
 G_PlatformDamage::G_PlatformDamage(const G_PlatformTransforms& _plat_trans)
@@ -13,7 +13,7 @@ G_PlatformDamage::G_PlatformDamage(const G_PlatformTransforms& _plat_trans)
     float dist_to_plat = ZC_Vec::Length(ZC_Vec::Vec4_to_Vec3((*(this->upCO->GetModelMatrix()))[3]));    //  distance from {0,0,0} to platform center
     const float min_dmg = 5.f;
     const float max_dmg = 15.f;
-    damage = std::round(min_dmg + ((max_dmg - min_dmg) * (dist_to_plat / G_Map::map_radius)));
+    damage = std::round(min_dmg + ((max_dmg - min_dmg) * (dist_to_plat / G_Map::dist_to_last_platform_center)));
 }
 
 void G_PlatformDamage::VAddObjectOnPlatform_P(G_Object* pObj_add)

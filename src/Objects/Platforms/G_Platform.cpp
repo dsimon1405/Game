@@ -2,7 +2,7 @@
 
 #include <Model/G_Models.h>
 #include <ZC/ZC__System.h>
-#include <GamePlay/G_Map.h>
+#include <Map/G_Map.h>
 
 G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans)
     : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr, G_PT__Start)

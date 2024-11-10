@@ -6,7 +6,7 @@
 #include <System/G_UpdaterLevels.h>
 #include <ZC/Tools/ZC_Random.h>
 #include <System/G_Func.h>
-#include <GamePlay/G_Map.h>
+#include <Map/G_Map.h>
 #include <ZC/Tools/Math/ZC_Math.h>
 
 G_PlatformWind::G_PlatformWind(const G_PlatformTransforms& _plat_trans)
