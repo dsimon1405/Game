@@ -23,7 +23,8 @@ private:
 		// normal
 		int normal;
 		// texCoords
-		ZC_Vec2<ushort> texCoords;
+		// ZC_Vec2<ushort> texCoords;
+		ZC_Vec2<float> texCoords;
 	};
 	struct VertNorm
 	{

@@ -152,7 +152,13 @@ std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(
 	}
 	return surfaces;
 }
-
+#include <iostream>
+struct VTC
+{
+	aiVector3D v;
+	aiVector2D tc;
+	std::vector<size_t> ids;
+};
 ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path, bool smooth_normals, bool invert_normals, G_ModelName model_name)
 {
 		//	get model matrix if it is
@@ -176,7 +182,8 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	default: break;
 	}
 
-// std::vector<aiVector2D> tc;
+std::vector<aiVector2D> tc;
+std::vector<VTC> vtcs;
 
 		//	vbo
 	std::list<std::list<VertNorm>> verts_to_smooth;
@@ -210,10 +217,29 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 				//	tex coords
 			if (pMesh->mTextureCoords[0])
 			{
-				aiVector3D& tex_coords = pMesh->mTextureCoords[0][vert_i];
-				vertex.texCoords = ZC_Vec2<ushort>(ZC_PackTexCoordFloatToUShort(tex_coords.x), ZC_PackTexCoordFloatToUShort(tex_coords.y));
+				aiVector3D tex_coords = pMesh->mTextureCoords[0][vert_i];
+						if (tex_coords.x < 0.f || tex_coords.y < 0.f || tex_coords.x > 1.f || tex_coords.y > 1.f)
+						{
+							bool add_vertex = true;
+							for (VTC& vtc : vtcs)
+							{
+								if (vtc.v == pMesh->mVertices[vert_i])
+								{
+									vtc.ids.emplace_back(vertices.size());
+									add_vertex = false;
+									break;
+								}
+							}
+							if (add_vertex) vtcs.emplace_back(VTC{ .v = pMesh->mVertices[vert_i], .tc = { tex_coords.x, tex_coords.y }, .ids = std::vector<size_t>{ vertices.size() } });
+						}
+						// if (tex_coords.x < 0.f) tex_coords.x = 0.f;
+						// if (tex_coords.y < 0.f) tex_coords.y = 0.f;
+						// if (tex_coords.x > 1.f) tex_coords.x = 1.f;
+						// if (tex_coords.y > 1.f) tex_coords.y = 1.f;
+						tc.emplace_back(aiVector2D(tex_coords.x, tex_coords.y));
 
-				// tc.emplace_back(aiVector2D(tex_coords.x, tex_coords.y));
+				vertex.texCoords = ZC_Vec2<float>(tex_coords.x, tex_coords.y);
+				// vertex.texCoords = ZC_Vec2<ushort>(ZC_PackTexCoordFloatToUShort(tex_coords.x), ZC_PackTexCoordFloatToUShort(tex_coords.y));
 			}
 			Vertex& v = vertices.emplace_back(vertex);
 			
@@ -324,7 +350,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 		ZC_TexSets::VectorOfTexturesCreator texCreator = pShPIS->texSets.GetCreator();
 		auto pNext_tex_name = texCreator.NextName();
 		if (pNext_tex_name && *pNext_tex_name == ZC_TexSets::texColor)
-			texCreator.Add(ZC_Texture::LoadTexture2D(tex_path.c_str(), 0));
+			texCreator.Add(ZC_Texture::LoadTexture2D(tex_path.c_str(), 0, GL_REPEAT, GL_REPEAT));
 		
 		tex_sets.emplace_front(ZC_TexturesSet{ .id = 0, .textures = texCreator.GetVector() });
 	}
