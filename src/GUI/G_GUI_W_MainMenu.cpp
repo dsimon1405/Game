@@ -14,7 +14,7 @@ G_GUI_W_MainMenu::G_GUI_W_MainMenu()
     bt_continue({ &G_GUI_W_MainMenu::ContinueGame, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Продолжить игру" }, { .lang = G_L_English, .text = L"Continue game" } }),
     bt_continue_best({ &G_GUI_W_MainMenu::ContinueBestGame, this }, {}, true,
-        { G_LangText{ .lang = G_L_Russian, .text = L"Загрузить сохранeние" }, { .lang = G_L_English, .text = L"Load saved" } }),
+        { G_LangText{ .lang = G_L_Russian, .text = L"Загрузить сохранeние" }, { .lang = G_L_English, .text = L"Load saved game" } }),
     bt_options({ &G_GUI_W_MainMenu::OpenOptions, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Настройки" }, { .lang = G_L_English, .text = L"Options" } }),
     bt_exit({ &G_GUI_W_MainMenu::ExitGame, this }, {}, true,

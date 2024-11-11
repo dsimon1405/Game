@@ -16,7 +16,7 @@ void G_MapSphere::SetScale(float _scale)
 {
         //  scale sphere
     scale = _scale;
-    unModel = ZC_Mat4<float>(1.f).Rotate(-45.f, {1.f, 0.f, 0.f}).Scale(scale, scale, scale);
+    unModel = ZC_Mat4<float>(1.f).Scale(scale, scale, scale);
 }
 
 float G_MapSphere::GetScale() const noexcept

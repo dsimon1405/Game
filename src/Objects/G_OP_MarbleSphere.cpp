@@ -47,11 +47,10 @@ void G_OP_MarbleSphere::VOnGroundRotateZ_IO(const ZC_Vec3<float>& origin, float 
     {
         this->changable_data_op.rotate_angle_z = -angle;
         this->callback_player_info(G_PI__cam_rotate_angle_z);
-    } 
- 
-    ch_d.cur_rotate_direction = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(ZC_Mat4<float>(1.f).Rotate(angle, { 0.f, 0.f, 1.f }) * ZC_Vec4<float>(ch_d.cur_rotate_direction, 1.f)));
+    }
+    
+    ch_d.local_model = ZC_Mat4<float>(1.f).Rotate(angle, { 0.f, 0.f, 1.f }) * ch_d.local_model;    //  roatate local_model by Z
 
-    CalculateCosSin();
     UpdateMatModel(new_pos);
 }
 
@@ -81,7 +80,7 @@ void G_OP_MarbleSphere::VDamageObject_OP(float damage, G_ObjectType ot_damager)
 
 void G_OP_MarbleSphere::VMoveInDirection_OP(const ZC_Vec3<float>& dir)
 {
-    if (ch_d.space_position != SP_Ground || ch_d.move_dirs.size() == 2) return;     //  sphere is flying or, reached max of move dirs in frame 2 (2 pressed button at the same time max)
+    if (ch_d.space_position != SP_Ground || ch_d.move_dirs.size() == 2ull) return;     //  sphere is flying or, reached max of move dirs in frame 2 (2 pressed button at the same time max)
     ch_d.move_dirs.emplace_back(dir);
 }
 
@@ -110,15 +109,11 @@ void G_OP_MarbleSphere::Callback_Updater(float time)
         this->callback_player_info(G_PI__fall);
         return;
     }
-    // if (this->VGetPosition_IO()[2] < -8.f) this->VSetPosition_IO(ZC_Vec3<float>(0.f, 0.f, 10.f));  //  fall from platform,   TEST DELETE
 
         //  correct space posiition
     switch (ch_d.space_position)
     {
-    case SP_Ground:{ if (!(ch_d.on_ground_collision_in_prev_frame))
-    {
-        ch_d.space_position = SP_Flight; break;
-    }}
+    case SP_Ground: if (!(ch_d.on_ground_collision_in_prev_frame)) ch_d.space_position = SP_Flight; break;
     case SP_Flight: if (ch_d.on_ground_collision_in_prev_frame) ch_d.space_position = SP_Ground; break;
     case SP_Jump: break;    //  chages only in JumpMove()
     }
@@ -138,24 +133,10 @@ void G_OP_MarbleSphere::Callback_Updater(float time)
     }
 
     UpdateSound();
-
     UpdateColorDMG(time);
-    
-    CalculateRotateZ(time);
     UpdateMatModel(pos);
     
     ch_d.space_position_prev = ch_d.space_position;
-}
-
-void G_OP_MarbleSphere::SetMoveAndRotateSpeeds(float new_speed, float time)
-{
-    ch_d.cur_move_speed = new_speed;
-    
-    ch_d.cur_rotattion_speed = ch_d.cur_move_speed * move_rotation_speed_coef * time * ch_d.rotation_signe_X;
-    float resutl = ch_d.rotate_angle_X + ch_d.cur_rotattion_speed;
-    ch_d.rotate_angle_X = resutl >= ZC_angle_360f ? resutl - ZC_angle_360f
-                    : resutl < 0.f ? ZC_angle_360f - resutl
-                    : resutl;
 }
 
 void G_OP_MarbleSphere::PushMove(ZC_Vec3<float>& rDir, float& rSpeed, float& rPower)
@@ -195,7 +176,6 @@ void G_OP_MarbleSphere::InertionMove(float time, ZC_Vec3<float>& pos)
         ch_d.cur_move_speed += push_speed;  //  time control to changing current move speed
         float max_push_speed = max_move_speed * push_power;
         if (ch_d.cur_move_speed > max_push_speed) ch_d.cur_move_speed = max_push_speed;
-        SetMoveAndRotateSpeeds(ch_d.cur_move_speed, time);
         
         pos += ch_d.cur_move_direction * ch_d.cur_move_speed * time;     //  time control to move lenth
         assert(pos[0] * 0.f == 0.f || pos[1] * 0.f == 0.f || pos[2] * 0.f == 0.f);
@@ -205,12 +185,12 @@ void G_OP_MarbleSphere::InertionMove(float time, ZC_Vec3<float>& pos)
         float new_move_speed = ch_d.cur_move_speed - (speed_change_val * time);  //  time control to changing current move speed
         if (ch_d.cur_move_speed <= 0.f)
         {
-            SetMoveAndRotateSpeeds(0.f, time);
+            ch_d.cur_move_speed = 0.f;
             ch_d.cur_move_direction = {};
         }
         else
         {
-            SetMoveAndRotateSpeeds(new_move_speed, time);
+            ch_d.cur_move_speed = new_move_speed;
             pos += ch_d.cur_move_direction * ch_d.cur_move_speed * time;     //  time control to move lenth
             assert(pos[0] * 0.f == 0.f || pos[1] * 0.f == 0.f || pos[2] * 0.f == 0.f);
         }
@@ -254,13 +234,13 @@ void G_OP_MarbleSphere::Move(float time, ZC_Vec3<float>& pos)
                 ch_d.cur_move_direction = (ch_d.cur_move_direction + new_dir) / 2.f;
                 Normalize(ch_d.cur_move_direction, {});
             }
-            SetMoveAndRotateSpeeds(new_speed, time);
+            ch_d.cur_move_speed = new_speed;
         }
         else
         {       //  dir
             ch_d.cur_move_direction = (ch_d.cur_move_direction + new_dir) / 2.f;
             Normalize(ch_d.cur_move_direction, {});
-            SetMoveAndRotateSpeeds(new_speed > max_move_speed ? max_move_speed : new_speed, time);
+            ch_d.cur_move_speed = new_speed > max_move_speed ? max_move_speed : new_speed;
         }
 
         pos += ch_d.cur_move_direction * ch_d.cur_move_speed * time;     //  time control to move lenth
@@ -305,8 +285,6 @@ void G_OP_MarbleSphere::JumpMove(float time, ZC_Vec3<float>& pos)
     pos[2] += cos_flight_angle * flight_speed * time;
 
     assert(pos[0] * 0.f == 0.f || pos[1] * 0.f == 0.f || pos[2] * 0.f == 0.f);
-    
-    SetMoveAndRotateSpeeds(ch_d.cur_move_speed, time);
 }
 
 void G_OP_MarbleSphere::Callback_Collision(const ZC_CO_CollisionResult& coll_result)
@@ -348,7 +326,6 @@ void G_OP_MarbleSphere::Callback_Collision(const ZC_CO_CollisionResult& coll_res
         }
         else ch_d.on_ground_collision_in_prev_frame = true;
     }
-
 
     // if (ch_d.space_position != SP_Jump)  //  don't stop jump, caurse jump may have too small angle on start and still have collision with G_OT__Ground
     // {
@@ -392,98 +369,21 @@ void G_OP_MarbleSphere::UpdateMatModel(const ZC_Vec3<float>& pos)
     ZC_Mat4<float> model(1.f);
     model.Translate(pos);
     assert(model[3][0] * 0.f == 0.f || model[3][1] * 0.f == 0.f || model[3][2] * 0.f == 0.f || model[3][3] * 0.f == 0.f);
-    // model.Rotate(rotatot_Z, {0,0,1});
-    RotateZ_WithCosSin(model);
-    model.Rotate(ch_d.rotate_angle_X, { 1.f, 0.f, 0.f });
+
+        //  rotate local_model matrix by xy if need
+    if (ch_d.cur_move_direction != ZC_Vec3<float>())
+    {
+        static const float rotatte_move_speed_coef = 30.f;
+        
+        float rotate_angle_xy = ch_d.cur_move_speed * rotatte_move_speed_coef * ZC__FPS::GetPreviousFrameTime();    //  time control
+        assert(ZC_Vec::Length(ch_d.cur_move_direction) > 0.999f && ZC_Vec::Length(ch_d.cur_move_direction) < 1.001f);     //  ch_d.cur_move_direction must be normalized!
+        ZC_Mat4<float> rotate_model_xy(1.f);
+        rotate_model_xy.Rotate(rotate_angle_xy, { - ch_d.cur_move_direction[1], ch_d.cur_move_direction[0], 0.f });    //  rotate only xy, but and dir can't have z != 0...
+        ch_d.local_model = rotate_model_xy * ch_d.local_model;      //  can't be (ch_d.local_model *= model_new;) the order of multiplication is important!
+    }
+    model *= ch_d.local_model;
+
     this->upCO->UpdateModelMatrix(model);
-}
-
-void G_OP_MarbleSphere::CalculateRotateZ(float time)
-{
-        //  rotate speres origin to correct (new) direction
-    static const float rotate_power = 10.f;
-
-    if (ch_d.cur_move_speed == 0.f) return;
-
-    float cos_dir = ZC_Vec::Dot(ch_d.cur_move_direction, ch_d.cur_rotate_direction);
-    if (cos_dir < -0.8f)    //  dirs allmost oposite, help to rotate
-    {       //  avoid arthogonal rotation for X change movind direction. Object will change rotation_signe_X downer and start reverce rotate around X 
-        if ((ch_d.cur_rotate_direction[1] > 0.f && ch_d.cur_rotate_direction[1] >= 0.8f) || (ch_d.cur_rotate_direction[1] < 0.f && ch_d.cur_rotate_direction[1] <= -0.8f))
-            ch_d.cur_rotate_direction = {};
-        else    //  for Y axis changing orthogonal diraction make some help, rotate current rotate diraction on 1 degree (wrong way, but help)
-        {
-            ZC_Vec4<float> cur_rot_dir_v4 = ZC_Mat4<float>(1.f).Rotate(1.f, { 0.f, 0.f, -1.f }) * ZC_Vec4<float>(ch_d.cur_rotate_direction, 1.f);
-            ch_d.cur_rotate_direction = ZC_Vec3<float>(cur_rot_dir_v4[0], cur_rot_dir_v4[1], cur_rot_dir_v4[2]);
-        }
-    }
-
-    ZC_Vec3<float> cur_to_new_offset = ch_d.cur_move_direction - ch_d.cur_rotate_direction;   //  where to rotate from current rotation angle
-    ZC_Vec3<float> temp_rotate_diration = ch_d.cur_rotate_direction + cur_to_new_offset * rotate_power * time;   //  calculate new rotate diraction with time controll
-    if (temp_rotate_diration != ZC_Vec3<float>())
-    {          //  check normalizatin
-        Normalize(temp_rotate_diration, ch_d.cur_rotate_direction);
-        ch_d.cur_rotate_direction = temp_rotate_diration;
-    }
-    else return;    //  no rotation, out
-
-        //  calculate cos sin for rotation around Z axis
-    if (ch_d.cur_move_direction != ZC_Vec3<float>()) CalculateCosSin();
-    
-    // float radians = ZC_Vec::Radians(rotate_angle_Z + temp_rotate_angle_Z);
-    // float sin1 = std::sin(radians);
-    // float cos1 = std::cos(radians);
-}
-
-void G_OP_MarbleSphere::CalculateCosSin()
-{
-        //  take positive X for calculateion.
-    ch_d.sin_Z = ZC_Vec::Dot({ 1.f, 0.f, 0.f }, ch_d.cur_rotate_direction);  //  usual Dot return cos, but now it sin, don't know why
-    ch_d.cos_Z = std::sqrt(1.f - (ch_d.sin_Z * ch_d.sin_Z));
-
-    assert(ch_d.cos_Z * 0.f == 0.f);
-        //  correct cos sin signes with axises of current roatate vector
-    if ((ch_d.cur_rotate_direction[0] >= 0.f && ch_d.cur_rotate_direction[1] >= 0.f) || (ch_d.cur_rotate_direction[0] <= 0.f && ch_d.cur_rotate_direction[1] >= 0.f))
-    {
-        ch_d.sin_Z *= -1.f;
-        ch_d.rotation_signe_X = -1.f;    //  x diractin rotation changed
-    }
-    else if ((ch_d.cur_rotate_direction[0] <= 0.f && ch_d.cur_rotate_direction[1] <= 0.f) || (ch_d.cur_rotate_direction[0] >= 0.f && ch_d.cur_rotate_direction[1] <= 0.f))
-    {
-        ch_d.sin_Z *= 1.f;
-        ch_d.cos_Z *= 1.f;
-        ch_d.rotation_signe_X = 1.f;    //  x diractin rotation changed
-    }
-}
-
-void G_OP_MarbleSphere::RotateZ_WithCosSin(ZC_Mat4<float>& model)
-{
-        //  Code taken from ZC_Mat4::Roate
-        //  Rotate model matri by Z axis using cos and sin calculated in G_OP_MarbleSphere::CalculateRotateZ()
-        //  Object start pos must be at {0,0,0} and look in {0,1,0} direction
-    ZC_Vec3<float> axis(0.f, 0.f, 1.f);
-    ZC_Vec3<float> temp(axis * (static_cast<float>(1) - ch_d.cos_Z));
-
-    ZC_Vec3<float> rotateX;
-    rotateX[0] = ch_d.cos_Z + temp[0] * axis[0];
-    rotateX[1] = temp[0] * axis[1] + ch_d.sin_Z * axis[2];
-    rotateX[2] = temp[0] * axis[2] - ch_d.sin_Z * axis[1];
-    ZC_Vec4<float> columnX = model[0] * rotateX[0] + model[1] * rotateX[1] + model[2] * rotateX[2];
-
-    ZC_Vec3<float> rotateY;
-    rotateY[0] = temp[1] * axis[0] - ch_d.sin_Z * axis[2];
-    rotateY[1] = ch_d.cos_Z + temp[1] * axis[1];
-    rotateY[2] = temp[1] * axis[2] + ch_d.sin_Z * axis[0];
-    ZC_Vec4<float> columnY = model[0] * rotateY[0] + model[1] * rotateY[1] + model[2] * rotateY[2];
-
-    ZC_Vec3<float> rotateZ;
-    rotateZ[0] = temp[2] * axis[0] + ch_d.sin_Z * axis[1];
-    rotateZ[1] = temp[2] * axis[1] - ch_d.sin_Z * axis[0];
-    rotateZ[2] = ch_d.cos_Z + temp[2] * axis[2];
-    ZC_Vec4<float> columnZ = model[0] * rotateZ[0] + model[1] * rotateZ[1] + model[2] * rotateZ[2];
-
-    model[0] = columnX;
-    model[1] = columnY;
-    model[2] = columnZ;
 }
 
 bool G_OP_MarbleSphere::Normalize(ZC_Vec3<float>& vec, const ZC_Vec3<float>& vec_default)
@@ -554,6 +454,101 @@ void G_OP_MarbleSphere::UpdateSound()
 
 
 
+
+// void G_OP_MarbleSphere::SetMoveAndRotateSpeeds(float new_speed, float time)
+// {
+//     ch_d.cur_move_speed = new_speed;
+    
+//     ch_d.cur_rotattion_speed = ch_d.cur_move_speed * move_rotation_speed_coef * time * ch_d.rotation_signe_X;
+//     float resutl = ch_d.rotate_angle_X + ch_d.cur_rotattion_speed;
+//     ch_d.rotate_angle_X = resutl >= ZC_angle_360f ? resutl - ZC_angle_360f
+//                     : resutl < 0.f ? ZC_angle_360f - resutl
+//                     : resutl;
+// }
+
+// void G_OP_MarbleSphere::CalculateRotateZ(float time)
+// {
+//         //  rotate sphere origin to correct (new) direction
+//     static const float rotate_power = 10.f;
+
+//     if (ch_d.cur_move_speed == 0.f) return;
+
+//     float cos_dir = ZC_Vec::Dot(ch_d.cur_move_direction, ch_d.cur_rotate_direction);
+//     if (cos_dir < -0.8f)    //  dirs allmost oposite, help to rotate
+//     {       //  avoid arthogonal rotation for X change movind direction. Object will change rotation_signe_X downer and start reverce rotate around X 
+//         if ((ch_d.cur_rotate_direction[1] > 0.f && ch_d.cur_rotate_direction[1] >= 0.8f) || (ch_d.cur_rotate_direction[1] < 0.f && ch_d.cur_rotate_direction[1] <= -0.8f))
+//             ch_d.cur_rotate_direction = {};
+//         else    //  for Y axis changing orthogonal diraction make some help, rotate current rotate diraction on 1 degree (wrong way, but help)
+//         {
+//             ZC_Vec4<float> cur_rot_dir_v4 = ZC_Mat4<float>(1.f).Rotate(1.f, { 0.f, 0.f, -1.f }) * ZC_Vec4<float>(ch_d.cur_rotate_direction, 1.f);
+//             ch_d.cur_rotate_direction = ZC_Vec3<float>(cur_rot_dir_v4[0], cur_rot_dir_v4[1], cur_rot_dir_v4[2]);
+//         }
+//     }
+
+//     ZC_Vec3<float> cur_to_new_offset = ch_d.cur_move_direction - ch_d.cur_rotate_direction;   //  where to rotate from current rotation angle
+//     ZC_Vec3<float> temp_rotate_direction = ch_d.cur_rotate_direction + cur_to_new_offset * rotate_power * time;   //  calculate new rotate diraction with time controll
+//     if (temp_rotate_direction != ZC_Vec3<float>())
+//     {          //  check normalization
+//         Normalize(temp_rotate_direction, ch_d.cur_rotate_direction);
+//         ch_d.cur_rotate_direction = temp_rotate_direction;
+//     }
+//     else return;    //  no rotation, out
+
+//         //  calculate cos sin for rotation around Z axis
+//     if (ch_d.cur_move_direction != ZC_Vec3<float>()) CalculateCosSin();
+// }
+
+// void G_OP_MarbleSphere::CalculateCosSin()
+// {
+//         //  take positive X for calculation.
+//     ch_d.sin_Z = ZC_Vec::Dot({ 1.f, 0.f, 0.f }, ch_d.cur_rotate_direction);  //  usual Dot return cos, but now it sin, don't know why
+//     ch_d.cos_Z = std::sqrt(1.f - (ch_d.sin_Z * ch_d.sin_Z));
+
+//     assert(ch_d.cos_Z * 0.f == 0.f);
+//         //  correct cos sin signes with axises of current roatate vector
+//     if ((ch_d.cur_rotate_direction[0] >= 0.f && ch_d.cur_rotate_direction[1] >= 0.f) || (ch_d.cur_rotate_direction[0] <= 0.f && ch_d.cur_rotate_direction[1] >= 0.f))
+//     {
+//         ch_d.sin_Z *= -1.f;
+//         ch_d.rotation_signe_X = -1.f;    //  x diractin rotation changed
+//     }
+//     else if ((ch_d.cur_rotate_direction[0] <= 0.f && ch_d.cur_rotate_direction[1] <= 0.f) || (ch_d.cur_rotate_direction[0] >= 0.f && ch_d.cur_rotate_direction[1] <= 0.f))
+//     {
+//         ch_d.sin_Z *= 1.f;
+//         ch_d.cos_Z *= 1.f;
+//         ch_d.rotation_signe_X = 1.f;    //  x diractin rotation changed
+//     }
+// }
+
+// void G_OP_MarbleSphere::RotateZ_WithCosSin(ZC_Mat4<float>& model)
+// {
+//         //  Code taken from ZC_Mat4::Roate
+//         //  Rotate model matri by Z axis using cos and sin calculated in G_OP_MarbleSphere::CalculateRotateZ()
+//         //  Object start pos must be at {0,0,0} and look in {0,1,0} direction
+//     ZC_Vec3<float> axis(0.f, 0.f, 1.f);
+//     ZC_Vec3<float> temp(axis * (static_cast<float>(1) - ch_d.cos_Z));
+
+//     ZC_Vec3<float> rotateX;
+//     rotateX[0] = ch_d.cos_Z + temp[0] * axis[0];
+//     rotateX[1] = temp[0] * axis[1] + ch_d.sin_Z * axis[2];
+//     rotateX[2] = temp[0] * axis[2] - ch_d.sin_Z * axis[1];
+//     ZC_Vec4<float> columnX = model[0] * rotateX[0] + model[1] * rotateX[1] + model[2] * rotateX[2];
+
+//     ZC_Vec3<float> rotateY;
+//     rotateY[0] = temp[1] * axis[0] - ch_d.sin_Z * axis[2];
+//     rotateY[1] = ch_d.cos_Z + temp[1] * axis[1];
+//     rotateY[2] = temp[1] * axis[2] + ch_d.sin_Z * axis[0];
+//     ZC_Vec4<float> columnY = model[0] * rotateY[0] + model[1] * rotateY[1] + model[2] * rotateY[2];
+
+//     ZC_Vec3<float> rotateZ;
+//     rotateZ[0] = temp[2] * axis[0] + ch_d.sin_Z * axis[1];
+//     rotateZ[1] = temp[2] * axis[1] - ch_d.sin_Z * axis[0];
+//     rotateZ[2] = ch_d.cos_Z + temp[2] * axis[2];
+//     ZC_Vec4<float> columnZ = model[0] * rotateZ[0] + model[1] * rotateZ[1] + model[2] * rotateZ[2];
+
+//     model[0] = columnX;
+//     model[1] = columnY;
+//     model[2] = columnZ;
+// }
 
 
 

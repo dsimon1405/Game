@@ -32,7 +32,7 @@ std::string G_ModelLoader::GetPath(G_ModelName model_name)
 	case G_MN__SphereMarble: return ZC_FSPath(model_dir_path).append("sphere/sphere_marble.dae").string();
 	case G_MN__SphereStar: return ZC_FSPath(model_dir_path).append("sphere/sphere_star.dae").string();
 	case G_MN__SphereMap: return ZC_FSPath(model_dir_path).append("sphere/sphere_marble.dae").string();
-	case G_MN__Platform_cylinder_black: return ZC_FSPath(model_dir_path).append("cylinder_black/cylinder_black.dae").string();
+	case G_MN__Platform_cylinder_black: return ZC_FSPath(model_dir_path).append("platform/cylinder_black.dae").string();
 	default: assert(false); return {};
 	}
 }
@@ -182,9 +182,6 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	default: break;
 	}
 
-std::vector<aiVector2D> tc;
-std::vector<VTC> vtcs;
-
 		//	vbo
 	std::list<std::list<VertNorm>> verts_to_smooth;
 	std::vector<Vertex> vertices;
@@ -217,29 +214,9 @@ std::vector<VTC> vtcs;
 				//	tex coords
 			if (pMesh->mTextureCoords[0])
 			{
-				aiVector3D tex_coords = pMesh->mTextureCoords[0][vert_i];
-						if (tex_coords.x < 0.f || tex_coords.y < 0.f || tex_coords.x > 1.f || tex_coords.y > 1.f)
-						{
-							bool add_vertex = true;
-							for (VTC& vtc : vtcs)
-							{
-								if (vtc.v == pMesh->mVertices[vert_i])
-								{
-									vtc.ids.emplace_back(vertices.size());
-									add_vertex = false;
-									break;
-								}
-							}
-							if (add_vertex) vtcs.emplace_back(VTC{ .v = pMesh->mVertices[vert_i], .tc = { tex_coords.x, tex_coords.y }, .ids = std::vector<size_t>{ vertices.size() } });
-						}
-						// if (tex_coords.x < 0.f) tex_coords.x = 0.f;
-						// if (tex_coords.y < 0.f) tex_coords.y = 0.f;
-						// if (tex_coords.x > 1.f) tex_coords.x = 1.f;
-						// if (tex_coords.y > 1.f) tex_coords.y = 1.f;
-						tc.emplace_back(aiVector2D(tex_coords.x, tex_coords.y));
-
+				aiVector3D& tex_coords = pMesh->mTextureCoords[0][vert_i];
+					//	don't use pack, texture may have coords out of range [0,1]
 				vertex.texCoords = ZC_Vec2<float>(tex_coords.x, tex_coords.y);
-				// vertex.texCoords = ZC_Vec2<ushort>(ZC_PackTexCoordFloatToUShort(tex_coords.x), ZC_PackTexCoordFloatToUShort(tex_coords.y));
 			}
 			Vertex& v = vertices.emplace_back(vertex);
 			
@@ -291,7 +268,7 @@ std::vector<VTC> vtcs;
 			//	get elements type and size, and fill
 	GLenum elementsType = 0;
 	ulong storingTypeSize = 0;
-	ZC_Buffer::GetElementsData(vertices.size() - 1, storingTypeSize, elementsType);
+	ZC_Buffer::GetElementsData(vertices.size() - 1ull, storingTypeSize, elementsType);
 	// ZC_DA<uchar> elements(storingTypeSize * elementsCount);
 	ZC_DA<uchar> elements(storingTypeSize * verts_count);	//	from blender elements count equal verts count...
 	switch (storingTypeSize)
