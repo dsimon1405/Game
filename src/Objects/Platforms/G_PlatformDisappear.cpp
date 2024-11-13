@@ -62,7 +62,7 @@ void G_PlatformDisappear::Callback_Updater(float time)
             ch_d.disapear_state = DS_phase1_disapear;
             ch_d.cur_color = disappear_color;
             this->unColor = disappear_color_packed;
-            this->dsCon.SwitchToDrawLvl(ZC_RL_Default, G_DL_AlphaBlending_PlatformDisapear);
+            this->dsCon.SwitchToDrawLvl(ZC_RL_Default, G_DL_AlphaBlending_PlatformDisappear);
             this->upSK->SetSoundState(G_SN__platform_disapear, ZC_SS__Play);
         }
         else
