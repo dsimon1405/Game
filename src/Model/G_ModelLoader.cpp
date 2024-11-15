@@ -152,13 +152,7 @@ std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(
 	}
 	return surfaces;
 }
-#include <iostream>
-struct VTC
-{
-	aiVector3D v;
-	aiVector2D tc;
-	std::vector<size_t> ids;
-};
+
 ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path, bool smooth_normals, bool invert_normals, G_ModelName model_name)
 {
 		//	get model matrix if it is
@@ -255,7 +249,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 		}
 	}
 	ZC_Buffer vbo(GL_ARRAY_BUFFER);
-	vbo.GLNamedBufferStorage(vertices.size() * sizeof(Vertex), vertices.data(), 0);
+	vbo.GLNamedBufferStorage(vertices.size() * sizeof(Vertex), vertices.data(), 0u);
 
 		//	ebo
 	// 		//	elemnts count
@@ -284,11 +278,11 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	// case 4: FillElements<uint>(reinterpret_cast<uint*>(elements.pHead), pMesh); break;
 	// }
 	ZC_Buffer ebo(GL_ELEMENT_ARRAY_BUFFER);
-	ebo.GLNamedBufferStorage(elements.size, elements.Begin(), 0);
+	ebo.GLNamedBufferStorage(elements.size, elements.Begin(), 0u);
 		
 		//	glDraw
 	// ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, elementsCount, elementsType, 0);
-	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, verts_count, elementsType, 0);
+	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, verts_count, elementsType, 0u);
 
 		//	ShPInitSet
 	typename ZC_ShProgs::ShPInitSet* pShPIS =

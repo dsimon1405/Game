@@ -97,10 +97,27 @@ ZC_DrawerSet G_ParticlesDrawer::CreateDrawerSet(unsigned long long particles_cou
     return ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers));
 }
 
+// #define G_ParticlesDrawer_Callback_Updater
+#ifdef G_ParticlesDrawer_Callback_Updater
+#include <ZC/Tools/Time/ZC_Timer.h>
+#include <iostream>
+#endif
 void G_ParticlesDrawer::Callback_Updater(float time)
 {
-        //  call heirs apdate functions, update gpu if need
+#ifdef G_ParticlesDrawer_Callback_Updater
+    static ZC_Timer timer_update(ZC_TR__seconds, 2., ZC_TRO__average, "update");
+    static ZC_Timer timer_sub_data(ZC_TR__seconds, 2., ZC_TRO__average, "sub_data");
+    timer_update.StartPoint();
+    UpdateParticlesPositions(time);
+    timer_update.EndPoint();
+    timer_sub_data.StartPoint();
+    GLSubDataPositions();
+    timer_sub_data.EndPoint();
+    if (timer_update.GetValuesCount() == 0ul) std::cout<<std::endl;
+ #else
     if (UpdateParticlesPositions(time)) GLSubDataPositions();
+#endif
+        //  call heirs apdate functions, update gpu if need
     if (UpdateParticlesColors(time)) GLSubDataColors();
 }
 
