@@ -12,7 +12,7 @@ set(Game_ASSETS_DIRECTORY_NAME assets)
 set(Game_ASSETS_DESTINATION_PATH 
     ${PROJECT_BINARY_DIR}/$<$<PLATFORM_ID:Windows>:$<IF:$<CONFIG:Debug>,Debug/,Release/>>${Game_ASSETS_DIRECTORY_NAME})   #   windows?
 
-set(Game_MY_DEBUG 1)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
+set(Game_MY_DEBUG 0)     # 1 true, 0 false   =>  use if(Game_MY_DEBUG EQUAL 1) - true; if(NOT Game_MY_DEBUG) - false
 
 #========================= external libs
 #   add submodules

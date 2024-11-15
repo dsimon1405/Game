@@ -142,5 +142,5 @@ void G_System::SetUpGUI()
     ZC_GUI_Colors::dropDownSwitch_arrow = 0;
 
 
-    // ZC__GUI::SetFontHeight(20);                                                                            //  TEST SETUP
+    ZC__GUI::SetFontHeight(20);                                                                            //  TEST SETUP
 }
