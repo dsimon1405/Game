@@ -82,6 +82,9 @@ ZC_Camera G_Camera::CreateCamera()
 
 void G_Camera::MouseMoveCallback(float x, float y, float xRel, float yRel, float time)
 {
+#ifdef G_CAMERA_DEBUG
+    if (!ZC_Events::IsButtonPressed(ZC_ButtonID::M_MIDLE)) return;
+#endif
     if (yRel != 0.f)
     {
         static const float sensitivity_rotation_Y = 0.3f;   //  coef of angle on wich will be resturned camera
@@ -166,6 +169,12 @@ void G_Camera::MouseWheelScroll(float rotationHorizontal, float rotationVertical
 
 void G_Camera::Callback_Updater(float time)
 {
+#ifdef G_CAMERA_DEBUG
+    bool update_vertical_angle = cur_vertical_angle != vertical_angle_must_be;
+    if (update_vertical_angle) cur_vertical_angle = vertical_angle_must_be;
+    bool update_horizontal_angle = cur_horizontal_angle != horizontal_angle_must_be;
+    if (update_horizontal_angle) cur_horizontal_angle = horizontal_angle_must_be;
+#else
     bool update_vertical_angle = cur_vertical_angle != vertical_angle_must_be;
     if (update_vertical_angle)
     {
@@ -215,6 +224,7 @@ void G_Camera::Callback_Updater(float time)
             if (cur_horizontal_angle <= horizontal_angle_must_be) cur_horizontal_angle = horizontal_angle_must_be;
         }
     }
+#endif
 
     if (update_vertical_angle || update_horizontal_angle)   //  was updated one or both of rotation angles
     {

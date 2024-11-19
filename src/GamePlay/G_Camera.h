@@ -4,6 +4,8 @@
 #include <ZC/Events/ZC_EC.h>
 #include <ZC/Events/ZC_ButtonID.h>
 
+#define G_CAMERA_DEBUG
+
 class G_Camera
 {
 public:
@@ -31,8 +33,11 @@ private:
     bool isDirsActual = false;
 
     const float maxDistanceToObject = 30.f,
-        // minDistanceToObject = 0.1f,
+#ifdef G_CAMERA_DEBUG
+        minDistanceToObject = 0.1f,
+#else
         minDistanceToObject = 5.f,
+#endif
         sensivityScroll = 1.f;
     float distanceToObject = 20.f;
         //  rotation
@@ -42,10 +47,13 @@ private:
     float cur_horizontal_angle = 0.f;
     float horizontal_angle_must_be = 0.1f;
             //  rotate around X
+#ifdef G_CAMERA_DEBUG
+    const float vertical_angle_max = 89.f;
+    const float vertical_angle_min = -89.f;
+#else
     const float vertical_angle_max = 30.f;
     const float vertical_angle_min = 10.f;
-    // const float vertical_angle_max = 89.f;
-    // const float vertical_angle_min = -89.f;
+#endif
     const float vertical_angle_start_pos = vertical_angle_min + ((vertical_angle_max - vertical_angle_min) / 2.f);
     float cur_vertical_angle = vertical_angle_start_pos;
     float vertical_angle_must_be = vertical_angle_start_pos;
