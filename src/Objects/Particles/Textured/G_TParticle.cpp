@@ -12,12 +12,14 @@
 
 G_TParticle::G_TParticle(ul_zc count, float appear_circle_radius, float life_secs_min, float life_secs_max)
     : upSP(new SetupParticle()),
+    particles_data{},
+    particles(),
     pos_and_life_time{},
     ds(CreateDrawerSet(upSP->data.particles_count, upSP->data.circle_radius, upSP->data.life_secs_min, upSP->data.life_secs_max)),
     // ds(CreateDrawerSet(count, appear_circle_radius, life_secs_min, life_secs_max)),
     ds_con(ds.MakeZC_DSController(0))
 {
-    ds_con.SetUniformsData(G_UN_unData, &unData);
+    // ds_con.SetUniformsData(G_UN_unData, &unData);
     ds_con.SwitchToDrawLvl(ZC_RL_Default, G_DL_AlphaBlending_ParticleFlame);
 
     ec_updater = ZC__Updater::Connect({ &G_TParticle::Callback_Updater, this }, G_UL__game_particles);
@@ -91,30 +93,85 @@ ZC_Vec2<float> G_TParticle::CalcRandPosXYInCircle(float circle_radius)
     return pos_xy;
 }
 
+// #include <iostream>
 ZC_DrawerSet G_TParticle::CreateDrawerSet(ul_zc count, float appear_circle_radius, float life_secs_min, float life_secs_max)
 {
-    pos_and_life_time.reserve(count);
-
-    for (ul_zc i = 0ull; i < count; ++i)
+    count = 2;
+    particles.reserve(count);
+    // particles = std::vector<Particle>(count, Particle{});
+    for (ul_zc i = 0; i < particles.capacity(); ++i)
     {
-        ZC_Vec2<float> pos_xy = CalcRandPosXYInCircle(appear_circle_radius);
-        pos_and_life_time.emplace_back(ZC_Vec4<float>(pos_xy[0], pos_xy[1], 0.f, CalcLifeTime(life_secs_min, life_secs_max)));
+        particles.emplace_back(Particle
+            {
+                .secs_to_start = 0.f,
+                .pos_start = i == 0 ? ZC_Vec3<float>(-2, 0, 0) : ZC_Vec3<float>(2, 0, 0),
+                .pos_cur = i == 0 ? ZC_Vec3<float>(-2, 0, 0) : ZC_Vec3<float>(2, 0, 0),     //  on start sets on cpu, changes only on gpu
+                .life_secs_total = 4.f,
+                // .life_secs_cur       //  calc on gpu
+                .dir_move_normalized = { 0, 0, 1 },
+                .move_speed_secs = 0.5f,
+                // .uvs_id              //  calc on gpu
+            });
     }
-    
-    // ZC_Buffer vbo(GL_SHADER_STORAGE_BUFFER);
-    ZC_Buffer vbo(GL_ARRAY_BUFFER);
-    vbo.GLNamedBufferStorage(pos_and_life_time.size() * sizeof(ZC_Vec4<float>), pos_and_life_time.data(), GL_DYNAMIC_STORAGE_BIT);
+
+    float uv_per_sec = 1.f;
+    particles_data = ParticlesData
+        {
+            // .prev_frame_secs = ,     //  calc on gpu
+            // .total_secs = ,          //  calc on gpu
+            .particles_origin_pos = { 0.f, 0.f, 0.f },
+            // .bl = ,                  //  calc on gpu
+            // .br = ,                  //  calc on gpu
+            // .tl = ,                  //  calc on gpu
+            // .tr = ,                  //  calc on gpu
+            .half_width = 1.f,
+            .half_height = 1.f,
+            .uv_shift_speed = 1.f / uv_per_sec,
+            .appear_secs = 0.4f,
+            .disappear_secs = 0.8f,
+        };
+
+    ZC_Buffer ssbo_particles(GL_SHADER_STORAGE_BUFFER, BIND_SSBO_PARTICLE);
+    ssbo_particles.GLNamedBufferStorage(sizeof(ParticlesData) + (sizeof(Particle) * particles.size()), &particles_data, GL_DYNAMIC_STORAGE_BIT);
+    ssbo_particles.GLNamedBufferSubData(sizeof(ParticlesData), sizeof(Particle) * particles.size(), particles.data());
+
+    const int tex_width = 512.f;
+    const int tex_height = 512.f;
+    const int tex_columns_count = 4;
+    const int tex_rows_count = 4;
+    const int tile_width = tex_width / tex_columns_count;
+    const int tile_heihgt = tex_height / tex_rows_count;
+    uint uvs_count = tex_columns_count * tex_rows_count;
+    std::vector<UV> uvs;
+    uvs.reserve(uvs_count);
+    for (int row_i = 0, tile_i = 0; row_i < tex_rows_count; ++row_i)
+    {
+        for (int column_i = 0; column_i < tex_columns_count; ++column_i)
+        {       //  fill uv from top left corner of the texture to bottom right
+            float left_x = column_i * tile_width;
+            float top_y = tex_height - (row_i * tile_heihgt);  //  opengl read textures from bottom to top
+            uvs.emplace_back(UV
+                {
+                    .left_x = left_x / tex_width,
+                    .top_y = top_y / tex_height,
+                    .right_x = (left_x + tile_width) / tex_width,
+                    .bottom_y = (top_y - tile_heihgt) / tex_width,
+                });
+        }
+    }
+    ZC_Buffer ssbo_uvs(GL_SHADER_STORAGE_BUFFER, BIND_SSBO_TEX_DATA);
+    ssbo_uvs.GLNamedBufferStorage(sizeof(uvs_count) + (sizeof(UV) * uvs.size()), &uvs_count, GL_DYNAMIC_STORAGE_BIT);
+    ssbo_uvs.GLNamedBufferSubData(sizeof(uvs_count), sizeof(UV) * uvs.size(), uvs.data());
 
 	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawArrays>(GL_POINTS, 0, count);
 
     ZC_ShProgs::ShPInitSet* pShPIS = ZC_ShProgs::Get(ZC_ShPName::ShPN_Game_Flame);
 
 	ZC_VAO vao;
-	// vao.Config(pShPIS->vaoConfigData, vbo, nullptr, 0, 0);
-	vao.Config(pShPIS->vaoConfigData, vbo, nullptr, 0, count);
 
 	std::forward_list<ZC_Buffer> buffers;
-	buffers.emplace_front(std::move(vbo));
+    buffers.emplace_front(std::move(ssbo_uvs));
+	buffers.emplace_front(std::move(ssbo_particles));
 
 	std::forward_list<ZC_TexturesSet> tex_sets;
     ZC_TexSets::VectorOfTexturesCreator texCreator = pShPIS->texSets.GetCreator();
@@ -141,15 +198,18 @@ void G_TParticle::Callback_Updater(float time)
     //     if (cur_life_sec > life_secs) cur_life_sec -= life_secs;
     // }
 
+    particles_data.prev_frame_secs = time;
+    particles_data.total_secs += time;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticlesData, prev_frame_secs), sizeof(particles_data.prev_frame_secs) + sizeof(particles_data.total_secs), &particles_data);
 
-    static ZC_Clock cl;
+    // static ZC_Clock cl;
 #ifdef G_TParticle_Callback_Updater
-    static ZC_Timer timer(ZC_TR__seconds, 5., ZC_TRO__average, "updt flame");
+    static ZC_Timer timer(ZC_TR__repeats, 5000., ZC_TRO__average, "updt flame");
 
     timer.StartPoint();
 
         //  update time to uniform
-    G_TParticle::pStatic->unData[0][0] = (float)cl.Time<ZC_Nanoseconds>() / 1000000000.f;   //  to seconds
+    // G_TParticle::pStatic->unData[0][0] = (float)cl.Time<ZC_Nanoseconds>() / 1000000000.f;   //  to seconds
 
     timer.EndPoint();
 
@@ -175,5 +235,5 @@ void G_TParticle::Callback_Updater(float time)
 }
 
 //  sum
-//  0.000064     update time to uniform (power off)
+//  0.000064 / 0.00011     update time to uniform (power off)
 //  0.000147     update pos at cpu

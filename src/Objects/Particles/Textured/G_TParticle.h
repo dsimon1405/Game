@@ -14,6 +14,63 @@ public:
     ZC_uptr<SetupParticle> upSP;
 
 
+        
+#define BIND_SSBO_PARTICLE 0
+#define BIND_SSBO_TEX_DATA 1
+    struct UV   //  array of UV into SSBO_UV on gpu
+    {
+        float left_x = 0.f;
+        float top_y = 0.f;
+        float right_x = 0.f;
+        float bottom_y = 0.f;
+    };
+
+        //  particle
+    struct Particle    //  std 430 to avoid problems with alignment, don't use mat and vec types!
+    {
+        float secs_to_start = 0.f;
+
+        ZC_Vec3<float> pos_start;
+        ZC_Vec3<float> pos_cur;
+        
+        float life_secs_total = 0.f;
+        float life_secs_cur = 0.f;
+
+        ZC_Vec3<float> dir_move_normalized;
+        float move_speed_secs = 0.f;
+
+        uint uvs_id = 0u;
+    };
+    struct ParticlesData    //  SSBO_Particles on gpu
+    {
+                //  Update every frame on the cpu
+            //  time
+        float prev_frame_secs = 0.f;
+        float total_secs = 0.f;   //  seconds from the start of particle system drawing
+                //  may be changed
+            //  origin pos
+        ZC_Vec3<float> particles_origin_pos;   //  may be located in other SSBOs and one calculated system may be use in different places
+
+                //  Update only on configuration
+            //  corners rotated frace to cam
+        ZC_Vec3<float> bl;
+        ZC_Vec3<float> br;
+        ZC_Vec3<float> tl;
+        ZC_Vec3<float> tr;
+            //  particle size for corners calculation
+        float half_width = 0.f;
+        float half_height = 0.f;
+            //  texture
+        float uv_shift_speed = 0.f;   //  how much change tiles in seond
+            //  alpha data
+        float appear_secs = 0.f;
+        float disappear_secs = 0.f;
+        
+        // Particle particles[];    AT GPU
+    } particles_data;
+    std::vector<Particle> particles;
+
+
     G_TParticle(ul_zc count, float appear_circle_radius, float life_time_min, float life_time_max);
     ~G_TParticle();
 
