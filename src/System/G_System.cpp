@@ -13,6 +13,8 @@
 #include <ZC/GUI/Backend/Config/ZC_GUI_IconUV.h>
 #include <ZC/GUI/Backend/Config/ZC_GUI_Colors.h>
 #include "G_LightUBO.h"
+#include <ZC/Video/OpenGL/Shader/ZC_ShPComputes.h>
+#include "G_ShPComputeName.h"
 
 G_System::G_System()
 {
@@ -22,14 +24,15 @@ G_System::G_System()
     ZC__System::Init(ZC_SF__Collision | ZC_SF__GUI | ZC_SF__Updater, ZC_SWF__Multisampling_4 | ZC_SWF__Border, 800, 600, "SPHERUM");
     ZC__Window::SetMinSize(800, 600);
     if (config.GetConfigData().fuull_screen) ZC__Window::SetFullScreen(true);
-    ZC__System::GlEnablePointSize();    //  particle system
+    // ZC__System::GlEnablePointSize();    //  particle system
     // ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
 
     ZC__FPS::SetTimeMeasure(ZC_FPS_TM__Seconds);
     ZC__FPS::SetLimit(0);
     ZC__FPS::NeedDraw(true);
     
-    
+    LoadComputeShaders();
+
     config.CreateGUI();
         //      models
     G_Models::LoadModels();
@@ -143,4 +146,11 @@ void G_System::SetUpGUI()
 
 
     ZC__GUI::SetFontHeight(20);                                                                            //  TEST SETUP
+}
+
+void G_System::LoadComputeShaders()
+{
+    ZC_FSPath path = ZC_FSPath(ZC_assetsDirPath).append("ZC/Shaders/Game");
+
+    ZC_ShPComputes::Load(G_ShPCN__flame, path.append("flame_c.glsl").string().c_str());
 }

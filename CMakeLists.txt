@@ -137,7 +137,9 @@ add_executable(${PROJECT_NAME} ${Game_SRC_FILES})
 #========================= include dirs
 target_include_directories(${PROJECT_NAME} ${Game_INCLUDE_DIRS}
     PRIVATE ${PROJECT_SOURCE_DIR}/src
+
     # PUBLIC /home/dmitry/projects/external/glm/include
+	# PUBLIC C:/Users/simon007/source/repos/Source/glm/include
     )
 
 #========================= link libs

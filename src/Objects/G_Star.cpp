@@ -70,8 +70,23 @@ G_ObjectTypeMask G_Star::VGetTypeMask_IO() const
 
 void G_Star::Callback_Updater(float time)
 {
-    UpdateDMG(time);
-    CalculateModelMatrix(time);
+    // UpdateDMG(time);
+    // CalculateModelMatrix(time);
+
+
+static bool b = true;
+    if (b)
+    {
+        CalculateModelMatrix(time);
+        b = false;
+        this->ds_con.SwitchToDrawLvl(ZC_RL_Default, ZC_DL_None);
+        this->particles_star.SetDrawState(false);
+    }
+    else
+    {
+    static const uint color_packed = ZC_PackColorFloatToUInt_RGB(1.f, 0.86f, 0.55f);    //  peach color
+    G_LightUBO::UpdateLightData(G_LN__Star, G_LightSet{ .pos = collision_object.GetFigure().center_fact, .color = color_packed });
+    }
 }
 
 void G_Star::Callback_Collision(const ZC_CO_CollisionResult& coll_result)

@@ -23,8 +23,10 @@ ZC_uptr<ZC_Drawer> G_DrawerCreator::GetRendererLevelDrawer(ZC_DrawerLevel lvl)
         ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA), ZC_GLCullFace(true))};  //  cull face no metter for points, don't disable here caurse neighboring levels use face cull 
     case G_DL_AlphaBlending_PlatformDisappear: return { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>
             (0, ZC_GLDepth(true, GL_FALSE), ZC_GLStencil(false), ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA), ZC_GLCullFace(true)) };
-    case G_DL_AlphaBlending_ParticleFlame: return { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_SSBOActivator, ZC_RLDData_Uniforms_GLDraw>
+    case G_DL_AlphaBlending_ParticleFlame: return { new ZC_DrawerFL<ZC_TexturesHolder, const ZC_VAO*, ZC_SSBOActivator, const ZC_ShPCompute*, const ZC_ShProg*, ZC_RLDData_Uniforms_GLDraw>
             (0, ZC_GLDepth(true, GL_FALSE), ZC_GLStencil(false), ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE), ZC_GLCullFace(false)) };
+    // case G_DL_AlphaBlending_ParticleFlame: return { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_SSBOActivator, ZC_RLDData_Uniforms_GLDraw>
+    //         (0, ZC_GLDepth(true, GL_FALSE), ZC_GLStencil(false), ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE), ZC_GLCullFace(false)) };
 //     case G_DL_AlphaBlending_ParticleFlame: return { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>
 //             (0, ZC_GLDepth(true, GL_FALSE), ZC_GLStencil(false), ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE), ZC_GLCullFace(false)) };
     default: assert(false); return nullptr;

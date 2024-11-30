@@ -15,4 +15,5 @@ private:
 
     void LoadSounds();
     void SetUpGUI();
+    void LoadComputeShaders();
 };

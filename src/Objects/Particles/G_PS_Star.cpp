@@ -33,7 +33,7 @@ G_PS_Star::G_PS_Star(unsigned long long particles_count, const ZC_Vec3<float>& _
     particles_sphere.reserve(particles_count);
     for (float cur_angle_X = 0.f; cur_angle_X < ZC_angle_360f; cur_angle_X = cur_angle_X + rot_angle > 359.9f ? ZC_angle_360f : cur_angle_X + rot_angle)
     {
-        for (float cur_angle_Z = 0.f; cur_angle_Z < ZC_angle_360f; cur_angle_Z += cur_angle_Z + rot_angle > 359.9f ? ZC_angle_360f : cur_angle_Z + rot_angle)
+        for (float cur_angle_Z = 0.f; cur_angle_Z < ZC_angle_360f; cur_angle_Z = cur_angle_Z + rot_angle > 359.9f ? ZC_angle_360f : cur_angle_Z + rot_angle)
         {       //  calculate position
             ZC_Mat4<float> model(1.f);
             if (cur_angle_X != 0.f) model.Rotate(cur_angle_X, { 1.f, 0.f, 0.f});
