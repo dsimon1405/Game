@@ -10,53 +10,20 @@
 #include <vector>
 #include <string>
 
-
 G_ParticleSystem::G_ParticleSystem(const G_PS_Source& ps_source)
     : ps_src(ps_source),
-    particle_system{CreateParticleSystem()},
+    ps{CreateParticleSystem()},
     particles(FillParticles()),
-    // pos_and_life_time{},
     ds(CreateDrawerSet()),
-    // ds(CreateDrawerSet(count, appear_circle_radius, life_secs_min, life_secs_max)),
-    ds_con(ds.MakeZC_DSController(0)),
-    upSP(new SetupParticle(this))                                                //  create after ctr
+    ds_con(ds.MakeZC_DSController(0))
 {
-    // ds_con.SetUniformsData(G_UN_unData, &unData);
+#ifdef SETUP__G_PARTICLE_SYSTEM
+    upSP = new Setup__G_ParticleSystem(this);
+#endif SETUP__G_PARTICLE_SYSTEM
+    
     ds_con.SwitchToDrawLvl(ps_src.render.render_level, ps_src.render.drawer_level);
 
     ec_updater = ZC__Updater::Connect({ &G_ParticleSystem::Callback_Updater, this }, G_UL__game_particles);
-    
-
-    // /*
-    // data[0].x - cur time in seconds
-    // data[0].y - tiles per second
-    // data[0].z - particle widht
-    // data[0].w - particle height
-
-    // data[1].x - appear/disappear seconds. other time particle have alpha 1.f
-    // data[1].y - pos x
-    // data[1].z - pos y
-    // data[1].y - pos z
-
-    // data[2].x - move to x
-    // data[2].y - move to y
-    // data[2].z - move to z
-    // data[2].w - move speed
-    // */
-    // unData[0][1] = upSP->data.tiles_per_second;
-    // unData[0][2] = upSP->data.width;
-    // unData[0][3] = upSP->data.height;
-    
-    // unData[1][0] = upSP->data.appear_secs;
-    // unData[1][1] = upSP->data.pos_x;
-    // unData[1][2] = upSP->data.pos_y;
-    // unData[1][3] = upSP->data.pos_z;
-
-    // unData[2][0] = upSP->data.move_to_x;
-    // unData[2][1] = upSP->data.move_to_y;
-    // unData[2][2] = upSP->data.move_to_z;
-    // unData[2][3] = ZC_Random::GetRandomInt(upSP->data.move_speed_min_sec * f_100, upSP->data.move_speed_max_sec * f_100) / f_100;
-    // int q = 3;
 }
 
 G_ParticleSystem::~G_ParticleSystem()
@@ -69,21 +36,27 @@ void G_ParticleSystem::SetDrawState(bool need_draw)
     need_draw ? ds_con.SwitchToDrawLvl(ps_src.render.render_level, ps_src.render.drawer_level) : ds_con.SwitchToDrawLvl(ps_src.render.render_level, ZC_DL_None);
 }
 
+bool G_ParticleSystem::GetDrawState()
+{
+    return ds_con.IsDrawing(ps_src.render.render_level);
+}
+
 void G_ParticleSystem::Set_Particles_count(ul_zc count)
 {
+    if (ps_src.particles_count == count) return;
     ps_src.particles_count = count;
 
     std::vector<G_ParticleSystem::Particle> particles = FillParticles();
 
-    particle_system.total_secs = 0.f;
-    particle_system.prev_frame_secs = 0.f;
+    ps.total_secs = 0.f;
+    ps.prev_frame_secs = 0.f;
 
     ZC_Buffer ssbo_particles(GL_SHADER_STORAGE_BUFFER, G_BIND_SSBO_PARTICLE);
     ssbo_particles.GLNamedBufferStorage(sizeof(G_ParticleSystem::ParticleSystem) + (sizeof(G_ParticleSystem::Particle) * particles.size()), nullptr, GL_DYNAMIC_STORAGE_BIT);
-    ssbo_particles.GLNamedBufferSubData(0, sizeof(G_ParticleSystem::ParticleSystem), &particle_system);
+    ssbo_particles.GLNamedBufferSubData(0, sizeof(G_ParticleSystem::ParticleSystem), &ps);
     ssbo_particles.GLNamedBufferSubData(sizeof(G_ParticleSystem::ParticleSystem), sizeof(G_ParticleSystem::Particle) * particles.size(), particles.data());
 
-    bool need_draw = ds_con.IsDrawing(ZC_RL_Default);
+    bool need_draw = GetDrawState();
     if (need_draw) SetDrawState(false);    //  will be added back to the end of the method to update pointers to ZC_GLDraw, ZC_VAO in ZC_DrawerFL
 
     ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawArrays>(GL_POINTS, 0, count);
@@ -106,125 +79,125 @@ void G_ParticleSystem::Set_Particles_count(ul_zc count)
 
 void G_ParticleSystem::Set_Life_space(G_PS_Source::LifeSpace life_space)
 {
-    particle_system.life_space = life_space;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, life_space), sizeof(ParticleSystem::life_space), &particle_system.life_space);
+    if (ps_src.life_space == life_space) return;
+    ps_src.life_space = life_space;
+    ps.life_space = life_space;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, life_space), sizeof(ParticleSystem::life_space), &ps.life_space);
 }
 
 void G_ParticleSystem::Set_SpawnShape__shape(G_PS_Source::SpawnShape::Shape shape)
 {
-    
+    if (ps_src.spawn_shape.shape == shape) return;
+    ps_src.spawn_shape.shape = shape;
+    FillParticlesPosition(particles);
 }
 
 void G_ParticleSystem::Set_SpawnShape__variable_1(float val_1)
 {
+    if (ps_src.spawn_shape.val_1 == val_1) return;
     ps_src.spawn_shape.val_1 = val_1;
-    FillParticlesPositions(particles);
+    FillParticlesPosition(particles);
     ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
 void G_ParticleSystem::Set_SpawnShape__variable_2(float val_2)
 {
+    if (ps_src.spawn_shape.val_2 == val_2) return;
     ps_src.spawn_shape.val_2 = val_2;
-    FillParticlesPositions(particles);
+    FillParticlesPosition(particles);
     ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
 void G_ParticleSystem::Set_SpawnShape__variable_3(float val_3)
 {
+    if (ps_src.spawn_shape.val_3 == val_3) return;
     ps_src.spawn_shape.val_3 = val_3;
-    if (ps_src.spawn_shape.shape == G_PS_Source::SpawnShape::S__Quad)   //  vall 3 uses only in S__Quad
+    if (ps_src.spawn_shape.shape == G_PS_Source::SpawnShape::S__Cube)   //  vall 3 uses only in S__Cube
     {
-        FillParticlesPositions(particles);
+        FillParticlesPosition(particles);
         ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
     }
 }
 
 void G_ParticleSystem::Set_SpawnMatModel__position(const ZC_Vec3<float>& pos)
 {
-    data.pos_x = v;
-            //  UPDATE ALL POSITION
-    G_ParticleSystem::pStatic->particle_system.mat_model = ZC_Mat4<float>(1.f).Translate(data.pos_x, data.pos_y, data.pos_z);
-    if (data.rot_angle != 0.f && (data.rot_axis_x != 0.f || data.rot_axis_y != 0.f || data.rot_axis_z != 0.f))
-        G_ParticleSystem::pStatic->particle_system.mat_model.Rotate(data.rot_angle, { data.rot_axis_x, data.rot_axis_y, data.rot_axis_z });
-
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, mat_model), sizeof(G_ParticleSystem::ParticleSystem::mat_model),
-        &G_ParticleSystem::pStatic->particle_system.mat_model);
+    if (ps_src.spawn_mat_model.position == pos) return;
+    ps_src.spawn_mat_model.position = pos;
+    ps.mat_model = CreateSpawnMatModel();
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, mat_model), sizeof(ParticleSystem::mat_model), &ps.mat_model);
 }
 
 void G_ParticleSystem::Set_SpawnMatModel__rotation(float angle, const ZC_Vec3<float>& axises)
 {
-        data.rot_angle = v;
-            //  UPDATE ALL ROATATION
-        G_ParticleSystem::pStatic->particle_system.mat_model = ZC_Mat4<float>(1.f).Translate(data.pos_x, data.pos_y, data.pos_z);
-        if (data.rot_angle != 0.f && (data.rot_axis_x != 0.f || data.rot_axis_y != 0.f || data.rot_axis_z != 0.f))
-            G_ParticleSystem::pStatic->particle_system.mat_model.Rotate(data.rot_angle, { data.rot_axis_x, data.rot_axis_y, data.rot_axis_z });
-
-        G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, mat_model), sizeof(G_ParticleSystem::ParticleSystem::mat_model),
-            &G_ParticleSystem::pStatic->particle_system.mat_model);
+    if (ps_src.spawn_mat_model.rotation_angle == angle && ps_src.spawn_mat_model.rotation_axis_power == axises) return;
+    ps_src.spawn_mat_model.rotation_angle = angle;
+    ps_src.spawn_mat_model.rotation_axis_power = axises;
+    ps.mat_model = CreateSpawnMatModel();
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, mat_model), sizeof(ParticleSystem::mat_model), &ps.mat_model);
 }
 
-void G_ParticleSystem::Set_Size__widht(float widht)
+void G_ParticleSystem::Set_Size__widht(float width)
 {
-    data.width = v;
-    G_ParticleSystem::pStatic->particle_system.half_width = data.width / 2.f;
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, half_width), sizeof(G_ParticleSystem::ParticleSystem::half_width),
-        &G_ParticleSystem::pStatic->particle_system.half_width);
+    if (ps_src.size.width == width) return;
+    ps_src.size.width = width;
+    ps.half_width = width / 2.f;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, half_width), sizeof(ParticleSystem::half_width), &ps.half_width);
 }
 
 void G_ParticleSystem::Set_Size__height(float height)
 {
-    data.height = v;
-    G_ParticleSystem::pStatic->particle_system.half_height = data.height / 2.f;
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, half_height), sizeof(G_ParticleSystem::ParticleSystem::half_height),
-        &G_ParticleSystem::pStatic->particle_system.half_height);
+    if (ps_src.size.height == height) return;
+    ps_src.size.height = height;
+    ps.half_height = height / 2.f;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, half_height), sizeof(ParticleSystem::half_height), &ps.half_height);
 }
 
-void G_ParticleSystem::Set_Life_time__secs_to_start_max(float start_at_sec)
+void G_ParticleSystem::Set_Life_time__secs_to_start_max(float secs_to_start_max)
 {
-    data.secs_to_start_max = v;
-    for (auto& p : G_ParticleSystem::pStatic->particles)
+    if (ps_src.life_time.secs_to_start_max == secs_to_start_max) return;
+    ps_src.life_time.secs_to_start_max = secs_to_start_max;
+    for (auto& p : particles)
     {
-        p.secs_to_start = G_ParticleSystem::GetRandom(0.f, data.secs_to_start_max);
+        p.secs_to_start = G_ParticleSystem::GetRandom(0.f, ps_src.life_time.secs_to_start_max);
         p.life_secs_cur = 0.f;
     }
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(sizeof(G_ParticleSystem::ParticleSystem), sizeof(G_ParticleSystem::Particle) * G_ParticleSystem::pStatic->particles.size(),
-        G_ParticleSystem::pStatic->particles.data());
+    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 
-    G_ParticleSystem::pStatic->particle_system.total_secs = 0.f;
-    G_ParticleSystem::pStatic->particle_system.prev_frame_secs = 0.f;
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(0, sizeof(G_ParticleSystem::ParticleSystem), &G_ParticleSystem::pStatic->particle_system);
+    ps.prev_frame_secs = 0.f;
+    ps.total_secs = 0.f;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(ParticleSystem::prev_frame_secs) + sizeof(ParticleSystem::total_secs), &ps.prev_frame_secs);
 }
 
-void G_ParticleSystem::Set_Life_time__min(float min_sec)
+void G_ParticleSystem::Set_Life_time__min(float secs_min)
 {
-    data.life_secs_min = v;
-    for (auto& p : G_ParticleSystem::pStatic->particles) p.life_secs_total = G_ParticleSystem::GetRandom(data.life_secs_min, data.life_secs_max);
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(sizeof(G_ParticleSystem::ParticleSystem), sizeof(G_ParticleSystem::Particle) * G_ParticleSystem::pStatic->particles.size(),
-        G_ParticleSystem::pStatic->particles.data());
+    if (ps_src.life_time.secs_min == secs_min) return;
+    ps_src.life_time.secs_min = secs_min;
+    for (Particle& p : particles) p.life_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
+    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
-void G_ParticleSystem::Set_Life_time__max(float max_sec)
+void G_ParticleSystem::Set_Life_time__max(float secs_max)
 {
-    data.life_secs_max = v;
-    for (auto& p : G_ParticleSystem::pStatic->particles) p.life_secs_total = G_ParticleSystem::GetRandom(data.life_secs_min, data.life_secs_max);
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(sizeof(G_ParticleSystem::ParticleSystem), sizeof(G_ParticleSystem::Particle) * G_ParticleSystem::pStatic->particles.size(),
-        G_ParticleSystem::pStatic->particles.data());
+    if (ps_src.life_time.secs_max == secs_max) return;
+    ps_src.life_time.secs_max = secs_max;
+    for (Particle& p : particles) p.life_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
+    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
-void G_ParticleSystem::Set_Visibility__start(float start_sec)
+void G_ParticleSystem::Set_Visibility__start(float appear_secs)
 {
-    data.appear_secs = v;
-    G_ParticleSystem::pStatic->particle_system.appear_secs = data.appear_secs;
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, appear_secs), sizeof(G_ParticleSystem::ParticleSystem::appear_secs),
-        &G_ParticleSystem::pStatic->particle_system.appear_secs);
+    if (ps_src.visibility.appear_secs == appear_secs) return;
+    ps_src.visibility.appear_secs = appear_secs;
+    ps.appear_secs = appear_secs;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, appear_secs), sizeof(ParticleSystem::appear_secs), &ps.appear_secs);
 }
 
-void G_ParticleSystem::Set_Visibility__end(float end_sec)
+void G_ParticleSystem::Set_Visibility__end(float disappear_secs)
 {
-    data.disappear_secs = v;
-    G_ParticleSystem::pStatic->particle_system.disappear_secs = data.disappear_secs;
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, disappear_secs), sizeof(G_ParticleSystem::ParticleSystem::disappear_secs),
-        &G_ParticleSystem::pStatic->particle_system.disappear_secs);
+    if (ps_src.visibility.disappear_secs == disappear_secs) return;
+    ps_src.visibility.disappear_secs = disappear_secs;
+    ps.disappear_secs = disappear_secs;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, disappear_secs), sizeof(ParticleSystem::disappear_secs), &ps.disappear_secs);
 }
 
 void G_ParticleSystem::Set_Move__direction_type(G_PS_Source::Move::DirectionType direction_type)
@@ -239,26 +212,26 @@ void G_ParticleSystem::Set_Move__move_variable(const ZC_Vec3<float>& move_variab
 
 void G_ParticleSystem::Set_Move__speed_power(float speed_power)
 {
-    data.speed_power = v;
-    G_ParticleSystem::pStatic->particle_system.speed_power = data.speed_power;
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, speed_power), sizeof(G_ParticleSystem::ParticleSystem::speed_power),
-        &G_ParticleSystem::pStatic->particle_system.speed_power);
+    if (ps_src.move.speed_power == speed_power) return;
+    ps_src.move.speed_power = speed_power;
+    ps.speed_power = speed_power;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, speed_power), sizeof(ParticleSystem::speed_power), &ps.speed_power);
 }
 
 void G_ParticleSystem::Set_Move__speed_min(float speed_min_secs)
 {
-    data.move_speed_min_sec = v;
-    for (auto& p : G_ParticleSystem::pStatic->particles) p.move_speed_secs = G_ParticleSystem::GetRandom(data.move_speed_min_sec, data.move_speed_max_sec);
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(sizeof(G_ParticleSystem::ParticleSystem), sizeof(G_ParticleSystem::Particle) * G_ParticleSystem::pStatic->particles.size(),
-        G_ParticleSystem::pStatic->particles.data());
+    if (ps_src.move.speed_min == speed_min_secs) return;
+    ps_src.move.speed_min = speed_min_secs;
+    for (auto& p : particles) p.move_speed_secs = G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max);
+    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
 void G_ParticleSystem::Set_Move__speed_max(float speed_max_secs)
 {
-    data.move_speed_max_sec = v;
-    for (auto& p : G_ParticleSystem::pStatic->particles) p.move_speed_secs = G_ParticleSystem::GetRandom(data.move_speed_min_sec, data.move_speed_max_sec);
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(sizeof(G_ParticleSystem::ParticleSystem), sizeof(G_ParticleSystem::Particle) * G_ParticleSystem::pStatic->particles.size(),
-        G_ParticleSystem::pStatic->particles.data());
+    if (ps_src.move.speed_max == speed_max_secs) return;
+    ps_src.move.speed_max = speed_max_secs;
+    for (auto& p : particles) p.move_speed_secs = G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max);
+    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
 void G_ParticleSystem::Set_Animation__change_tyles_style(G_PS_Source::Animation::ChangeTilesStyle change_tyles_style)
@@ -268,10 +241,10 @@ void G_ParticleSystem::Set_Animation__change_tyles_style(G_PS_Source::Animation:
 
 void G_ParticleSystem::Set_Animation__tiles_per_second(float tiles_per_second)
 {
-    data.tiles_per_second = v;
-    G_ParticleSystem::pStatic->particle_system.uv_shift_speed = 1.f / data.tiles_per_second;
-    G_ParticleSystem::pStatic->ds.buffers.front().GLNamedBufferSubData(offsetof(G_ParticleSystem::ParticleSystem, uv_shift_speed), sizeof(G_ParticleSystem::ParticleSystem::uv_shift_speed),
-        &G_ParticleSystem::pStatic->particle_system.uv_shift_speed);
+    if (ps_src.animation.tiles_per_second == tiles_per_second) return;
+    ps_src.animation.tiles_per_second = tiles_per_second;
+    ps.uv_shift_speed = 1.f / tiles_per_second;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, uv_shift_speed), sizeof(ParticleSystem::uv_shift_speed), &ps.uv_shift_speed);
 }
 
 void G_ParticleSystem::Set_Animation__offset_from(G_PS_Source::Animation::OffsetFrom offset_from)
@@ -289,17 +262,22 @@ float G_ParticleSystem::GetRandom(float secs_min, float secs_max)
     return f_zc(ZC_Random::GetRandomInt(secs_min * f_100, secs_max * f_100)) / f_100;
 }
 
-G_ParticleSystem::ParticleSystem G_ParticleSystem::CreateParticleSystem()
+ZC_Mat4<f_zc> G_ParticleSystem::CreateSpawnMatModel()
 {
     ZC_Mat4<float> mat_model(1.f);
     mat_model.Translate(ps_src.spawn_mat_model.position);
     if (ps_src.spawn_mat_model.rotation_angle != 0.f && (ps_src.spawn_mat_model.rotation_axis_power != ZC_Vec3<float>()))   //  use only if not null value in angle and minimun one of axes
         mat_model.Rotate(ps_src.spawn_mat_model.rotation_angle, ps_src.spawn_mat_model.rotation_axis_power);
+    return mat_model;
+}
+
+G_ParticleSystem::ParticleSystem G_ParticleSystem::CreateParticleSystem()
+{
     return ParticleSystem
     {
         // .prev_frame_secs = ,     //  calc on gpu
         // .total_secs = ,          //  calc on gpu
-        .mat_model = mat_model,
+        .mat_model = CreateSpawnMatModel(),
         // .bl = ,                  //  calc on gpu
         // .br = ,                  //  calc on gpu
         // .tl = ,                  //  calc on gpu
@@ -314,11 +292,11 @@ G_ParticleSystem::ParticleSystem G_ParticleSystem::CreateParticleSystem()
     };
 }
 
-void G_ParticleSystem::FillParticlePositoin(G_ParticleSystem::Particle& rParticle, const ZC_Vec3<float>& pos_start)
+void G_ParticleSystem::FillParticlePosition(G_ParticleSystem::Particle& rParticle, const ZC_Vec3<float>& pos_start)
 {
     ZC_Vec3<float> pos_cur = pos_start;
     if (ps_src.life_space == G_PS_Source::LifeSpace::LS__world)    //  move to world space
-        pos_cur = ZC_Vec::Vec4_to_Vec3(particle_system.mat_model * ZC_Vec4<float>(pos_start, 1.f));
+        pos_cur = ZC_Vec::Vec4_to_Vec3(ps.mat_model * ZC_Vec4<float>(pos_start, 1.f));
     rParticle.pos_cur = pos_cur;
     rParticle.pos_start = pos_start;
 }
@@ -328,7 +306,7 @@ std::vector<G_ParticleSystem::Particle> G_ParticleSystem::FillParticles()
     std::vector<Particle> particles_temp;
     particles_temp.reserve(ps_src.particles_count);
 
-    for (ul_zc i = 0; particles_temp.capacity(); ++i)
+    for (ul_zc i = 0; i < particles_temp.capacity(); ++i)
     {
         particles_temp.emplace_back(Particle
             {
@@ -347,18 +325,18 @@ std::vector<G_ParticleSystem::Particle> G_ParticleSystem::FillParticles()
             });
     }
     
-    FillParticlesPositions(particles_temp);
+    FillParticlesPosition(particles_temp);
 
     return particles_temp;
 }
 
-void G_ParticleSystem::FillParticlesPositions(std::vector<G_ParticleSystem::Particle>& rParticles)
+void G_ParticleSystem::FillParticlesPosition(std::vector<G_ParticleSystem::Particle>& rParticles)
 {
     switch (ps_src.spawn_shape.shape)
     {
     case G_PS_Source::SpawnShape::S__Circle: FillShapeSphera(rParticles); break;
     case G_PS_Source::SpawnShape::S__Sphere: FillShapeCircle(rParticles); break;
-    case G_PS_Source::SpawnShape::S__Quad: break;
+    case G_PS_Source::SpawnShape::S__Cube: break;
     }
 }
 
@@ -379,7 +357,7 @@ void G_ParticleSystem::FillShapeSphera(std::vector<G_ParticleSystem::Particle>& 
             if (cur_angle_X != 0.f) model.Rotate(cur_angle_X, { 1.f, 0.f, 0.f});
             if (cur_angle_Z != 0.f) model.Rotate(cur_angle_Z, { 0.f, 0.f, 1.f});
             ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, random_radius ? float(GetRandom(radius_min, radius_max)) : radius_min, 0.f, 1.f));
-            FillParticlePositoin(rParticles[rParticles_i], pos);
+            FillParticlePosition(rParticles[rParticles_i], pos);
         }
     }
 
@@ -388,7 +366,7 @@ void G_ParticleSystem::FillShapeSphera(std::vector<G_ParticleSystem::Particle>& 
     {
         ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(ZC_Mat4(1.f).Rotate(ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i), {1.f, 1.f, 1.f})
             * ZC_Vec4<float>(0.f, random_radius ? float(GetRandom(radius_min, radius_max)) : radius_min, 0.f, 1.f));
-        FillParticlePositoin(rParticles[rParticles_i], pos);
+        FillParticlePosition(rParticles[rParticles_i], pos);
     }
 }
 
@@ -444,45 +422,20 @@ void G_ParticleSystem::FillShapeCircle(std::vector<G_ParticleSystem::Particle>& 
         last_quater = Quater(last_quater + 1);
         if (last_quater > x_neg__y_neg) last_quater = x_neg__y_pos;
 
-        FillParticlePositoin(p, { pos_xy[0], pos_xy[1], 0.f });
+        FillParticlePosition(p, { pos_xy[0], pos_xy[1], 0.f });
     }
 }
 
 // #include <iostream>
 ZC_DrawerSet G_ParticleSystem::CreateDrawerSet()
-{   
-    //     //  particle_system must be before FillParticles(), to have actual mat_model
-    // ZC_Mat4<float> mat_model(1.f);
-    // mat_model.Translate(upSP->data.pos_x, upSP->data.pos_y, upSP->data.pos_z);
-    // if (upSP->data.rot_angle != 0.f && (upSP->data.rot_axis_x != 0.f || upSP->data.rot_axis_y != 0.f || upSP->data.rot_axis_z != 0.f))
-    //     mat_model.Rotate(upSP->data.rot_angle, { upSP->data.rot_axis_x, upSP->data.rot_axis_y, upSP->data.rot_axis_z });
-    // particle_system = ParticleSystem
-    //     {
-    //         // .prev_frame_secs = ,     //  calc on gpu
-    //         // .total_secs = ,          //  calc on gpu
-    //         .mat_model = mat_model,
-    //         // .bl = ,                  //  calc on gpu
-    //         // .br = ,                  //  calc on gpu
-    //         // .tl = ,                  //  calc on gpu
-    //         // .tr = ,                  //  calc on gpu
-    //         .half_width = upSP->data.width / 2.f,
-    //         .half_height = upSP->data.height / 2.f,
-    //         .appear_secs = upSP->data.appear_secs,
-    //         .disappear_secs = GetRandom(upSP->data.appear_secs, upSP->data.disappear_secs),
-    //         .life_space = upSP->data.life_space,
-    //         .speed_power = upSP->data.speed_power,
-    //         .uv_shift_speed = 1.f / upSP->data.tiles_per_second,
-    //     };
-auto count = 1;             //  DELETE ME !!!!
-    // particles = FillParticles(count, secs_to_start_max, appear_circle_radius, life_secs_min, life_secs_max);
-
+{
     ZC_Buffer ssbo_particles(GL_SHADER_STORAGE_BUFFER, G_BIND_SSBO_PARTICLE);
     ssbo_particles.GLNamedBufferStorage(sizeof(ParticleSystem) + (sizeof(Particle) * particles.size()), nullptr, GL_DYNAMIC_STORAGE_BIT);
-    ssbo_particles.GLNamedBufferSubData(0, sizeof(ParticleSystem), &particle_system);
+    ssbo_particles.GLNamedBufferSubData(0, sizeof(ParticleSystem), &ps);
     ssbo_particles.GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 
         //  texture
-    ZC_Texture tex = ZC_Texture::LoadTexture2D(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string().c_str(), 0, GL_REPEAT, GL_REPEAT);
+    ZC_Texture tex = ZC_Texture::LoadTexture2D(ps_src.render.tex_path.c_str(), 0, GL_REPEAT, GL_REPEAT);
         //  fill tex uv
     const int tile_width = tex.GetWidth() / ps_src.render.columns_count;
     const int tile_heihgt = tex.GetHeight() / ps_src.render.rows_count;
@@ -508,7 +461,7 @@ auto count = 1;             //  DELETE ME !!!!
     ssbo_uvs.GLNamedBufferStorage(sizeof(uvs_count) + (sizeof(UV) * uvs.size()), &uvs_count, GL_DYNAMIC_STORAGE_BIT);
     ssbo_uvs.GLNamedBufferSubData(sizeof(uvs_count), sizeof(UV) * uvs.size(), uvs.data());
 
-	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawArrays>(GL_POINTS, 0, count);
+	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawArrays>(GL_POINTS, 0, particles.size());
 
     ZC_ShProgs::ShPInitSet* pShPIS = ZC_ShProgs::Get(ZC_ShPName::ShPN_Game_Flame);
 
@@ -527,7 +480,6 @@ auto count = 1;             //  DELETE ME !!!!
     ZC_ShPCompute shPCompute(G_ShPCN__flame, GL_SHADER_STORAGE_BARRIER_BIT, particles.size(), 1, 1);
 
     return ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers), std::move(tex_sets), { { ZC_RL_Default } }, shPCompute);
-    // return ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers), std::move(tex_sets));
 }
 
 #define G_TParticle_Callback_Updater
@@ -553,9 +505,9 @@ void G_ParticleSystem::Callback_Updater(float time)
 
     timer.StartPoint();
 
-    particle_system.prev_frame_secs = time;
-    particle_system.total_secs += time;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(particle_system.prev_frame_secs) + sizeof(particle_system.total_secs), &particle_system.prev_frame_secs);
+    ps.prev_frame_secs = time;
+    ps.total_secs += time;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(ps.prev_frame_secs) + sizeof(ps.total_secs), &ps.prev_frame_secs);
 
         //  update time to uniform
     // G_ParticleSystem::pStatic->unData[0][0] = (float)cl.Time<ZC_Nanoseconds>() / 1000000000.f;   //  to seconds
@@ -579,9 +531,9 @@ void G_ParticleSystem::Callback_Updater(float time)
     // ds.buffers.front().GLNamedBufferSubData(0ll, sizeof(ZC_Vec4<float>) * pos_and_life_time.size(), pos_and_life_time.data());
     
 #else
-    particle_system.prev_frame_secs = time;
-    particle_system.total_secs += time;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(particle_system.prev_frame_secs) + sizeof(particle_system.total_secs), &particle_system);
+    ps.prev_frame_secs = time;
+    ps.total_secs += time;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(ps.prev_frame_secs) + sizeof(ps.total_secs), &ps);
     // G_ParticleSystem::pStatic->unData[0][0] = (float)cl.Time<ZC_Nanoseconds>() / 1000000000.f;   //  to seconds
 #endif
 }

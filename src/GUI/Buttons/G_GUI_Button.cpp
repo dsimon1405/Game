@@ -17,18 +17,18 @@ void G_GUI_Button::ButtonFocusChanged(bool is_on)
     ss_button_focused.upSound->Play();
 }
 
-float G_GUI_Button::CalculateButtonWidth(const std::forward_list<G_LangText>& _lang_texts)
+float G_GUI_Button::CalculateButtonWidth(const ZC_GUI_Font* pFont, const std::forward_list<G_LangText>& _lang_texts)
 {
     static const float add_to_side_borders = 30.f;
-    return GetLongestName(_lang_texts) + add_to_side_borders;
+    return GetLongestName(pFont, _lang_texts) + add_to_side_borders;
 }
 
-float G_GUI_Button::GetLongestName(const std::forward_list<G_LangText>& _lang_texts)
+float G_GUI_Button::GetLongestName(const ZC_GUI_Font* pFont, const std::forward_list<G_LangText>& _lang_texts)
 {
     float max_length = 0.f;
     for (const G_LangText& lt : _lang_texts)
     {
-        float length = ZC__GUI::CalculateWstrWidth(lt.text);
+        float length = pFont->CalculateWstrWidth(lt.text);
         if (length > max_length) max_length = length; 
     }
     return max_length;

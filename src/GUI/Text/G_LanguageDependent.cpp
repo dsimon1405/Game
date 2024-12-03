@@ -23,12 +23,12 @@ G_LanguageDependent::G_LanguageDependent(std::forward_list<G_LangText>&& _lang_t
     ld_heirs.emplace_front(this);
 }
 
-int G_LanguageDependent::GetLongestWidth(const std::forward_list<G_LangText>& _lang_texts)
+int G_LanguageDependent::GetLongestWidth(const ZC_GUI_Font* pFont, const std::forward_list<G_LangText>& _lang_texts)
 {
     int longest_width = 0;
     for (const G_LangText& lt : _lang_texts)
     {
-        int width = ZC__GUI::CalculateWstrWidth(lt.text);
+        int width = pFont->CalculateWstrWidth(lt.text);
         if (width > longest_width) longest_width = width;
     }
     return longest_width;

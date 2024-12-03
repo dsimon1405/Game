@@ -87,6 +87,7 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_GUI_Text.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_LangText.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_ZC_TextSceneTurnedToCameraLevel.cpp
+    ${PROJECT_SOURCE_DIR}/src/GUI/Text/G_GUI_Fonts.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_ButtonText.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_CheckBox.cpp
     ${PROJECT_SOURCE_DIR}/src/GUI/Buttons/G_GUI_Button.cpp

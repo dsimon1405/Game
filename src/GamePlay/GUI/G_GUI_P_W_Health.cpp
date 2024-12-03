@@ -5,13 +5,15 @@
 #include <System/G_UpdaterLevels.h>
 #include <System/G_Func.h>
 #include <System/G_FontData.h>
+#include <GUI/Text/G_GUI_Fonts.h>
 
 #include <cmath>
 
 G_GUI_P_W_Health::G_GUI_P_W_Health(int _hp)
-    : window(ZC_WOIData(ZC__GUI::GetLongestNumberCharacterWidth() * 3, ZC__GUI::GetFontHeight(), 0.f, ZC__GUI::GetFontHeight(), ZC_WOIF__X_Center | ZC_WOIF__Y_Bottom_Pixel),
-        ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Stacionar | ZC_GUI_WF__NoBackground),
-    text_health(std::to_wstring(_hp), false, ZC__GUI::GetLongestNumberCharacterWidth() * 3, ZC_GUI_TextAlignment::Center, color_hp_max_pack),
+    : window(ZC_WOIData(G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 3, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40), 0.f, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40),
+        ZC_WOIF__X_Center | ZC_WOIF__Y_Bottom_Pixel), ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Stacionar | ZC_GUI_WF__NoBackground),
+    text_health(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), std::to_wstring(_hp), false,
+        G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 3, ZC_GUI_TextAlignment::Center, color_hp_max_pack),
     hp_default(_hp)
 {
     window.AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::Center, 0, 0), { text_health.GetObj() })));

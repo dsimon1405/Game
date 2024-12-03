@@ -2,6 +2,7 @@
 
 #include <GUI/Text/G_LangText.h>
 #include <Sound/G_SystemSound.h>
+#include <ZC/GUI/Backend/Text/ZC_GUI_Font.h>
 
 #include <forward_list>
 
@@ -15,8 +16,8 @@ public:
 
     void ButtonFocusChanged(bool is_on);
 
-    static float CalculateButtonWidth(const std::forward_list<G_LangText>& _lang_texts);
-    static float GetLongestName(const std::forward_list<G_LangText>& _lang_texts);
+    static float CalculateButtonWidth(const ZC_GUI_Font* pFont, const std::forward_list<G_LangText>& _lang_texts);
+    static float GetLongestName(const ZC_GUI_Font* pFont, const std::forward_list<G_LangText>& _lang_texts);
 
 private:
     static inline G_SystemSound ss_button_focused;

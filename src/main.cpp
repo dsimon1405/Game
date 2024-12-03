@@ -10,7 +10,6 @@ int main(int argv, char** args)
     G_System system;
     G_GameManager gm;
     
-
     // G_Camera cam_test(ZC_Function<void(const ZC_Vec3<float>&)>{&F}, ZC_Vec3<float>{ 0.f, 0.f, 0.f });
     // cam_test.SetConnectionToEvents(true);
     

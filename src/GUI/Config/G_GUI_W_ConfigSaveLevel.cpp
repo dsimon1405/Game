@@ -4,19 +4,22 @@
 #include <ZC/GUI/ZC__GUI.h>
 #include <System/G_UpdaterLevels.h>
 #include <ZC/GUI/Backend/Config/ZC_GUI_Colors.h>
+#include <GUI/Text/G_GUI_Fonts.h>
 
 G_GUI_W_ConfigSaveLevel::G_GUI_W_ConfigSaveLevel()
-    : text_Level_saved(ZC_GUI_TextAlignment::Left, ZC_GUI_Colors::window_text, 
+    : text_Level_saved(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), ZC_GUI_TextAlignment::Left, ZC_GUI_Colors::window_text,
         { G_LangText{ .lang = G_L_Russian, .text = L"ур. сохранён" }, { .lang = G_L_English, .text = L"level saved" } }),
-    text_level(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 4, ZC_GUI_TextAlignment::Right),
-    text_time(L"", false, ZC__GUI::GetLongestNumberCharacterWidth() * 6 + ZC__GUI::CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
-    window(ZC_WOIData(text_level.GetWidth() + text_Level_saved.GetWidth() + ZC__GUI::GetFontHeight() / 2.f,
-        ZC__GUI::GetFontHeight() * 2.f, ZC__GUI::GetFontHeight() / 3.f, 0.f, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel), ZC_GUI_WF__Stacionar | ZC_GUI_WF__NoBackground
+    text_level(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"", false, G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 4, ZC_GUI_TextAlignment::Right),
+    text_time(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"", false,
+        G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 6 + G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->CalculateWstrWidth(L":") * 2, ZC_GUI_TextAlignment::Center),
+    window(ZC_WOIData(text_level.GetWidth() + text_Level_saved.GetWidth() + G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) / 2.f,
+        G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) * 2.f, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) / 3.f, 0.f, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel),
+        ZC_GUI_WF__Stacionar | ZC_GUI_WF__NoBackground
         // | ZC_GUI_WF__NeedDraw)
         )
 {
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, 0, ZC__GUI::GetFontHeight() / 2.f), { text_Level_saved.GetObj(), text_level.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(ZC__GUI::GetFontHeight() * 1.5f, ZC_GUI_RowParams::Right, 0, 0), { text_time.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, 0, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) / 2.f), { text_Level_saved.GetObj(), text_level.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) * 1.5f, ZC_GUI_RowParams::Right, 0, 0), { text_time.GetObj() }));
 }
 
 G_GUI_W_ConfigSaveLevel::~G_GUI_W_ConfigSaveLevel()

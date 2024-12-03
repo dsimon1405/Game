@@ -15,6 +15,7 @@
 #include "G_LightUBO.h"
 #include <ZC/Video/OpenGL/Shader/ZC_ShPComputes.h>
 #include "G_ShPComputeName.h"
+#include <GUI/Text/G_GUI_Fonts.h>
 
 G_System::G_System()
 {
@@ -32,12 +33,14 @@ G_System::G_System()
     ZC__FPS::NeedDraw(true);
     
     LoadComputeShaders();
-
+        //  fonts for ZC_Text class, not ZC_GUI
+    G_FontData::LoadFonts();
+        //  load ZC_GUI fonts
+    G_GUI_Fonts::LoadFonts();
+        //  create G_GUI_W_ConfigSaveLevel
     config.CreateGUI();
         //      models
     G_Models::LoadModels();
-        //  fonts for ZC_Text class, not ZC_GUI (gui load for them self)
-    G_FontData::LoadFonts();
         //  open audio stream
     ZC_Audio::OpenAudioStream(ZC_AudioSet(ZC_Sounds::GetSound(0)->GetAudioSet()));
         //  crete lights ubo
@@ -92,7 +95,6 @@ void G_System::LoadSounds()
 
 void G_System::SetUpGUI()
 {
-    ZC__GUI::SetFontHeight(40);
     ZC__GUI::SetPathToCustomIconTexture(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/game_icons.png").string());
 
     static const float icon_tex_width = 800.f;
@@ -143,9 +145,6 @@ void G_System::SetUpGUI()
     ZC_GUI_Colors::dropDownSwitch_button_pressed = ZC_PackColorUCharToUInt_RGB(100, 100, 100);
     ZC_GUI_Colors::dropDownSwitch_text = 0;
     ZC_GUI_Colors::dropDownSwitch_arrow = 0;
-
-
-    ZC__GUI::SetFontHeight(20);                                                                            //  TEST SETUP
 }
 
 void G_System::LoadComputeShaders()

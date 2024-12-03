@@ -3,21 +3,22 @@
 #include <GamePlay/G_GameManager.h>
 #include <ZC/ZC__System.h>
 #include <System/G_Config.h>
+#include <GUI/Text/G_GUI_Fonts.h>
 
 G_GUI_W_MainMenu::G_GUI_W_MainMenu()
     : window(ZC_WOIData(500.f, 430.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center),
     ZC_GUI_WF__NeedDraw),
     // 0),
-    text_game(ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"С-Ф-Е-Р-У-М" }, { .lang = G_L_English, .text = L"S-P-H-E-R-U-M" } }),
-    bt_start({ &G_GUI_W_MainMenu::StartNewGame, this }, {}, true,
+    text_game(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"С-Ф-Е-Р-У-М" }, { .lang = G_L_English, .text = L"S-P-H-E-R-U-M" } }),
+    bt_start(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), { &G_GUI_W_MainMenu::StartNewGame, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Новая игра" }, { .lang = G_L_English, .text = L"New game" } }),
-    bt_continue({ &G_GUI_W_MainMenu::ContinueGame, this }, {}, true,
+    bt_continue(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), { &G_GUI_W_MainMenu::ContinueGame, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Продолжить игру" }, { .lang = G_L_English, .text = L"Continue game" } }),
-    bt_continue_best({ &G_GUI_W_MainMenu::ContinueBestGame, this }, {}, true,
+    bt_continue_best(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), { &G_GUI_W_MainMenu::ContinueBestGame, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Загрузить сохранeние" }, { .lang = G_L_English, .text = L"Load saved game" } }),
-    bt_options({ &G_GUI_W_MainMenu::OpenOptions, this }, {}, true,
+    bt_options(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), { &G_GUI_W_MainMenu::OpenOptions, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Настройки" }, { .lang = G_L_English, .text = L"Options" } }),
-    bt_exit({ &G_GUI_W_MainMenu::ExitGame, this }, {}, true,
+    bt_exit(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), { &G_GUI_W_MainMenu::ExitGame, this }, {}, true,
         { G_LangText{ .lang = G_L_Russian, .text = L"Покинуть игру" }, { .lang = G_L_English, .text = L"Leave the game" } })
 {
     const float distance_y = 20.f;
