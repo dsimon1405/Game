@@ -377,7 +377,7 @@ struct Setup__G_ParticleSystem
     
     Setup__G_ParticleSystem(G_ParticleSystem* _pPS)
         : pPS(_pPS),
-        win(ZC_WOIData(300.f, 600.f, 0.f, 0.f, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Top_Pixel), ZC_GUI_WF__Movable | ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Scrollable),
+        win(ZC_WOIData(300.f, 600.f, 0.f, 0.f, ZC_WOIF__X_Center_Pixel | ZC_WOIF__Y_Center_Pixel), ZC_GUI_WF__Movable | ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Scrollable),
         bnt__particles_count(ZC_GUI_ButtonNumber<ui_zc>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.particles_count, 1, 10000, 1, 2, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Particles_count, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Particles amount", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
         t__life_space(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Life space", true, 0, ZC_GUI_TextAlignment::Left),
         sdd__life_space(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"Local", L"World" }, pPS->c_ps_src.life_space, 0.f, 0.f, { &Setup__G_ParticleSystem::Life_space, this }, ZC_GUI_ColorsDropDown(ZC_GUI_ColorsButton(ZC_PackColorUCharToUInt_RGB(40, 40, 40), ZC_PackColorUCharToUInt_RGB(60, 60, 60), ZC_PackColorUCharToUInt_RGB(80, 80, 80), ZC_PackColorUCharToUInt_RGB(100, 100, 100)), ZC_PackColorUCharToUInt_RGB(200, 200, 200), ZC_PackColorUCharToUInt_RGB(150, 150, 150))),
@@ -427,60 +427,60 @@ struct Setup__G_ParticleSystem
         float sub_section_y = 10;
         float row_y = 5;
         float distacne_x = 10.f;
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__particles_count.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, distacne_x), { sdd__life_space.GetObj(), t__life_space.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__particles_count.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, distacne_x, ZC_GUI_RowParams::Y_Center), { sdd__life_space.GetObj(), t__life_space.GetObj() }));
 
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, section_y, 0.f), { t__spawn_shape.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { sdd__spawn_shape__shape.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__spawn_shape__val_1.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__spawn_shape__val_2.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__spawn_shape__val_3.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__spawn_shape.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { sdd__spawn_shape__shape.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_shape__val_1.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_shape__val_2.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_shape__val_3.GetObj() }));
         if (pPS->c_ps_src.spawn_shape.shape != G_PS_Source::SpawnShape::S__Cube) bnt__spawn_shape__val_3.SetDrawState(false);
 
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, section_y, 0.f), { t__mat_model.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, sub_section_y, 0.f), { t__mat_model__tanslate.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__mat_model__translate_x.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__mat_model__translate_y.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__mat_model__translate_z.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, sub_section_y, 0.f), { t__mat_model__rotate.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { mat__mat_model__rotation_angle.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__mat_model__rotation_axis_power_x.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__mat_model__rotation_axis_power_y.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__mat_model__rotation_axis_power_z.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__mat_model.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, sub_section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__mat_model__tanslate.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__mat_model__translate_x.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__mat_model__translate_y.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__mat_model__translate_z.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, sub_section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__mat_model__rotate.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { mat__mat_model__rotation_angle.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__mat_model__rotation_axis_power_x.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__mat_model__rotation_axis_power_y.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__mat_model__rotation_axis_power_z.GetObj() }));
         
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, section_y, 0.f), { t__size.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__size__width.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__size__height.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__size.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__size__width.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__size__height.GetObj() }));
 
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, section_y, 0.f), { t__life_time.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__life_time__secs_to_start_max.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__life_time__secs_min.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__life_time__secs_max.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__life_time.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__life_time__secs_to_start_max.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__life_time__secs_min.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__life_time__secs_max.GetObj() }));
 
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, section_y, 0.f), { t__visibility.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__alpha__appear_secs.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__alpha__disappear_secs.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__visibility.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__alpha__appear_secs.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__alpha__disappear_secs.GetObj() }));
         
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, section_y, 0.f), { t__move_set.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, sub_section_y, distacne_x), { sdd__move_set__direction_type.GetObj(), t__move_set__direction_type.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__move_set__move_variable_x.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__move_set__move_variable_y.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__move_set__move_variable_z.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__move_set.GetObj() }));
+win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, sub_section_y, distacne_x, ZC_GUI_RowParams::Y_Center), { sdd__move_set__direction_type.GetObj(), t__move_set__direction_type.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__move_variable_x.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__move_variable_y.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__move_variable_z.GetObj() }));
         if (pPS->c_ps_src.move.direction_type == G_PS_Source::Move::DT__from_particles_center)
         {
             bnt__move_set__move_variable_x.SetDrawState(false);
             bnt__move_set__move_variable_y.SetDrawState(false);
             bnt__move_set__move_variable_z.SetDrawState(false);
         }
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, sub_section_y, 0.f), { bnt__move_set__speed_power.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__move_set__speed_min.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__move_set__speed_max.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, sub_section_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_power.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_min.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_max.GetObj() }));
 
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, section_y, 0.f), { t__animation.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, distacne_x), { sdd__animation__change_tyles_style.GetObj(), t__animation__change_tyles_style.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__animation__tiles_per_second.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, distacne_x), { sdd__animation__offset_from.GetObj(), t__animation__offset_from.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, row_y, 0.f), { bnt__animation__secs_offset_to_start_animation.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__animation.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, distacne_x, ZC_GUI_RowParams::Y_Bottom), { sdd__animation__change_tyles_style.GetObj(), t__animation__change_tyles_style.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__animation__tiles_per_second.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, distacne_x, ZC_GUI_RowParams::Y_Center), { sdd__animation__offset_from.GetObj(), t__animation__offset_from.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__animation__secs_offset_to_start_animation.GetObj() }));
     }
     
     void Particles_count(ui_zc v) { pPS->Set_Particles_count(v); }

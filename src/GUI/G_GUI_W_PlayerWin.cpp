@@ -25,12 +25,12 @@ G_GUI_W_PlayerWin::G_GUI_W_PlayerWin()
         { G_LangText{ .lang = G_L_Russian, .text = L"Следующий уровень" }, { .lang = G_L_English, .text = L"Go to next level" } }),
     text_arrow(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"=>", true, 0, ZC_GUI_TextAlignment::Left)
 {
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 10.f, 0.f), { text_Victory.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(33.f, ZC_GUI_RowParams::Right, 30.f, 96.f), { text_Total.GetObj(), text_Level.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 10.f, 20.f),
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, 10.f, 0.f, ZC_GUI_RowParams::Y_Center), { text_Victory.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(33.f, ZC_GUI_RowParams::X_Right, 30.f, 96.f, ZC_GUI_RowParams::Y_Center), { text_Total.GetObj(), text_Level.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, 10.f, 20.f, ZC_GUI_RowParams::Y_Center),
         { text_Time.GetObj(), text_level_time.GetObj(), text_arrow.GetObj(), text_total_time.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 40.f, 0.f), { bt_Go_to_next_level.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 20.f, 0.f), { bt_Go_to_main_menu.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, 40.f, 0.f, ZC_GUI_RowParams::Y_Center), { bt_Go_to_next_level.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, 20.f, 0.f, ZC_GUI_RowParams::Y_Center), { bt_Go_to_main_menu.GetObj() }));
 }
 
 G_GUI_W_PlayerWin::~G_GUI_W_PlayerWin()

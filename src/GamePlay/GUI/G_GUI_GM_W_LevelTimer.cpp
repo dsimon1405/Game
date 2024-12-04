@@ -21,7 +21,7 @@ G_GUI_GM_W_LevelTimer::G_GUI_GM_W_LevelTimer()
     text_colon_1(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L":", true, 0, ZC_GUI_TextAlignment::Left, ZC_PackColorUCharToUInt_RGB(150, 150, 150)),
     text_colon_2(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L":", true, 0, ZC_GUI_TextAlignment::Left, ZC_PackColorUCharToUInt_RGB(150, 150, 150))
 {
-    this->AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::Left, 0, G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width / 5),
+    this->AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::X_Left, 0, G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width / 5, ZC_GUI_RowParams::Y_Center),
         { text_hours.GetObj(), text_colon_1.GetObj(), text_minute.GetObj(), text_colon_2.GetObj(), text_seconds.GetObj() })));
 }
 

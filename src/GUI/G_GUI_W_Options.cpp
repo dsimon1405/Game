@@ -25,11 +25,12 @@ G_GUI_W_Options::G_GUI_W_Options()
 {
     const float distance_y = 20.f;
     const float offset_x = 40.f;
-    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, distance_y, 0.f), { text_Options.GetObj() }));
-    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(offset_x, ZC_GUI_RowParams::Left, 50.f, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) / 2.f), { text_Language.GetObj(), &sdd_language }));
-    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(offset_x, ZC_GUI_RowParams::Left, distance_y, 0.f), { chB_fullscreen.GetObj() }));
-    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(offset_x, ZC_GUI_RowParams::Left, distance_y, 0.f), { bit_volume.GetObj() }));
-    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, 70.f, 0.f), { bt_Go_to_main_menu.GetObj() }));
+    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { text_Options.GetObj() }));
+    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(offset_x, ZC_GUI_RowParams::X_Left, 50.f, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) / 2.f, ZC_GUI_RowParams::Y_Center),
+        { text_Language.GetObj(), &sdd_language }));
+    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(offset_x, ZC_GUI_RowParams::X_Left, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { chB_fullscreen.GetObj() }));
+    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(offset_x, ZC_GUI_RowParams::X_Left, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { bit_volume.GetObj() }));
+    this->AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, 70.f, 0.f, ZC_GUI_RowParams::Y_Center), { bt_Go_to_main_menu.GetObj() }));
 }
 
 void G_GUI_W_Options::CallMainMenu(float)

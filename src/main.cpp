@@ -8,10 +8,10 @@ void F(const ZC_Vec3<float>&){}
 int main(int argv, char** args)
 {
     G_System system;
-    G_GameManager gm;
+    // G_GameManager gm;
     
-    // G_Camera cam_test(ZC_Function<void(const ZC_Vec3<float>&)>{&F}, ZC_Vec3<float>{ 0.f, 0.f, 0.f });
-    // cam_test.SetConnectionToEvents(true);
+    G_Camera cam_test(ZC_Function<void(const ZC_Vec3<float>&)>{&F}, ZC_Vec3<float>{ 0.f, 0.f, 0.f });
+    cam_test.SetConnectionToEvents(true);
     
     // const int tex_width = 512.f;
     // const int tex_height = 512.f;
@@ -35,8 +35,8 @@ int main(int argv, char** args)
                     .render_level = ZC_RL_Default,
                     .drawer_level = G_DL_AlphaBlending_ParticleFlame,
                     .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string(),
-                    .columns_count = 2,
-                    .rows_count = 3,
+                    .columns_count = 3,
+                    .rows_count = 2,
                 },
             .spawn_shape = G_PS_Source::SpawnShape
                 {

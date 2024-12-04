@@ -16,7 +16,7 @@ G_GUI_P_W_Health::G_GUI_P_W_Health(int _hp)
         G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 3, ZC_GUI_TextAlignment::Center, color_hp_max_pack),
     hp_default(_hp)
 {
-    window.AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::Center, 0, 0), { text_health.GetObj() })));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::X_Center, 0.f, 0.f, ZC_GUI_RowParams::Y_Center), { text_health.GetObj() })));
 }
 
 G_GUI_P_W_Health::~G_GUI_P_W_Health()
@@ -62,7 +62,7 @@ void G_GUI_P_W_Health::UpdateHealth(int hp_new, G_ObjectType ot_damager)
     // int swindow_height = 0.f;
     // ZC_SWindow::GetSize(swindow_width, swindow_height);
     // float tw_indent_right = swindow_width - tw_X;
-    // tw_subtract->SetNewIndentParams(tw_indent_right, tw_Y, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel);
+    // tw_subtract->SetNewIndentParams_WOI(tw_indent_right, tw_Y, ZC_WOIF__X_Right_Pixel | ZC_WOIF__Y_Bottom_Pixel);
     switch (ot_damager)
     {
     case G_OT__Star: tw_subtract->SetColorFloat(0.8f, 0.22f, 0.f); break;   //  orange color
@@ -132,8 +132,8 @@ void G_GUI_P_W_Health::Callback_Updater(float time)
                 float ind_x = 0.f;
                 float ind_y = 0.f;
                 int flags = 0;
-                (*iter)->GetIndentParams(ind_x, ind_y, flags);
-                (*iter)->SetNewIndentParams(ind_x, ind_y + (y_speed * time), flags);
+                (*iter)->GetIndentParams_WOI(ind_x, ind_y, flags);
+                (*iter)->SetNewIndentParams_WOI(ind_x, ind_y + (y_speed * time), flags);
                 
                 ++iter;
             }

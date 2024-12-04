@@ -22,12 +22,12 @@ G_GUI_W_MainMenu::G_GUI_W_MainMenu()
         { G_LangText{ .lang = G_L_Russian, .text = L"Покинуть игру" }, { .lang = G_L_English, .text = L"Leave the game" } })
 {
     const float distance_y = 20.f;
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, distance_y, 0.f), { text_game.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, distance_y, 0.f), { bt_start.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, distance_y, 0.f), { bt_continue.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, distance_y, 0.f), { bt_continue_best.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, distance_y, 0.f), { bt_options.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Center, distance_y, 0.f), { bt_exit.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { text_game.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { bt_start.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { bt_continue.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { bt_continue_best.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { bt_options.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, distance_y, 0.f, ZC_GUI_RowParams::Y_Center), { bt_exit.GetObj() }));
 
     bt_continue.ChangeButtonActivity(false);
     bt_continue_best.ChangeButtonActivity(G_Config::GetConfigData().level > 1);

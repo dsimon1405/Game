@@ -18,8 +18,9 @@ G_GUI_W_ConfigSaveLevel::G_GUI_W_ConfigSaveLevel()
         // | ZC_GUI_WF__NeedDraw)
         )
 {
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::Right, 0, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) / 2.f), { text_Level_saved.GetObj(), text_level.GetObj() }));
-    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) * 1.5f, ZC_GUI_RowParams::Right, 0, 0), { text_time.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, 0, G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) / 2.f, ZC_GUI_RowParams::Y_Center),
+        { text_Level_saved.GetObj(), text_level.GetObj() }));
+    window.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40) * 1.5f, ZC_GUI_RowParams::X_Right, 0.f, 0.f, ZC_GUI_RowParams::Y_Center), { text_time.GetObj() }));
 }
 
 G_GUI_W_ConfigSaveLevel::~G_GUI_W_ConfigSaveLevel()
