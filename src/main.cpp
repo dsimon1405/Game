@@ -3,15 +3,26 @@
 
 #include <Objects/Particles/Textured/G_TParticle.h>
 #include <ZC/File/ZC_File.h>
+#include <GUI/Text/G_GUI_Fonts.h>
+#include <ZC/GUI/ZC_GUI__Window.h>
+#include <ZC/GUI/Button/ZC_GUI__ButtonNumberText.h>
+#include <System/G_RenderLevel.h>
+#include <ZC/Tools/ZC_Random.h>
+#include <ZC/GUI/ZC_GUI__Switch.h>
+#include <ZC/GUI/ZC_GUI__Text.h>
+#include <ZC/GUI/ZC__GUI.h>
+#include <GUI/Text/G_GUI_Fonts.h>
+void Life_space(ui_zc){}
+void Spawn_shape__fill_to_center(uchar){}
 
 void F(const ZC_Vec3<float>&){}
 int main(int argv, char** args)
 {
     G_System system;
-    // G_GameManager gm;
+    G_GameManager gm;
     
-    G_Camera cam_test(ZC_Function<void(const ZC_Vec3<float>&)>{&F}, ZC_Vec3<float>{ 0.f, 0.f, 0.f });
-    cam_test.SetConnectionToEvents(true);
+    // G_Camera cam_test(ZC_Function<void(const ZC_Vec3<float>&)>{&F}, ZC_Vec3<float>{ 0.f, 0.f, 0.f });
+    // cam_test.SetConnectionToEvents(true);
     
     // const int tex_width = 512.f;
     // const int tex_height = 512.f;
@@ -28,41 +39,50 @@ int main(int argv, char** args)
     // // ZC_Texture::LoadTexture2D(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/flame.png").string().c_str(), 0, GL_REPEAT, GL_REPEAT);
     G_ParticleSystem tp(G_PS_Source
         {
-            .particles_count = 1,
+            // .particles_count = 100,     //  b
+            .particles_count = 10,     //  f
             .life_space = G_PS_Source::LS__world,
             .render = G_PS_Source::Render
                 {
                     .render_level = ZC_RL_Default,
                     .drawer_level = G_DL_AlphaBlending_ParticleFlame,
-                    .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string(),
-                    .columns_count = 3,
-                    .rows_count = 2,
+                    // .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string(),     //  b
+                    // .columns_count = 3,      //  b
+                    // .rows_count = 2,     //  b
+                    .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/flame.png").string(),
+                    .columns_count = 4,
+                    .rows_count = 4,
                 },
             .spawn_shape = G_PS_Source::SpawnShape
                 {
                     .shape = G_PS_Source::SpawnShape::S__Sphere,
-                    .val_1 = 0.f,
-                    .val_2 = 10.f
+                    .fill_to_center = 1.f
                 },
             .spawn_mat_model = G_PS_Source::SpawnMatModel
                 {
-                    .position = { 0.f, 0.f, 5.f },
+                    .translate = { 0.f, 20.f, 5.f },
+                    .scale = { 5.f, 5.f, 5.f }  //  f
                 },
             .size = G_PS_Source::Size
                 {
-                    .width = 2.f,
-                    .height = 2.f,
+                    // .width = 2.f,    //  b
+                    // .height = 2.f,   //  b
+                    .width = 30.f,      //  f
+                    .height = 30.f,     //  f
                 },
             .life_time = G_PS_Source::LifeTime
                 {
                     .secs_to_start_max = 3.f,
                     .secs_min = 2.f,
-                    .secs_max = 10.f
+                    // .secs_max = 10.f    //  b
+                    .secs_max = 3.f    //  f
                 },
             .visibility = G_PS_Source::Visibility
                 {
-                    .appear_secs = 0.8,
-                    .disappear_secs = 1.F,
+                    // .appear_secs = 0.8,      //  b
+                    // .disappear_secs = 1.F,       //  b
+                    .appear_secs = 0.2,     //  f
+                    .disappear_secs = 0.6F,     //  f
                 },
             .move = G_PS_Source::Move
                 {
@@ -70,7 +90,8 @@ int main(int argv, char** args)
                     .move_variable = { 1.f, 0.f, 0.f },
                     .speed_power = 1.f,
                     .speed_min = 4.f,
-                    .speed_max = 13.f
+                    // .speed_max = 13.f   //  b
+                    .speed_max = 7.f   //  f
                 },
             .animation = G_PS_Source::Animation
                 {
