@@ -37,61 +37,60 @@ int main(int argv, char** args)
     // const int tex_rows_count = 2;       //  bubble
     // ZC_Texture::LoadTexture2D(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string().c_str(), 0, GL_REPEAT, GL_REPEAT);
     // // ZC_Texture::LoadTexture2D(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/flame.png").string().c_str(), 0, GL_REPEAT, GL_REPEAT);
-    G_ParticleSystem tp(G_PS_Source
+    G_ParticleSystem ps(G_PS_Source
         {
-            // .particles_count = 100,     //  b
-            .particles_count = 10,     //  f
-            .life_space = G_PS_Source::LS__world,
+            .particles_count = 100,     //  b
+            // .particles_count = 10,     //  f
             .render = G_PS_Source::Render
                 {
                     .render_level = ZC_RL_Default,
                     .drawer_level = G_DL_AlphaBlending_ParticleFlame,
-                    // .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string(),     //  b
-                    // .columns_count = 3,      //  b
-                    // .rows_count = 2,     //  b
-                    .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/flame.png").string(),
-                    .columns_count = 4,
-                    .rows_count = 4,
+                    .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string(),     //  b
+                    .columns_count = 3,      //  b
+                    .rows_count = 2,     //  b
+                    // .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/flame.png").string(),      //  f
+                    // .columns_count = 4,      //  f
+                    // .rows_count = 4,     //  f
                 },
             .spawn_shape = G_PS_Source::SpawnShape
                 {
-                    .shape = G_PS_Source::SpawnShape::S__Sphere,
+                    .shape = G_PS_Source::SpawnShape::S__Circle,
                     .fill_to_center = 1.f
                 },
             .spawn_mat_model = G_PS_Source::SpawnMatModel
                 {
-                    .translate = { 0.f, 20.f, 5.f },
-                    .scale = { 5.f, 5.f, 5.f }  //  f
+                    .translate = { 2.f, 2.f, 2.f },
+                    .scale = { 2.f, 2.f, 2.f }
                 },
             .size = G_PS_Source::Size
                 {
-                    // .width = 2.f,    //  b
-                    // .height = 2.f,   //  b
-                    .width = 30.f,      //  f
-                    .height = 30.f,     //  f
+                    .width = 0.5f,    //  b
+                    .height = 0.5f,   //  b
+                    // .width = 30.f,      //  f
+                    // .height = 30.f,     //  f
                 },
             .life_time = G_PS_Source::LifeTime
                 {
-                    .secs_to_start_max = 3.f,
-                    .secs_min = 2.f,
-                    // .secs_max = 10.f    //  b
-                    .secs_max = 3.f    //  f
+                    .secs_to_start_max = 1.f,
+                    .secs_min = 1.f,
+                    .secs_max = 2.f    //  b
+                    // .secs_max = 3.f    //  f
                 },
             .visibility = G_PS_Source::Visibility
                 {
-                    // .appear_secs = 0.8,      //  b
-                    // .disappear_secs = 1.F,       //  b
-                    .appear_secs = 0.2,     //  f
-                    .disappear_secs = 0.6F,     //  f
+                    .appear_secs = 0.3,      //  b
+                    .disappear_secs = 0.6F,       //  b
+                    // .visibility_appear_secs = 0.2,     //  f
+                    // .visibility_disappear_secs = 0.6F,     //  f
                 },
             .move = G_PS_Source::Move
                 {
                     .direction_type = G_PS_Source::Move::DT__variable_is_direction,
-                    .move_variable = { 1.f, 0.f, 0.f },
+                    .variable = { 0.f, 0.f, 3.f },
                     .speed_power = 1.f,
-                    .speed_min = 4.f,
-                    // .speed_max = 13.f   //  b
-                    .speed_max = 7.f   //  f
+                    .speed_min = 1.f,
+                    .speed_max = 3.f   //  b
+                    // .speed_max = 7.f   //  f
                 },
             .animation = G_PS_Source::Animation
                 {
@@ -101,6 +100,7 @@ int main(int argv, char** args)
                     .secs_offset_to_start_animation = 0.f
                 }
         });
+        ps.SetDrawState(true);
 
         // float tiles_per_second = 7.f;
         // // float width = 30.f;      //  flame
@@ -109,10 +109,10 @@ int main(int argv, char** args)
         // float height = 2.f;        //  buuble
         // float secs_to_start_max = 3.f;  //  takes random from 0 to secs_to_start_max
 
-        // float appear_secs = 0.8f;           //  BUBBLE
-        // float disappear_secs = 1.f;         //  BUBBLE
-        // // float appear_secs = 0.2f;        //  FLAME
-        // // float disappear_secs = 0.6f;     //  FLAME
+        // float visibility_appear_secs = 0.8f;           //  BUBBLE
+        // float visibility_disappear_secs = 1.f;         //  BUBBLE
+        // // float visibility_appear_secs = 0.2f;        //  FLAME
+        // // float visibility_disappear_secs = 0.6f;     //  FLAME
 
         // float pos_x = 0.f;
         // float pos_y = 0.f;
@@ -134,7 +134,7 @@ int main(int argv, char** args)
         // // float move_to_x = 0.f;
         // // float move_to_y = 0.f;
         // // float move_to_z = 6.f;
-        // float move_speed_power = 1.f;
+        // float speed_power = 1.f;
         // float move_speed_min_sec = 4.f;
         // float move_speed_max_sec = 13.f;         //  BUBBLE
         // // float move_speed_max_sec = 7.f;      //  FLAME

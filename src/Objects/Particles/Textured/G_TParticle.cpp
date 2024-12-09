@@ -21,7 +21,7 @@ G_ParticleSystem::G_ParticleSystem(const G_PS_Source& ps_source)
     upSP = new Setup__G_ParticleSystem(this);
 #endif SETUP__G_PARTICLE_SYSTEM
     
-    ds_con.SwitchToDrawLvl(ps_src.render.render_level, ps_src.render.drawer_level);
+    // ds_con.SwitchToDrawLvl(ps_src.render.render_level, ps_src.render.drawer_level);
 
     ec_updater = ZC__Updater::Connect({ &G_ParticleSystem::Callback_Updater, this }, G_UL__game_particles);
 }
@@ -48,8 +48,8 @@ void G_ParticleSystem::Set_Particles_count(ul_zc count)
 
     particles = FillParticles();
 
-    ps.total_secs = 0.f;
-    ps.prev_frame_secs = 0.f;
+    ps.time_total_secs = 0.f;
+    ps.time_prev_frame_secs = 0.f;
 
     ZC_Buffer ssbo_particles(GL_SHADER_STORAGE_BUFFER, G_BIND_SSBO_PARTICLE);
     ssbo_particles.GLNamedBufferStorage(sizeof(G_ParticleSystem::ParticleSystem) + (sizeof(G_ParticleSystem::Particle) * particles.size()), nullptr, GL_DYNAMIC_STORAGE_BIT);
@@ -75,15 +75,6 @@ void G_ParticleSystem::Set_Particles_count(ul_zc count)
     if (need_draw) SetDrawState(need_draw);
 }
 
-void G_ParticleSystem::Set_Life_space(G_PS_Source::LifeSpace life_space)
-{
-    if (ps_src.life_space == life_space) return;
-    ps_src.life_space = life_space;
-    ps.life_space = life_space;
-    for (Particle& p : particles) p.pos_cur = ZC_Vec::Vec4_to_Vec3(ps.mat_model * ZC_Vec4<float>(p.pos_start, 1.f));
-    SetSpawnDataToDefault(true, true);
-}
-
 void G_ParticleSystem::Set_SpawnShape__shape(G_PS_Source::SpawnShape::Shape shape)
 {
     if (ps_src.spawn_shape.shape == shape) return;
@@ -104,8 +95,8 @@ void G_ParticleSystem::Set_SpawnMatModel__translation(const ZC_Vec3<float>& pos)
 {
     if (ps_src.spawn_mat_model.translate == pos) return;
     ps_src.spawn_mat_model.translate = pos;
-    ps.mat_model = CreateSpawnMatModel();
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, mat_model), sizeof(ParticleSystem::mat_model), &ps.mat_model);
+    ps.spawn_mat_model = CreateSpawnMatModel();
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, spawn_mat_model), sizeof(ParticleSystem::spawn_mat_model), &ps.spawn_mat_model);
 }
 
 void G_ParticleSystem::Set_SpawnMatModel__rotate(G_PS_Source::SpawnMatModel::RotateOrder rotate_order, float x, float y, float z)
@@ -116,32 +107,32 @@ void G_ParticleSystem::Set_SpawnMatModel__rotate(G_PS_Source::SpawnMatModel::Rot
     ps_src.spawn_mat_model.rotate_angle_X = x;
     ps_src.spawn_mat_model.rotate_angle_Y = y;
     ps_src.spawn_mat_model.rotate_angle_Z = z;
-    ps.mat_model = CreateSpawnMatModel();
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, mat_model), sizeof(ParticleSystem::mat_model), &ps.mat_model);
+    ps.spawn_mat_model = CreateSpawnMatModel();
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, spawn_mat_model), sizeof(ParticleSystem::spawn_mat_model), &ps.spawn_mat_model);
 }
 
 void G_ParticleSystem::Set_SpawnMatModel__scale(const ZC_Vec3<float>& scale)
 {
     if (scale == ps_src.spawn_mat_model.scale) return;
     ps_src.spawn_mat_model.scale = scale;
-    ps.mat_model = CreateSpawnMatModel();
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, mat_model), sizeof(ParticleSystem::mat_model), &ps.mat_model);
+    ps.spawn_mat_model = CreateSpawnMatModel();
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, spawn_mat_model), sizeof(ParticleSystem::spawn_mat_model), &ps.spawn_mat_model);
 }
 
 void G_ParticleSystem::Set_Size__width(float width)
 {
     if (ps_src.size.width == width) return;
     ps_src.size.width = width;
-    ps.half_width = width / 2.f;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, half_width), sizeof(ParticleSystem::half_width), &ps.half_width);
+    ps.size_half_width = width / 2.f;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, size_half_width), sizeof(ParticleSystem::size_half_width), &ps.size_half_width);
 }
 
 void G_ParticleSystem::Set_Size__height(float height)
 {
     if (ps_src.size.height == height) return;
     ps_src.size.height = height;
-    ps.half_height = height / 2.f;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, half_height), sizeof(ParticleSystem::half_height), &ps.half_height);
+    ps.size_half_height = height / 2.f;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, size_half_height), sizeof(ParticleSystem::size_half_height), &ps.size_half_height);
 }
 
 void G_ParticleSystem::Set_Life_time__secs_to_start_max(float secs_to_start_max)
@@ -150,21 +141,21 @@ void G_ParticleSystem::Set_Life_time__secs_to_start_max(float secs_to_start_max)
     ps_src.life_time.secs_to_start_max = secs_to_start_max;
     for (auto& p : particles)
     {
-        p.secs_to_start = G_ParticleSystem::GetRandom(0.f, ps_src.life_time.secs_to_start_max);
-        p.life_secs_cur = 0.f;
+        p.life_time_secs_to_start = G_ParticleSystem::GetRandom(0.f, ps_src.life_time.secs_to_start_max);
+        p.life_time_secs_cur = 0.f;
     }
     ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 
-    ps.prev_frame_secs = 0.f;
-    ps.total_secs = 0.f;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(ParticleSystem::prev_frame_secs) + sizeof(ParticleSystem::total_secs), &ps.prev_frame_secs);
+    ps.time_prev_frame_secs = 0.f;
+    ps.time_total_secs = 0.f;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, time_prev_frame_secs), sizeof(ParticleSystem::time_prev_frame_secs) + sizeof(ParticleSystem::time_total_secs), &ps.time_prev_frame_secs);
 }
 
 void G_ParticleSystem::Set_Life_time__min(float secs_min)
 {
     if (ps_src.life_time.secs_min == secs_min) return;
     ps_src.life_time.secs_min = secs_min;
-    for (Particle& p : particles) p.life_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
+    for (Particle& p : particles) p.life_time_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
     SetSpawnDataToDefault(true, true);
 }
 
@@ -172,42 +163,50 @@ void G_ParticleSystem::Set_Life_time__max(float secs_max)
 {
     if (ps_src.life_time.secs_max == secs_max) return;
     ps_src.life_time.secs_max = secs_max;
-    for (Particle& p : particles) p.life_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
+    for (Particle& p : particles) p.life_time_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
     SetSpawnDataToDefault(true, true);
 }
 
-void G_ParticleSystem::Set_Visibility__start(float appear_secs)
+void G_ParticleSystem::Set_Visibility__start(float visibility_appear_secs)
 {
-    if (ps_src.visibility.appear_secs == appear_secs) return;
-    ps_src.visibility.appear_secs = appear_secs;
-    ps.appear_secs = appear_secs;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, appear_secs), sizeof(ParticleSystem::appear_secs), &ps.appear_secs);
+    if (ps_src.visibility.appear_secs == visibility_appear_secs) return;
+    ps_src.visibility.appear_secs = visibility_appear_secs;
+    ps.visibility_appear_secs = visibility_appear_secs;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, visibility_appear_secs), sizeof(ParticleSystem::visibility_appear_secs), &ps.visibility_appear_secs);
 }
 
-void G_ParticleSystem::Set_Visibility__end(float disappear_secs)
+void G_ParticleSystem::Set_Visibility__end(float visibility_disappear_secs)
 {
-    if (ps_src.visibility.disappear_secs == disappear_secs) return;
-    ps_src.visibility.disappear_secs = disappear_secs;
-    ps.disappear_secs = disappear_secs;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, disappear_secs), sizeof(ParticleSystem::disappear_secs), &ps.disappear_secs);
+    if (ps_src.visibility.disappear_secs == visibility_disappear_secs) return;
+    ps_src.visibility.disappear_secs = visibility_disappear_secs;
+    ps.visibility_disappear_secs = visibility_disappear_secs;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, visibility_disappear_secs), sizeof(ParticleSystem::visibility_disappear_secs), &ps.visibility_disappear_secs);
 }
 
 void G_ParticleSystem::Set_Move__direction_type(G_PS_Source::Move::DirectionType direction_type)
 {
-
+    if (ps_src.move.direction_type == direction_type) return;
+    ps_src.move.direction_type = direction_type;
+    ps.move_direction_type = direction_type;
+    ps.move_variable = direction_type == G_PS_Source::Move::DT__variable_is_direction ? ZC_Vec::Normalize(ps_src.move.variable) : ps_src.move.variable;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, move_direction_type),
+        sizeof(ParticleSystem::move_direction_type) + sizeof(ParticleSystem::move_variable), &ps.move_direction_type);
 }
 
-void G_ParticleSystem::Set_Move__move_variable(const ZC_Vec3<float>& move_variable)
+void G_ParticleSystem::Set_Move__move_variable(const ZC_Vec3<float>& variable)
 {
-
+    if (ps_src.move.variable == variable) return;
+    ps_src.move.variable = variable;
+    ps.move_variable = ps_src.move.direction_type == G_PS_Source::Move::DT__variable_is_direction ? ZC_Vec::Normalize(variable) : variable;  //  make normalization for DT__variable_is_direction once only aon CPU
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, move_variable), sizeof(ParticleSystem::move_variable), &ps.move_variable);
 }
 
 void G_ParticleSystem::Set_Move__speed_power(float speed_power)
 {
     if (ps_src.move.speed_power == speed_power) return;
     ps_src.move.speed_power = speed_power;
-    ps.speed_power = speed_power;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, speed_power), sizeof(ParticleSystem::speed_power), &ps.speed_power);
+    ps.move_speed_power = speed_power;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, move_speed_power), sizeof(ParticleSystem::move_speed_power), &ps.move_speed_power);
 }
 
 void G_ParticleSystem::Set_Move__speed_min(float speed_min_secs)
@@ -256,82 +255,80 @@ float G_ParticleSystem::GetRandom(float secs_min, float secs_max)
 
 ZC_Mat4<f_zc> G_ParticleSystem::CreateSpawnMatModel()
 {
-    ZC_Mat4<float> mat_model(1.f);
+    ZC_Mat4<float> spawn_mat_model(1.f);
         //  translate
-    mat_model.Translate(ps_src.spawn_mat_model.translate);
+    spawn_mat_model.Translate(ps_src.spawn_mat_model.translate);
         //  rotate
     switch (ps_src.spawn_mat_model.rotate_order)
     {
     case G_PS_Source::SpawnMatModel::RotateOrder::RO_xyz:   //  reverse call order
     {
-        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
     } break;
     case G_PS_Source::SpawnMatModel::RotateOrder::RO_xzy:   //  reverse call order
     {
-        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
-        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
+        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
     } break;
     case G_PS_Source::SpawnMatModel::RotateOrder::RO_yxz:   //  reverse call order
     {
-        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
-        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
+        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
     } break;
     case G_PS_Source::SpawnMatModel::RotateOrder::RO_zxy:   //  reverse call order
     {
-        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
     } break;
     case G_PS_Source::SpawnMatModel::RotateOrder::RO_yzx:
     {
-        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
     } break;
     case G_PS_Source::SpawnMatModel::RotateOrder::RO_zyx:
     {
-        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
-        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
+        if (ps_src.spawn_mat_model.rotate_angle_X != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_X, { 1.f, 0.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Y != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Y, { 0.f, 1.f, 0.f });
+        if (ps_src.spawn_mat_model.rotate_angle_Z != 0.f) spawn_mat_model.Rotate(ps_src.spawn_mat_model.rotate_angle_Z, { 0.f, 0.f, 1.f });
     } break;
     }
         //  scale
-    mat_model.Scale(ps_src.spawn_mat_model.scale);
-    return mat_model;
+    spawn_mat_model.Scale(ps_src.spawn_mat_model.scale);
+    return spawn_mat_model;
 }
 
 G_ParticleSystem::ParticleSystem G_ParticleSystem::CreateParticleSystem()
 {
     return ParticleSystem
     {
-        // .prev_frame_secs = ,     //  calc on gpu
-        // .total_secs = ,          //  calc on gpu
-        .mat_model = CreateSpawnMatModel(),
-        // .bl = ,                  //  calc on gpu
-        // .br = ,                  //  calc on gpu
-        // .tl = ,                  //  calc on gpu
-        // .tr = ,                  //  calc on gpu
-        .half_width = ps_src.size.width / 2.f,
-        .half_height = ps_src.size.height / 2.f,
-        .appear_secs = ps_src.visibility.appear_secs,
-        .disappear_secs = ps_src.visibility.disappear_secs,
-        .life_space = ps_src.life_space,
-        .speed_power = ps_src.move.speed_power,
+            //  time
+        // .time_prev_frame_secs = ,     //  calc on gpu
+        // .time_total_secs = ,          //  calc on gpu
+            //  pos
+        .spawn_mat_model = CreateSpawnMatModel(),
+            //  size
+        // .size_bl = ,                  //  calc on gpu
+        // .size_br = ,                  //  calc on gpu
+        // .size_tl = ,                  //  calc on gpu
+        // .size_tr = ,                  //  calc on gpu
+        .size_half_width = ps_src.size.width / 2.f,
+        .size_half_height = ps_src.size.height / 2.f,
+            //  visibility
+        .visibility_appear_secs = ps_src.visibility.appear_secs,
+        .visibility_disappear_secs = ps_src.visibility.disappear_secs,
+            //  mpve
+        .move_direction_type = ps_src.move.direction_type,
+        .move_variable = ps_src.move.direction_type == G_PS_Source::Move::DT__variable_is_direction ? ZC_Vec::Normalize(ps_src.move.variable) : ps_src.move.variable,   //  in this case there is no need to calculate on the GPU, it is calculated once on the CPU
+        .move_speed_power = ps_src.move.speed_power,
+            //  animation
         .uv_shift_speed = 1.f / ps_src.animation.tiles_per_second,
     };
-}
-
-void G_ParticleSystem::FillParticlePosition(G_ParticleSystem::Particle& rParticle, const ZC_Vec3<float>& pos_start)
-{
-    ZC_Vec3<float> pos_cur = pos_start;
-    if (ps_src.life_space == G_PS_Source::LifeSpace::LS__world)    //  move to world space
-        pos_cur = ZC_Vec::Vec4_to_Vec3(ps.mat_model * ZC_Vec4<float>(pos_start, 1.f));
-    rParticle.pos_cur = pos_cur;
-    rParticle.pos_start = pos_start;
 }
 
 std::vector<G_ParticleSystem::Particle> G_ParticleSystem::FillParticles()
@@ -343,22 +340,25 @@ std::vector<G_ParticleSystem::Particle> G_ParticleSystem::FillParticles()
     {
         particles_temp.emplace_back(Particle
             {
-                .life_secs_total = ps_src.life_time.secs_min == ps_src.life_time.secs_max ? ps_src.life_time.secs_min : GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max),
-                // .life_secs_cur       //  calc on gpu
-                // .life_time_alpha     //  calc on gpu
-                .secs_to_start = ps_src.life_time.secs_to_start_max == 0.f ? 0.f : GetRandom(0.f, ps_src.life_time.secs_to_start_max),
+                    //  life time
+                .life_time_secs_to_start = ps_src.life_time.secs_to_start_max == 0.f ? 0.f : GetRandom(0.f, ps_src.life_time.secs_to_start_max),
+                .life_time_secs_total = ps_src.life_time.secs_min == ps_src.life_time.secs_max ? ps_src.life_time.secs_min : GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max),
+                // .life_time_secs_cur          //  calc on gpu
+                    //  pos
                 .pos_start = {},
-                .pos_cur = {},     //  on start sets on cpu, changes only on gpu
-                // .dir_move_normalized = {1.f, 0.f, 0.f},     //  BUBBLE
-                // .dir_move_normalized = pos == ZC_Vec3<float>() ? ZC_Vec3<float>() : ZC_Vec::Normalize(pos),      //  FLAME
-                .move_speed_secs = ps_src.move.speed_min == ps_src.move.speed_max ? ps_src.move.speed_min
-                    : G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max),
-                // .uvs_id              //  calc on gpu
-                // .uvs_cur_id          //  calc on gpu
+                // .pos_cur                     //  calc on gpu
+                    //  visibility
+                // .visibility_alpha            //  calc on gpu
+                    //  move
+                // .move_dir_normalized         //  calc on gpu
+                .move_speed_secs = ps_src.move.speed_min == ps_src.move.speed_max ? ps_src.move.speed_min : G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max),
+                    //  animation
+                // .uvs_id                      //  calc on gpu
+                // .uvs_cur_id                  //  calc on gpu
             });
     }
 
-    for (Particle& p : particles) p.dir_move_normalized = p.pos_cur == ZC_Vec3<float>() ? ZC_Vec3<float>() : ZC_Vec::Normalize(p.pos_cur);                     //  MAKE SOMETHING THIS THIS, NEED POSITION WICH WILL BE FILLED ONLY IN FillParticlePosition()
+    // for (Particle& p : particles) p.move_dir_normalized = p.pos_cur == ZC_Vec3<float>() ? ZC_Vec3<float>() : ZC_Vec::Normalize(p.pos_cur);                     //  MAKE SOMETHING THIS THIS, NEED POSITION WICH WILL BE FILLED ONLY IN FillParticlePosition()
     
     FillParticlesPosition(particles_temp);
 
@@ -370,70 +370,168 @@ void G_ParticleSystem::FillParticlesPosition(std::vector<G_ParticleSystem::Parti
     switch (ps_src.spawn_shape.shape)
     {
     case G_PS_Source::SpawnShape::S__Circle: FillShapeCircle(rParticles); break;
-    case G_PS_Source::SpawnShape::S__Sphere: FillShapeSphera(rParticles); break;
-    case G_PS_Source::SpawnShape::S__Cube: break;
-    case G_PS_Source::SpawnShape::S__Square: break;
+    case G_PS_Source::SpawnShape::S__Sphere: FillShapeSphere(rParticles, false); break;
+    case G_PS_Source::SpawnShape::S__Cube: FillShapeCube(rParticles); break;
+    case G_PS_Source::SpawnShape::S__Square: FillShapeSquare(rParticles); break;
+    case G_PS_Source::SpawnShape::S__Hemisphere: FillShapeSphere(rParticles, true); break;
     }
 }
 
-void G_ParticleSystem::FillShapeSphera(std::vector<G_ParticleSystem::Particle>& rParticles)
+void G_ParticleSystem::SetAxisQuaterSigne2D(ZC_Vec3<float>& pos_xy)
 {
-    float radius_min = radius_or_length_max - (radius_or_length_max * ps_src.spawn_shape.fill_to_center);
-    bool random_radius = radius_min != radius_or_length_max;
-
-    float rot_angle = ZC_angle_360f / std::floor(std::sqrt(ps_src.particles_count));   //  round to integer count of particles in mesh
-
-    ul_zc rParticles_i = 0;
-    for (float cur_angle_X = 0.f; cur_angle_X < ZC_angle_360f; cur_angle_X = cur_angle_X + rot_angle > 359.9f ? ZC_angle_360f : cur_angle_X + rot_angle)
+    enum AxisQuater
+    {                       //  If +x to right, +y to up
+        x_neg__y_pos,       //  tl
+        x_pos__y_pos,       //  tr
+        x_pos__y_neg,       //  br
+        x_neg__y_neg        //  bl
+    } static last_quater = x_neg__y_pos;
+    switch (last_quater)  //  each new particle have pos at the next quater of the shape with clockwise
     {
-        for (float cur_angle_Z = 0.f; cur_angle_Z < ZC_angle_360f; cur_angle_Z = cur_angle_Z + rot_angle > 359.9f ? ZC_angle_360f : cur_angle_Z + rot_angle, ++rParticles_i)
-        {       //  calculate position
-            ZC_Mat4<float> model(1.f);
-            if (cur_angle_X != 0.f) model.Rotate(cur_angle_X, { 1.f, 0.f, 0.f});
-            if (cur_angle_Z != 0.f) model.Rotate(cur_angle_Z, { 0.f, 0.f, 1.f});
-            ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, random_radius ? float(GetRandom(radius_min, radius_or_length_max)) : radius_min, 0.f, 1.f));
-            FillParticlePosition(rParticles[rParticles_i], pos);
-        }
+    case x_neg__y_pos: pos_xy[0] *= -1.f; break;
+    case x_pos__y_pos: break;   //  default values are positive
+    case x_pos__y_neg: pos_xy[1] *= -1.f; break;
+    case x_neg__y_neg: { pos_xy[0] *= -1.f, pos_xy[1]*= -1.f; } break;
     }
+    last_quater = AxisQuater(last_quater + 1);
+    if (last_quater > x_neg__y_neg) last_quater = x_neg__y_pos;
+}
 
-    size_t rest_sphere_particles = rParticles.size() - rParticles_i;
-    for (; rParticles_i < rest_sphere_particles; ++rParticles_i)  //  sphere mesh may not be edeal, so rest particles add with random rotation
+void G_ParticleSystem::SetAxisQuaterSigne3D(ZC_Vec3<float>& pos_xyz)
+{
+    enum AxisEighth
+    {                           //  Look from -y: +x to right, +y to front, +z to up
+        x_neg__y_pos__z_pos,    //  tl far
+        x_pos__y_pos__z_pos,    //  tr far
+        x_pos__y_neg__z_pos,    //  tr near
+        x_neg__y_neg__z_pos,    //  tl near
+        x_neg__y_pos__z_neg,    //  bl far
+        x_pos__y_pos__z_neg,    //  br far
+        x_pos__y_neg__z_neg,    //  br near
+        x_neg__y_neg__z_neg,    //  bl near
+    } static last_eighth = x_neg__y_pos__z_pos;
+    switch (last_eighth)  //  each new particle have pos at the next eighth of the shape with clockwise, first far then near
     {
-        ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(ZC_Mat4(1.f).Rotate(ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i), {1.f, 1.f, 1.f})
-            * ZC_Vec4<float>(0.f, random_radius ? float(GetRandom(radius_min, radius_or_length_max)) : radius_min, 0.f, 1.f));
-        FillParticlePosition(rParticles[rParticles_i], pos);
+    case x_neg__y_pos__z_pos: pos_xyz[0] *= -1.f; break;
+    case x_pos__y_pos__z_pos: break;   //  default values are positive
+    case x_pos__y_neg__z_pos: pos_xyz[1] *= -1.f; break;
+    case x_neg__y_neg__z_pos: { pos_xyz[0] *= -1.f; pos_xyz[1] *= -1.f; } break;
+    case x_neg__y_pos__z_neg: { pos_xyz[0] *= -1.f; pos_xyz[2] *= -1.f; } ; break;
+    case x_pos__y_pos__z_neg: pos_xyz[2] *= -1.f; break;
+    case x_pos__y_neg__z_neg: { pos_xyz[1] *= -1.f; pos_xyz[2] *= -1.f; } ; break;
+    case x_neg__y_neg__z_neg: pos_xyz *= -1.f; break;
     }
+    last_eighth = AxisEighth(last_eighth + 1);
+    if (last_eighth > x_neg__y_neg__z_neg) last_eighth = x_neg__y_pos__z_pos;
 }
 
 void G_ParticleSystem::FillShapeCircle(std::vector<G_ParticleSystem::Particle>& rParticles)
 {
-    float radius_min = radius_or_length_max - (radius_or_length_max * ps_src.spawn_shape.fill_to_center);
-    bool random_radius = radius_min != radius_or_length_max;
+    float radius_min = radius_or_half_length_max - (radius_or_half_length_max * ps_src.spawn_shape.fill_to_center);
 
     for (Particle& p : rParticles)
     {
         float dir_x = f_zc(ZC_Random::GetRandomInt(1, i_100)) / f_100;
         float dir_y = f_zc(ZC_Random::GetRandomInt(1, i_100)) / f_100;
-        ZC_Vec2<float> pos_xy = ZC_Vec::MoveByLength({}, { dir_x, dir_y }, random_radius ? GetRandom(radius_min, radius_or_length_max) : radius_or_length_max);
+        ZC_Vec2<float> pos_xy = ZC_Vec::MoveByLength({}, { dir_x, dir_y }, radius_min != radius_or_half_length_max ? GetRandom(radius_min, radius_or_half_length_max) : radius_or_half_length_max);
+        p.pos_start = ZC_Vec3<float>(pos_xy[0], pos_xy[1], 0.f);
+        SetAxisQuaterSigne2D(p.pos_start);
+    }
+}
 
-        enum Quater
-        {                       //  If +x to right, +y to up
-            x_neg__y_pos,       //  tl
-            x_pos__y_pos,       //  tr
-            x_pos__y_neg,       //  br
-            x_neg__y_neg        //  bl
-        } static last_quater = x_neg__y_pos;
-        switch (last_quater)  //  each new particle have pos at the next quater of th ecircle with clockwise
+void G_ParticleSystem::FillShapeSphere(std::vector<Particle>& rParticles, bool hemisphere)
+{
+    float radius_min = radius_or_half_length_max - (radius_or_half_length_max * ps_src.spawn_shape.fill_to_center);
+
+    float rot_angle = ZC_angle_360f / std::floor(std::sqrt(ps_src.particles_count));   //  round to integer count of particles in mesh
+        //  random way
+    for (Particle& p : rParticles)
+    {
+        float rotate_z = GetRandom(0.f, 90.f);
+        float rotate_x = GetRandom(0.f, 90.f);
+        ZC_Mat4<float> model(1.f);
+        if (rotate_x != 0.f) model.Rotate(rotate_x, { 1.f, 0.f, 0.f});
+        if (rotate_z != 0.f) model.Rotate(rotate_z, { 0.f, 0.f, -1.f});
+        ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, radius_min != radius_or_half_length_max ? float(GetRandom(radius_min, radius_or_half_length_max)) : radius_min, 0.f, 1.f));
+        hemisphere ? SetAxisQuaterSigne2D(pos) : SetAxisQuaterSigne3D(pos);     //  if hemisphere, fill only Z positive quaters
+        p.pos_start = pos;
+    }
+
+        //  calculate way, not good
+    // ul_zc rParticles_i = 0;
+    // for (float cur_angle_X = 0.f; cur_angle_X < ZC_angle_360f; cur_angle_X = cur_angle_X + rot_angle > 359.9f ? ZC_angle_360f : cur_angle_X + rot_angle)
+    // {
+    //     for (float cur_angle_Z = 0.f; cur_angle_Z < ZC_angle_360f; cur_angle_Z = cur_angle_Z + rot_angle > 359.9f ? ZC_angle_360f : cur_angle_Z + rot_angle, ++rParticles_i)
+    //     {       //  calculate position
+    //         ZC_Mat4<float> model(1.f);
+    //         if (cur_angle_X != 0.f) model.Rotate(cur_angle_X, { 1.f, 0.f, 0.f});
+    //         if (cur_angle_Z != 0.f) model.Rotate(cur_angle_Z, { 0.f, 0.f, 1.f});
+    //         ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, radius_min != radius_or_half_length_max ? float(GetRandom(radius_min, radius_or_half_length_max)) : radius_min, 0.f, 1.f));
+    //         rParticles[rParticles_i].pos_start = pos;
+    //     }
+    // }
+
+    // size_t rest_sphere_particles = rParticles.size() - rParticles_i;
+    // for (; rParticles_i < rest_sphere_particles; ++rParticles_i)  //  sphere mesh may not be edeal, so rest particles add with random rotation
+    // {
+    //     ZC_Vec3<float> pos = ZC_Vec::Vec4_to_Vec3(ZC_Mat4(1.f).Rotate(ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i), {1.f, 1.f, 1.f})
+    //         * ZC_Vec4<float>(0.f, radius_min != radius_or_half_length_max ? float(GetRandom(radius_min, radius_or_half_length_max)) : radius_min, 0.f, 1.f));
+    //     rParticles[rParticles_i].pos_start = pos;
+    // }
+}
+
+void G_ParticleSystem::FillShapeSquare(std::vector<Particle>& rParticles)
+{
+    float half_length_min = radius_or_half_length_max - (radius_or_half_length_max * ps_src.spawn_shape.fill_to_center);
+    
+    enum ZeroHalfLengthMin  //  to have empty space into the shape equal to half length min need to use random from zero for one of the axises X or Y
+    {
+        ZHLM_x,
+        ZHLM_y
+    } static zhlm = ZHLM_x;
+    
+    i_zc quater_counter = 0;
+    for (Particle& p : rParticles)
+    {
+        float pos_x = GetRandom(zhlm == ZHLM_x ? 0.f : half_length_min, radius_or_half_length_max);
+        float pos_y = GetRandom(zhlm == ZHLM_y ? 0.f : half_length_min, radius_or_half_length_max);
+        p.pos_start = ZC_Vec3<float>(pos_x, pos_y, 0.f);
+        SetAxisQuaterSigne2D(p.pos_start);
+
+        if (++quater_counter == 4)     //  change random state for half_length_min each full-filled round of quaters
         {
-        case x_neg__y_pos: pos_xy[0] *= -1.f; break;
-        case x_pos__y_pos: break;   //  default values are positive
-        case x_pos__y_neg: pos_xy[1] *= -1.f; break;
-        case x_neg__y_neg: pos_xy *= -1.f; break;
+            zhlm = zhlm == ZHLM_x ? ZHLM_y : ZHLM_x;
+            quater_counter = 0;
         }
-        last_quater = Quater(last_quater + 1);
-        if (last_quater > x_neg__y_neg) last_quater = x_neg__y_pos;
+    }
+}
+    
+void G_ParticleSystem::FillShapeCube(std::vector<Particle>& rParticles)
+{
+    float half_length_min = radius_or_half_length_max - (radius_or_half_length_max * ps_src.spawn_shape.fill_to_center);
+    
+    enum UseHalfLengthMin  //  to have empty space into the shape equal to half length min need to use random from zero for one of the axises X or Y or Z
+    {
+        UHLM_x,
+        UHLM_y,
+        UHLM_z
+    } static uhlm = UHLM_x;
 
-        FillParticlePosition(p, { pos_xy[0], pos_xy[1], 0.f });
+    i_zc eighth_counter = 0;
+    for (Particle& p : rParticles)
+    {
+        float pos_x = GetRandom(uhlm == UHLM_x ? half_length_min : 0.f, radius_or_half_length_max);
+        float pos_y = GetRandom(uhlm == UHLM_y ? half_length_min : 0.f, radius_or_half_length_max);
+        float pos_z = GetRandom(uhlm == UHLM_z ? half_length_min : 0.f, radius_or_half_length_max);
+        p.pos_start = ZC_Vec3<float>(pos_x, pos_y, pos_z);
+        SetAxisQuaterSigne3D(p.pos_start);
+
+        if (++eighth_counter == 8)     //  change random state for half_length_min each full-filled round of the eighth.
+        {
+            uhlm = UseHalfLengthMin(uhlm + 1);
+            if (uhlm > UHLM_z) uhlm = UHLM_x;
+            eighth_counter = 0;
+        }
     }
 }
 
@@ -496,11 +594,11 @@ ZC_DrawerSet G_ParticleSystem::CreateDrawerSet()
 
 void G_ParticleSystem::SetSpawnDataToDefault(bool update_gpu_particle_system, bool update_gpu_particles)
 {
-    ps.prev_frame_secs = 0.f;
-    ps.total_secs = 0.f;
+    ps.time_prev_frame_secs = 0.f;
+    ps.time_total_secs = 0.f;
     if (update_gpu_particle_system) ds.buffers.front().GLNamedBufferSubData(0, sizeof(ParticleSystem), &ps);
 
-    for (Particle& p : particles) p.life_secs_cur = 0.f;
+    for (Particle& p : particles) p.life_time_secs_cur = 0.f;
     if (update_gpu_particles) ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
@@ -527,24 +625,24 @@ void G_ParticleSystem::Callback_Updater(float time)
 
     timer.StartPoint();
 
+    // ds_con.SwitchToDrawLvl(ps_src.render.render_level, ps_src.render.drawer_level);
 
-    static const float rot_speed_XY = 60.f;
-    static const float rot_speed_Z = 3.f;
-    static float cur_angle_XY = 0.f;
-    static float cur_angle_Z = 0.f;
-    static float dist_to_center = 142;
+    // static const float rot_speed_XY = 60.f;
+    // static const float rot_speed_Z = 3.f;
+    // static float cur_angle_XY = 0.f;
+    // static float cur_angle_Z = 0.f;
+    // static float dist_to_center = 142;
+    // cur_angle_XY += rot_speed_XY * time;
+    // cur_angle_Z += rot_speed_Z * time;
+    // ZC_Mat4<float> model = ZC_Mat4<float>(1.f).Rotate(cur_angle_Z, {0.f, 0.f, 1.f}).Translate({ 0.f, dist_to_center, 10.f })
+    //     .Rotate(cur_angle_XY, { 1.f, 1.f, 0.f });
+    // ZC_Vec3<float> star_center = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, 0.f, 0.f, 1.f));
+    // Set_SpawnMatModel__translation(star_center);
 
-    cur_angle_XY += rot_speed_XY * time;
-    cur_angle_Z += rot_speed_Z * time;
-    ZC_Mat4<float> model = ZC_Mat4<float>(1.f).Rotate(cur_angle_Z, {0.f, 0.f, 1.f}).Translate({ 0.f, dist_to_center, 10.f })
-        .Rotate(cur_angle_XY, { 1.f, 1.f, 0.f });
-    ZC_Vec3<float> star_center = ZC_Vec::Vec4_to_Vec3(model * ZC_Vec4<float>(0.f, 0.f, 0.f, 1.f));
-    Set_SpawnMatModel__translation(star_center);
 
-
-    ps.prev_frame_secs = time;
-    ps.total_secs += time;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(ps.prev_frame_secs) + sizeof(ps.total_secs), &ps.prev_frame_secs);
+    ps.time_prev_frame_secs = time;
+    ps.time_total_secs += time;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, time_prev_frame_secs), sizeof(ps.time_prev_frame_secs) + sizeof(ps.time_total_secs), &ps.time_prev_frame_secs);
 
         //  update time to uniform
     // G_ParticleSystem::pStatic->unData[0][0] = (float)cl.Time<ZC_Nanoseconds>() / 1000000000.f;   //  to seconds
@@ -568,9 +666,9 @@ void G_ParticleSystem::Callback_Updater(float time)
     // ds.buffers.front().GLNamedBufferSubData(0ll, sizeof(ZC_Vec4<float>) * pos_and_life_time.size(), pos_and_life_time.data());
     
 #else
-    ps.prev_frame_secs = time;
-    ps.total_secs += time;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, prev_frame_secs), sizeof(ps.prev_frame_secs) + sizeof(ps.total_secs), &ps);
+    ps.time_prev_frame_secs = time;
+    ps.time_total_secs += time;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, time_prev_frame_secs), sizeof(ps.time_prev_frame_secs) + sizeof(ps.time_total_secs), &ps);
     // G_ParticleSystem::pStatic->unData[0][0] = (float)cl.Time<ZC_Nanoseconds>() / 1000000000.f;   //  to seconds
 #endif
 }

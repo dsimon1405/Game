@@ -25,8 +25,9 @@ struct G_PS_Source
         {
             S__Circle = 0,
             S__Sphere,
-            S__Cube,
             S__Square,
+            S__Cube,
+            S__Hemisphere
         };
 
         Shape shape = S__Circle;
@@ -47,14 +48,14 @@ struct G_PS_Source
             RO_zyx,
         };
             //  translate
-        ZC_Vec3<f_zc> translate;        //  ParticleSystem::mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
+        ZC_Vec3<f_zc> translate;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
             //  rotate
         RotateOrder rotate_order = RO_xyz;
-        f_zc rotate_angle_X = 0.f;        //  ParticleSystem::mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
-        f_zc rotate_angle_Y = 0.f;        //  ParticleSystem::mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
-        f_zc rotate_angle_Z = 0.f;        //  ParticleSystem::mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
+        f_zc rotate_angle_X = 0.f;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
+        f_zc rotate_angle_Y = 0.f;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
+        f_zc rotate_angle_Z = 0.f;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
             //  scale
-        ZC_Vec3<float> scale;        //  ParticleSystem::mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
+        ZC_Vec3<float> scale;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
     };
         //  Particle size
     struct Size
@@ -65,15 +66,15 @@ struct G_PS_Source
         //  Parrticle life time params.
     struct LifeTime
     {
-        f_zc secs_to_start_max = 0.f;   //  max seconds to start particle's life. Particle::secs_to_start - takes random [0, secs_to_start_max]
-        f_zc secs_min = 1.f;    //  particle life time calculation param. Particle::life_secs_total takes random [secs_min, secs_max]
-        f_zc secs_max = 1.f;    //  particle life time calculation param. Particle::life_secs_total takes random [secs_min, secs_max]
+        f_zc secs_to_start_max = 0.f;   //  max seconds to start particle's life. Particle::life_time_secs_to_start - takes random [0, secs_to_start_max]
+        f_zc secs_min = 1.f;    //  particle life time calculation param. Particle::life_time_secs_total takes random [secs_min, secs_max]
+        f_zc secs_max = 1.f;    //  particle life time calculation param. Particle::life_time_secs_total takes random [secs_min, secs_max]
     };
         //  Particle alpha channel params.
     struct Visibility
     {
         float appear_secs = 0.f;        //  particle appear during this time. Counted from the particle's respawn
-        float disappear_secs = 0.f;     //  particle disappears during this time. Start disappear from -> Particle::life_secs_total - disappear_secs
+        float disappear_secs = 0.f;     //  particle disappears during this time. Start disappear from -> Particle::life_time_secs_total - visibility_disappear_secs
     };
         //  Particle move params.
     struct Move
@@ -81,12 +82,12 @@ struct G_PS_Source
             //  model of direction for each particle
         enum DirectionType
         {
-            DT__from_particles_center    = 0,    //  Default direction, ignore G_ParticleMoveSet::move_variable. Use the normalized Particle::pos_start (particles local space diraction) as the direction of movement. If G_PLS__world_space is used, when a particle spawns, local space direction will rotate (just rotate!) with ParticleSystem::mat_model to have the actual direction at start.
-            DT__variable_is_direction    = 1,    //  All particles will have the same move direction sets at G_ParticleMoveSet::move_variable (direction in particles local space) when spawned. If G_PLS__world_space is used, when a particle spawns, local space direction will rotate (just rotate!) with ParticleSystem::mat_model to have the actual direction at start.
-            DT__variable_is_destination  = 2,    //  G_ParticleMoveSet::move_variable is final destination (in particles local space) for all particles for wich each particle calculate direction. Destination does not rotates, no metter woch uses LS__particle_system LS__world
+            DT__from_particles_center    = 0,    //  Default direction, ignore Move::variable. On gpu use the normalized Particle::pos_start (particles local space diraction) as the direction of movement. If G_PLS__world_space is used, when a particle spawns, local space direction will rotate (just rotate!) with ParticleSystem::spawn_mat_model to have the actual direction at start.
+            DT__variable_is_direction    = 1,    //  All particles will have the same move direction sets at G_ParticleMoveSet::variable (direction in particles local space) when spawned. If G_PLS__world_space is used, when a particle spawns, local space direction will rotate (just rotate!) with ParticleSystem::spawn_mat_model to have the actual direction at start.
+            DT__variable_is_destination  = 2,    //  G_ParticleMoveSet::variable is final destination (in particles local space) for all particles for wich each particle calculate direction. Destination does not rotates, no metter woch uses LS__particle_system LS__world
         };
-        DirectionType direction_type = DT__from_particles_center;   //  help calculate Particle::dir_move_normalized
-        ZC_Vec3<float> move_variable;       //  see DT__variable_is_direction, DT__variable_is_destination
+        DirectionType direction_type = DT__from_particles_center;   //  help calculate Particle::move_dir_normalized
+        ZC_Vec3<float> variable;       //  see DT__variable_is_direction, DT__variable_is_destination
         float speed_power = 1.f;       //  coefficient of movement speed of all particles. ParticleSystem::speed_power. Speed power of all particles (multiplied by the individual speed of each particle). If 0 particles do not move.
         float speed_min = 1.f;         //  particle move speed calculate param. ParticleSystem::move_speed_secs - takes random [speed_min, speed_max]
         float speed_max = 1.f;         //  particle move speed calculate param. ParticleSystem::move_speed_secs - takes random [speed_min, speed_max]
@@ -113,14 +114,7 @@ struct G_PS_Source
         float secs_offset_to_start_animation = 0.f;      //  calculates seconds to start animation, while not start shows first tile
     };
 
-    enum LifeSpace
-    {
-        LS__particle_system = 0,    //  particles moves in the particles local space in compute shader and then in the geometry shader with ParticleSystem::mat_model matrix translates to the world position (if mat_model changes all particles will change there positions).
-        LS__world = 1,    //  when spawned, each particle gets a world position by multiplying ParticleSystem::mat_model in the compute shader, then moves while it is alive in the compute shader (changing mat_model does not affect particles that are already alive, only particles that will reborn).
-    };
-
     ul_zc particles_count = 1;
-    LifeSpace life_space = LS__particle_system;     //  ParticleSystem::life_space
     Render render;
     SpawnShape spawn_shape;
     SpawnMatModel spawn_mat_model;
@@ -149,7 +143,6 @@ public:
     bool GetDrawState();
 
     void Set_Particles_count(ul_zc count);
-    void Set_Life_space(G_PS_Source::LifeSpace life_space);
     void Set_SpawnShape__shape(G_PS_Source::SpawnShape::Shape shape);
     void Set_SpawnShape__fill_to_center(float fill_to_center);
     void Set_SpawnMatModel__translation(const ZC_Vec3<float>& trans);
@@ -160,10 +153,10 @@ public:
     void Set_Life_time__secs_to_start_max(float secs_to_start_max);
     void Set_Life_time__min(float secs_min);
     void Set_Life_time__max(float secs_max);
-    void Set_Visibility__start(float appear_secs);
-    void Set_Visibility__end(float disappear_secs);
+    void Set_Visibility__start(float visibility_appear_secs);
+    void Set_Visibility__end(float visibility_disappear_secs);
     void Set_Move__direction_type(G_PS_Source::Move::DirectionType direction_type);
-    void Set_Move__move_variable(const ZC_Vec3<float>& move_variable);
+    void Set_Move__move_variable(const ZC_Vec3<float>& variable);
     void Set_Move__speed_power(float speed_power);
     void Set_Move__speed_min(float speed_min_secs);
     void Set_Move__speed_max(float speed_max_secs);
@@ -191,21 +184,19 @@ private:
         //  particle
     struct Particle    //  std 430 to avoid problems with alignment, don't use mat and vec types!
     {
-        float life_secs_total = 0.f;
-        float life_secs_cur = 0.f;
-
-        float life_time_alpha = 0.f;
-
-        float secs_to_start = 0.f;
-
+            //  life time
+        float life_time_secs_to_start = 0.f;   //  secs to start life time
+        float life_time_secs_total = 0.f;      //  life time total secs
+        float life_time_secs_cur = 0.f;        //  life time cur secs
             //  position
         ZC_Vec3<float> pos_start;
         ZC_Vec3<float> pos_cur;
-        
-        ZC_Vec3<float> dir_move_normalized;
+            //  visibility
+        float visibility_alpha = 0.f;
+            //  move
+        ZC_Vec3<float> move_dir_normalized;
         float move_speed_secs = 0.f;
-
-            //  animation, uv
+            //  animation
         uint uvs_id = 0u;
         uint uvs_cur_id = 0u;
     };
@@ -213,32 +204,30 @@ private:
     {
                 //  Update every frame on the cpu
             //  time
-        float prev_frame_secs = 0.f;
-        float total_secs = 0.f;   //  seconds from the start of particle system drawing
+        float time_prev_frame_secs = 0.f;
+        float time_total_secs = 0.f;   //  seconds from the start of particle system drawing
                 //  may be changed
             //  origin pos
-        ZC_Mat4<float> mat_model;   //  may be located in other SSBOs and one calculated system may be use in different places
+        ZC_Mat4<float> spawn_mat_model;   //  may be located in other SSBOs and one calculated system may be use in different places
 
                 //  Update only on configuration
+            //  size
             //  corners rotated face to cam
-        ZC_Vec3<float> bl;
-        ZC_Vec3<float> br;
-        ZC_Vec3<float> tl;
-        ZC_Vec3<float> tr;
+        ZC_Vec3<float> size_bl;
+        ZC_Vec3<float> size_br;
+        ZC_Vec3<float> size_tl;
+        ZC_Vec3<float> size_tr;
             //  particle size for corners calculation
-        float half_width = 0.f;
-        float half_height = 0.f;
+        float size_half_width = 0.f;
+        float size_half_height = 0.f;
             //  visibility
-        float appear_secs = 0.f;
-        float disappear_secs = 0.f;
-
-            //  position
-        G_PS_Source::LifeSpace life_space;     //  look enum G_ParticleLifeSpace
-                //  move
-        
-        float speed_power = 0.f;     //  total move speed of all particles
-        
-            //  Animation
+        float visibility_appear_secs = 0.f;
+        float visibility_disappear_secs = 0.f;
+            //  move
+        G_PS_Source::Move::DirectionType move_direction_type = G_PS_Source::Move::DirectionType::DT__from_particles_center;     //  see G_PS_Source::Move::DirectionType
+        ZC_Vec3<float> move_variable;       //  see G_PS_Source::Move::DirectionType
+        float move_speed_power = 0.f;       //  total move speed of all particles
+            //  animation
         float uv_shift_speed = 0.f;   //  how much change tiles in second
 
         // Particle particles[];    AT GPU
@@ -247,7 +236,7 @@ private:
     static inline const float f_100 = 100.f;
     static inline const int i_100 = 100;
 
-    static inline float radius_or_length_max = 1.f;     //  max radius or length of the filling shape
+    static inline float radius_or_half_length_max = 1.f;     //  max radius or length of the filling shape
 
     G_PS_Source ps_src;
     ParticleSystem ps;
@@ -260,13 +249,15 @@ private:
 
     ZC_Mat4<f_zc> CreateSpawnMatModel();
     ParticleSystem CreateParticleSystem();
-    void FillParticlePosition(Particle& rParticle, const ZC_Vec3<float>& pos_start);
 
     std::vector<Particle> FillParticles();
     void FillParticlesPosition(std::vector<Particle>& rParticles);
-    void FillShapeSphera(std::vector<Particle>& rParticles);
-    // ZC_Vec2<float> CalcRandPosXYInCircle();
+    void SetAxisQuaterSigne2D(ZC_Vec3<float>& pos_xy);
+    void SetAxisQuaterSigne3D(ZC_Vec3<float>& pos_xyz);
     void FillShapeCircle(std::vector<Particle>& rParticles);
+    void FillShapeSphere(std::vector<Particle>& rParticles, bool hemisphere);
+    void FillShapeSquare(std::vector<Particle>& rParticles);
+    void FillShapeCube(std::vector<Particle>& rParticles);
 
     ZC_DrawerSet CreateDrawerSet();
 
@@ -286,6 +277,7 @@ private:
 #include <ZC/GUI/ZC_GUI__Text.h>
 #include <ZC/GUI/ZC__GUI.h>
 #include <GUI/Text/G_GUI_Fonts.h>
+#include <ZC/GUI/ZC_GUI__CheckBox.h>
 
 struct Setup__G_ParticleSystem
 {
@@ -299,10 +291,10 @@ struct Setup__G_ParticleSystem
     //     float height = 2.f;        //  buuble
     //     float secs_to_start_max = 3.f;  //  takes random from 0 to secs_to_start_max
 
-    //     float appear_secs = 0.8f;           //  BUBBLE
-    //     float disappear_secs = 1.f;         //  BUBBLE
-    //     // float appear_secs = 0.2f;        //  FLAME
-    //     // float disappear_secs = 0.6f;     //  FLAME
+    //     float visibility_appear_secs = 0.8f;           //  BUBBLE
+    //     float visibility_disappear_secs = 1.f;         //  BUBBLE
+    //     // float visibility_appear_secs = 0.2f;        //  FLAME
+    //     // float visibility_disappear_secs = 0.6f;     //  FLAME
 
     //     float pos_x = 0.f;
     //     float pos_y = 0.f;
@@ -334,11 +326,9 @@ struct Setup__G_ParticleSystem
     ZC_GUI__WinImmutable win;
 
     ZC_GUI__ButtonNumberText<ui_zc> bnt__particles_count;
-    ZC_GUI__Text t__life_space;
-    ZC_GUI__SwitchDropDown sdd__life_space;
 
     std::wstring wstr_spawn_shape__radius = L"Radius";
-    std::wstring wstr_spawn_shape__length = L"Length";
+    std::wstring wstr_spawn_shape__half_length = L"Half length";
     ZC_GUI__Text t__spawn_shape;
     ZC_GUI__SwitchDropDown sdd__spawn_shape__shape;
     ZC_GUI__ButtonNumberText<uch_zc> bnt__spawn_shape__fill_to_center;
@@ -393,12 +383,10 @@ struct Setup__G_ParticleSystem
         : pPS(_pPS),
         win(ZC_WOIData(300.f, 600.f, 0.f, 0.f, ZC_WOIF__X_Center_Pixel | ZC_WOIF__Y_Center_Pixel), ZC_GUI_WF__Movable | ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Scrollable),
         bnt__particles_count(ZC_GUI_ButtonNumber<ui_zc>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.particles_count, 1, 10000, 1, 2, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Particles_count, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Particles amount", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
-        t__life_space(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Life space", true, 0, ZC_GUI_TextAlignment::Left),
-        sdd__life_space(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"Local", L"World" }, pPS->c_ps_src.life_space, 0.f, 0.f, { &Setup__G_ParticleSystem::Life_space, this }, ZC_GUI_ColorsDropDown(ZC_GUI_ColorsButton(ZC_PackColorUCharToUInt_RGB(40, 40, 40), ZC_PackColorUCharToUInt_RGB(60, 60, 60), ZC_PackColorUCharToUInt_RGB(80, 80, 80), ZC_PackColorUCharToUInt_RGB(100, 100, 100)), ZC_PackColorUCharToUInt_RGB(200, 200, 200), ZC_PackColorUCharToUInt_RGB(150, 150, 150))),
             //  spawn shape
         t__spawn_shape(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Spawn Shape ", true, 0, ZC_GUI_TextAlignment::Left),
-        sdd__spawn_shape__shape(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"Circle", L"Sircle", L"Cube", L"Square" }, pPS->c_ps_src.life_space, 0.f, 0.f, { &Setup__G_ParticleSystem::Spawn_shape__shape, this }, ZC_GUI_ColorsDropDown(ZC_GUI_ColorsButton(ZC_PackColorUCharToUInt_RGB(40, 40, 40), ZC_PackColorUCharToUInt_RGB(60, 60, 60), ZC_PackColorUCharToUInt_RGB(80, 80, 80), ZC_PackColorUCharToUInt_RGB(100, 100, 100)), ZC_PackColorUCharToUInt_RGB(200, 200, 200), ZC_PackColorUCharToUInt_RGB(150, 150, 150))),
-        bnt__spawn_shape__fill_to_center(ZC_GUI_ButtonNumber<uch_zc>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0, 0, pPS->c_ps_src.spawn_shape.fill_to_center * 100, 0, 100, 1, 5, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Spawn_shape__fill_to_center, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Fill to center %", true, G_GUI_Fonts::Get(G_GUI_FN__Arial_20)->CalculateWstrWidth(wstr_spawn_shape__length), ZC_GUI_TextAlignment::Right, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
+        sdd__spawn_shape__shape(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"Circle", L"Sphere", L"Square", L"Cube", L"Hemisphere" }, ui_zc(pPS->c_ps_src.spawn_shape.shape), 0.f, 0.f, { &Setup__G_ParticleSystem::Spawn_shape__shape, this }, ZC_GUI_ColorsDropDown(ZC_GUI_ColorsButton(ZC_PackColorUCharToUInt_RGB(40, 40, 40), ZC_PackColorUCharToUInt_RGB(60, 60, 60), ZC_PackColorUCharToUInt_RGB(80, 80, 80), ZC_PackColorUCharToUInt_RGB(100, 100, 100)), ZC_PackColorUCharToUInt_RGB(200, 200, 200), ZC_PackColorUCharToUInt_RGB(150, 150, 150))),
+        bnt__spawn_shape__fill_to_center(ZC_GUI_ButtonNumber<uch_zc>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0, 0, pPS->c_ps_src.spawn_shape.fill_to_center * 100, 0, 100, 1, 5, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Spawn_shape__fill_to_center, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Fill to center %", true, G_GUI_Fonts::Get(G_GUI_FN__Arial_20)->CalculateWstrWidth(wstr_spawn_shape__half_length), ZC_GUI_TextAlignment::Right, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
             //  spawn mat model
         t__spawn_mat_model(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Spawn Mat Model", true, 0, ZC_GUI_TextAlignment::Left),
         t__spawn_mat_model__tanslate(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Translate", true, 0, ZC_GUI_TextAlignment::Left),
@@ -431,9 +419,9 @@ struct Setup__G_ParticleSystem
         t__move_set(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Move (seconds)", true, 0, ZC_GUI_TextAlignment::Left),
         t__move_set__direction_type(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Move type (system space)", true, 0, ZC_GUI_TextAlignment::Left),
         sdd__move_set__direction_type(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"From center", L"Direction", L"Point" }, pPS->c_ps_src.move.direction_type, 0.f, 0.f, { &Setup__G_ParticleSystem::Move_set__direction_type, this }, ZC_GUI_ColorsDropDown(ZC_GUI_ColorsButton(ZC_PackColorUCharToUInt_RGB(40, 40, 40), ZC_PackColorUCharToUInt_RGB(60, 60, 60), ZC_PackColorUCharToUInt_RGB(80, 80, 80), ZC_PackColorUCharToUInt_RGB(100, 100, 100)), ZC_PackColorUCharToUInt_RGB(200, 200, 200), ZC_PackColorUCharToUInt_RGB(150, 150, 150))),
-        bnt__move_set__move_variable_x(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.move_variable[0], -10000.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__move_variable_x, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"X", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
-        bnt__move_set__move_variable_y(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.move_variable[1], -10000.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__move_variable_y, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Y", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
-        bnt__move_set__move_variable_z(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.move_variable[2], -10000.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__move_variable_z, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Z", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
+        bnt__move_set__move_variable_x(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.variable[0], -10000.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__move_variable_x, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"X", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
+        bnt__move_set__move_variable_y(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.variable[1], -10000.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__move_variable_y, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Y", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
+        bnt__move_set__move_variable_z(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.variable[2], -10000.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__move_variable_z, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Z", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
         bnt__move_set__speed_power(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.speed_power, 0.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__speed_power, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Speed power", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
         bnt__move_set__speed_min(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.speed_min, 0.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__speed_min, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Speed min", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
         bnt__move_set__speed_max(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.move.speed_max, 0.f, 10000.f, 1.f, 2.f, 0, ZC_GUI_TextAlignment::Right, { &Setup__G_ParticleSystem::Move_set__speed_max, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(0.f, ZC_GUI_TFB_Indent_Location::OutOfButtonLeft), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Speed max", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_PackColorUCharToUInt_RGB(230, 230, 230), 0))),
@@ -450,13 +438,13 @@ struct Setup__G_ParticleSystem
         float sub_section_y = 10;
         float row_y = 5;
         float distacne_x = 10.f;
+            //  particles count
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__particles_count.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, distacne_x, ZC_GUI_RowParams::Y_Center), { sdd__life_space.GetObj(), t__life_space.GetObj() }));
-
+            //  spawn shape
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__spawn_shape.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { sdd__spawn_shape__shape.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_shape__fill_to_center.GetObj() }));
-
+            //  spwn mat model
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__spawn_mat_model.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, sub_section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__spawn_mat_model__tanslate.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_mat_model__translate_x.GetObj() }));
@@ -471,21 +459,24 @@ struct Setup__G_ParticleSystem
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_mat_model__scale_X.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_mat_model__scale_Y.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__spawn_mat_model__scale_Z.GetObj() }));
-        
+            //  size
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__size.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__size__width.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__size__height.GetObj() }));
-
+            //  life time
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__life_time.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__life_time__secs_to_start_max.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__life_time__secs_min.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__life_time__secs_max.GetObj() }));
-
+            //  vidibility
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__visibility.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__alpha__appear_secs.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__alpha__disappear_secs.GetObj() }));
-        
+            //  move
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__move_set.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, sub_section_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_power.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_min.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_max.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, sub_section_y, distacne_x, ZC_GUI_RowParams::Y_Center), { sdd__move_set__direction_type.GetObj(), t__move_set__direction_type.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__move_variable_x.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__move_variable_y.GetObj() }));
@@ -496,10 +487,7 @@ struct Setup__G_ParticleSystem
             bnt__move_set__move_variable_y.SetDrawState(false);
             bnt__move_set__move_variable_z.SetDrawState(false);
         }
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, sub_section_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_power.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_min.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__move_set__speed_max.GetObj() }));
-
+            //  animation
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__animation.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, distacne_x, ZC_GUI_RowParams::Y_Bottom), { sdd__animation__change_tyles_style.GetObj(), t__animation__change_tyles_style.GetObj() }));
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Right, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__animation__tiles_per_second.GetObj() }));
@@ -508,7 +496,6 @@ struct Setup__G_ParticleSystem
     }
     
     void Particles_count(ui_zc v) { pPS->Set_Particles_count(v); }
-    void Life_space(ui_zc v) { pPS->Set_Life_space(G_PS_Source::LifeSpace(v)); }
     void Spawn_shape__shape(ui_zc v) { pPS->Set_SpawnShape__shape(G_PS_Source::SpawnShape::Shape(v)); }
     void Spawn_shape__fill_to_center(uch_zc v) { pPS->Set_SpawnShape__fill_to_center(v / 100.f); }
     
@@ -544,9 +531,9 @@ struct Setup__G_ParticleSystem
         bnt__move_set__move_variable_z.SetDrawState(G_PS_Source::Move::DirectionType(v) != G_PS_Source::Move::DT__from_particles_center);
         pPS->Set_Move__direction_type(G_PS_Source::Move::DirectionType(v));
     }
-    void Move_set__move_variable_x(float v) { pPS->Set_Move__move_variable({ v, pPS->c_ps_src.move.move_variable[1], pPS->c_ps_src.move.move_variable[2] }); }
-    void Move_set__move_variable_y(float v) { pPS->Set_Move__move_variable({ pPS->c_ps_src.move.move_variable[0], v, pPS->c_ps_src.move.move_variable[2] }); }
-    void Move_set__move_variable_z(float v) { pPS->Set_Move__move_variable({ pPS->c_ps_src.move.move_variable[0], pPS->c_ps_src.move.move_variable[1], v }); }
+    void Move_set__move_variable_x(float v) { pPS->Set_Move__move_variable({ v, pPS->c_ps_src.move.variable[1], pPS->c_ps_src.move.variable[2] }); }
+    void Move_set__move_variable_y(float v) { pPS->Set_Move__move_variable({ pPS->c_ps_src.move.variable[0], v, pPS->c_ps_src.move.variable[2] }); }
+    void Move_set__move_variable_z(float v) { pPS->Set_Move__move_variable({ pPS->c_ps_src.move.variable[0], pPS->c_ps_src.move.variable[1], v }); }
     void Move_set__speed_power(float v) { pPS->Set_Move__speed_power(v); }
     void Move_set__speed_min(float v) { pPS->Set_Move__speed_min(v); }
     void Move_set__speed_max(float v) { pPS->Set_Move__speed_max(v); }
