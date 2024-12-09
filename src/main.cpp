@@ -39,7 +39,7 @@ int main(int argv, char** args)
     // // ZC_Texture::LoadTexture2D(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/flame.png").string().c_str(), 0, GL_REPEAT, GL_REPEAT);
     G_ParticleSystem ps(G_PS_Source
         {
-            .particles_count = 100,     //  b
+            .particles_count = 1,     //  b
             // .particles_count = 10,     //  f
             .render = G_PS_Source::Render
                 {
@@ -71,9 +71,9 @@ int main(int argv, char** args)
                 },
             .life_time = G_PS_Source::LifeTime
                 {
-                    .secs_to_start_max = 1.f,
-                    .secs_min = 1.f,
-                    .secs_max = 2.f    //  b
+                    .secs_to_start_max = 0.f,
+                    .secs_min = 5.f,
+                    .secs_max = 5.f    //  b
                     // .secs_max = 3.f    //  f
                 },
             .visibility = G_PS_Source::Visibility
@@ -87,17 +87,22 @@ int main(int argv, char** args)
                 {
                     .direction_type = G_PS_Source::Move::DT__variable_is_direction,
                     .variable = { 0.f, 0.f, 3.f },
-                    .speed_power = 1.f,
+                    .speed_power = 0.f,
                     .speed_min = 1.f,
                     .speed_max = 3.f   //  b
                     // .speed_max = 7.f   //  f
                 },
+            .rotate = G_PS_Source::Rotate
+                {
+                    .angle_use = G_PS_Source::Rotate::AU__contant,
+                    .angle_1 = 0.f
+                },
             .animation = G_PS_Source::Animation
                 {
-                    .change_tyles_style = G_PS_Source::Animation::CHT__Loop,
+                    .repaet = G_PS_Source::Animation::R_Loop,
                     .tiles_per_second = 7.f,
                     .offset_from = G_PS_Source::Animation::OF__Start,
-                    .secs_offset_to_start_animation = 0.f
+                    .offset_to_start_animation_secs = 0.f
                 }
         });
         ps.SetDrawState(true);
@@ -149,3 +154,14 @@ int main(int argv, char** args)
 
 //  timer,  dmg platform,    cursor capture,    camera scroll dist,     platform rotation,  platforms same,     switch win platform,    wind push,  wind power max
 //  mouse capture,   full screen system
+
+
+//  need to adit ZC_GUI_TextInputWindow::Caret movement with pressed ctr and collision on spesial symbols (.,*!$ ...), in method ZC_GUI_TextInputWindow::Caret::KeyboardButtonLeftDown/KeyboardButtonRightDown(bool needSubData)
+        // //      aaaaaa&&&.&#$   .**#
+        //  ckeck what is the symbol with > < = of unicode codes! with not a == L'#' !!!
+        // enum Chars
+        // {
+        //     Ch_symbol,
+        //     Ch_text,
+        //     Ch_space
+        // } cur_char;     //  void ZC_GUI_TextInputWindow::Caret::KeyboardButtonLeftDown(bool needSubData)

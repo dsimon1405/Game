@@ -21,8 +21,6 @@ G_ParticleSystem::G_ParticleSystem(const G_PS_Source& ps_source)
     upSP = new Setup__G_ParticleSystem(this);
 #endif SETUP__G_PARTICLE_SYSTEM
     
-    // ds_con.SwitchToDrawLvl(ps_src.render.render_level, ps_src.render.drawer_level);
-
     ec_updater = ZC__Updater::Connect({ &G_ParticleSystem::Callback_Updater, this }, G_UL__game_particles);
 }
 
@@ -79,16 +77,14 @@ void G_ParticleSystem::Set_SpawnShape__shape(G_PS_Source::SpawnShape::Shape shap
 {
     if (ps_src.spawn_shape.shape == shape) return;
     ps_src.spawn_shape.shape = shape;
-    FillParticlesPosition(particles);
-    SetSpawnDataToDefault(true, true);
+    SetSpawnDataToDefault();
 }
 
 void G_ParticleSystem::Set_SpawnShape__fill_to_center(float fill_to_center)
 {
     if (ps_src.spawn_shape.fill_to_center == fill_to_center) return;
     ps_src.spawn_shape.fill_to_center = fill_to_center;
-    FillParticlesPosition(particles);
-    SetSpawnDataToDefault(true, true);
+    SetSpawnDataToDefault();
 }
 
 void G_ParticleSystem::Set_SpawnMatModel__translation(const ZC_Vec3<float>& pos)
@@ -139,32 +135,21 @@ void G_ParticleSystem::Set_Life_time__secs_to_start_max(float secs_to_start_max)
 {
     if (ps_src.life_time.secs_to_start_max == secs_to_start_max) return;
     ps_src.life_time.secs_to_start_max = secs_to_start_max;
-    for (auto& p : particles)
-    {
-        p.life_time_secs_to_start = G_ParticleSystem::GetRandom(0.f, ps_src.life_time.secs_to_start_max);
-        p.life_time_secs_cur = 0.f;
-    }
-    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
-
-    ps.time_prev_frame_secs = 0.f;
-    ps.time_total_secs = 0.f;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, time_prev_frame_secs), sizeof(ParticleSystem::time_prev_frame_secs) + sizeof(ParticleSystem::time_total_secs), &ps.time_prev_frame_secs);
+    SetSpawnDataToDefault();
 }
 
 void G_ParticleSystem::Set_Life_time__min(float secs_min)
 {
     if (ps_src.life_time.secs_min == secs_min) return;
     ps_src.life_time.secs_min = secs_min;
-    for (Particle& p : particles) p.life_time_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
-    SetSpawnDataToDefault(true, true);
+    SetSpawnDataToDefault();
 }
 
 void G_ParticleSystem::Set_Life_time__max(float secs_max)
 {
     if (ps_src.life_time.secs_max == secs_max) return;
     ps_src.life_time.secs_max = secs_max;
-    for (Particle& p : particles) p.life_time_secs_total = G_ParticleSystem::GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
-    SetSpawnDataToDefault(true, true);
+    SetSpawnDataToDefault();
 }
 
 void G_ParticleSystem::Set_Visibility__start(float visibility_appear_secs)
@@ -213,39 +198,51 @@ void G_ParticleSystem::Set_Move__speed_min(float speed_min_secs)
 {
     if (ps_src.move.speed_min == speed_min_secs) return;
     ps_src.move.speed_min = speed_min_secs;
-    for (auto& p : particles) p.move_speed_secs = G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max);
-    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
+    SetSpawnDataToDefault();
 }
 
 void G_ParticleSystem::Set_Move__speed_max(float speed_max_secs)
 {
     if (ps_src.move.speed_max == speed_max_secs) return;
     ps_src.move.speed_max = speed_max_secs;
-    for (auto& p : particles) p.move_speed_secs = G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max);
-    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
+    SetSpawnDataToDefault();
 }
 
-void G_ParticleSystem::Set_Animation__change_tyles_style(G_PS_Source::Animation::ChangeTilesStyle change_tyles_style)
+void G_ParticleSystem::Set_Rotate(const G_PS_Source::Rotate& rotate)
 {
+    if (ps_src.rotate == rotate) return;
+    ps_src.rotate = rotate;
+    SetSpawnDataToDefault();
+}
 
+void G_ParticleSystem::Set_Animation__repeat(G_PS_Source::Animation::Repaet repaet)
+{
+    if (ps_src.animation.repaet == repaet) return;
+    ps_src.animation.repaet = repaet;
+    ps.animation_repeat = repaet;
+    SetSpawnDataToDefault();
 }
 
 void G_ParticleSystem::Set_Animation__tiles_per_second(float tiles_per_second)
 {
     if (ps_src.animation.tiles_per_second == tiles_per_second) return;
     ps_src.animation.tiles_per_second = tiles_per_second;
-    ps.uv_shift_speed = 1.f / tiles_per_second;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, uv_shift_speed), sizeof(ParticleSystem::uv_shift_speed), &ps.uv_shift_speed);
+    ps.animation_uv_shift_speed = 1.f / tiles_per_second;
+    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, animation_uv_shift_speed), sizeof(ParticleSystem::animation_uv_shift_speed), &ps.animation_uv_shift_speed);
 }
 
 void G_ParticleSystem::Set_Animation__offset_from(G_PS_Source::Animation::OffsetFrom offset_from)
 {
-
+    if (ps_src.animation.offset_from == offset_from) return;
+    ps_src.animation.offset_from = offset_from;
+    SetSpawnDataToDefault();
 }
 
-void G_ParticleSystem::Set_Animation__secs_offset_to_start_animation(float secs_offset_to_start_animatin)
+void G_ParticleSystem::Set_Animation__secs_offset_to_start_animation(float offset_to_start_animation_secs)
 {
-
+    if (ps_src.animation.offset_to_start_animation_secs == offset_to_start_animation_secs) return;
+    ps_src.animation.offset_to_start_animation_secs = offset_to_start_animation_secs;
+    SetSpawnDataToDefault();
 }
 
 float G_ParticleSystem::GetRandom(float secs_min, float secs_max)
@@ -308,15 +305,11 @@ G_ParticleSystem::ParticleSystem G_ParticleSystem::CreateParticleSystem()
     return ParticleSystem
     {
             //  time
-        // .time_prev_frame_secs = ,     //  calc on gpu
-        // .time_total_secs = ,          //  calc on gpu
+        // .time_prev_frame_secs = ,     //  sets in Update
+        // .time_total_secs = ,          //  sets in Update
             //  pos
         .spawn_mat_model = CreateSpawnMatModel(),
-            //  size
-        // .size_bl = ,                  //  calc on gpu
-        // .size_br = ,                  //  calc on gpu
-        // .size_tl = ,                  //  calc on gpu
-        // .size_tr = ,                  //  calc on gpu
+            //  texture size
         .size_half_width = ps_src.size.width / 2.f,
         .size_half_height = ps_src.size.height / 2.f,
             //  visibility
@@ -327,7 +320,8 @@ G_ParticleSystem::ParticleSystem G_ParticleSystem::CreateParticleSystem()
         .move_variable = ps_src.move.direction_type == G_PS_Source::Move::DT__variable_is_direction ? ZC_Vec::Normalize(ps_src.move.variable) : ps_src.move.variable,   //  in this case there is no need to calculate on the GPU, it is calculated once on the CPU
         .move_speed_power = ps_src.move.speed_power,
             //  animation
-        .uv_shift_speed = 1.f / ps_src.animation.tiles_per_second,
+        .animation_repeat = ps_src.animation.repaet,
+        .animation_uv_shift_speed = ps_src.animation.tiles_per_second == 0.f ? 0.f : 1.f / ps_src.animation.tiles_per_second,
     };
 }
 
@@ -338,11 +332,12 @@ std::vector<G_ParticleSystem::Particle> G_ParticleSystem::FillParticles()
 
     for (ul_zc i = 0; i < particles_temp.capacity(); ++i)
     {
+        float life_time_secs_total = ps_src.life_time.secs_min == ps_src.life_time.secs_max ? ps_src.life_time.secs_min : GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max);
         particles_temp.emplace_back(Particle
             {
                     //  life time
                 .life_time_secs_to_start = ps_src.life_time.secs_to_start_max == 0.f ? 0.f : GetRandom(0.f, ps_src.life_time.secs_to_start_max),
-                .life_time_secs_total = ps_src.life_time.secs_min == ps_src.life_time.secs_max ? ps_src.life_time.secs_min : GetRandom(ps_src.life_time.secs_min, ps_src.life_time.secs_max),
+                .life_time_secs_total = life_time_secs_total,
                 // .life_time_secs_cur          //  calc on gpu
                     //  pos
                 .pos_start = {},
@@ -352,14 +347,20 @@ std::vector<G_ParticleSystem::Particle> G_ParticleSystem::FillParticles()
                     //  move
                 // .move_dir_normalized         //  calc on gpu
                 .move_speed_secs = ps_src.move.speed_min == ps_src.move.speed_max ? ps_src.move.speed_min : G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max),
-                    //  animation
-                // .uvs_id                      //  calc on gpu
-                // .uvs_cur_id                  //  calc on gpu
+                    //  texture corners rotated frace to cam
+                // .size_bl                 //  calc on gpu
+                // .size_br                 //  calc on gpu
+                // .size_tl                 //  calc on gpu
+                // .size_tr                 //  calc on gpu
+                .rotate_angle = ps_src.rotate.GetAngle(),
+                    //  animaion
+                .animation_start_secs = ps_src.animation.Calc_animation_start_secs(life_time_secs_total),     //  when in life time to start animation
+                // uint animation_uvs_cur_id           //  calc on gpu
+                // uint animation_uvs_cur_id_secs      //  calc on gpu
             });
     }
+        
 
-    // for (Particle& p : particles) p.move_dir_normalized = p.pos_cur == ZC_Vec3<float>() ? ZC_Vec3<float>() : ZC_Vec::Normalize(p.pos_cur);                     //  MAKE SOMETHING THIS THIS, NEED POSITION WICH WILL BE FILLED ONLY IN FillParticlePosition()
-    
     FillParticlesPosition(particles_temp);
 
     return particles_temp;
@@ -592,14 +593,14 @@ ZC_DrawerSet G_ParticleSystem::CreateDrawerSet()
 }
 
 
-void G_ParticleSystem::SetSpawnDataToDefault(bool update_gpu_particle_system, bool update_gpu_particles)
+void G_ParticleSystem::SetSpawnDataToDefault()
 {
     ps.time_prev_frame_secs = 0.f;
     ps.time_total_secs = 0.f;
-    if (update_gpu_particle_system) ds.buffers.front().GLNamedBufferSubData(0, sizeof(ParticleSystem), &ps);
+    ds.buffers.front().GLNamedBufferSubData(0, sizeof(ParticleSystem), &ps);
 
-    for (Particle& p : particles) p.life_time_secs_cur = 0.f;
-    if (update_gpu_particles) ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
+    particles = FillParticles();
+    ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
 #define G_TParticle_Callback_Updater
@@ -677,3 +678,32 @@ void G_ParticleSystem::Callback_Updater(float time)
 //  0.000064 - 0.00011     update time to uniform (power off)
 //  0.000147     update pos at cpu
 //  0.000065 - 0.000135      ssbo, update time at cpu, all data particle data updates at vertex shader
+
+
+
+    //  G_PS_Source::Rotate
+#include <ZC/Tools/ZC_Random.h> 
+
+bool G_PS_Source::Rotate::operator == (const Rotate& r) const noexcept
+{
+    return angle_use == r.angle_use && angle_1 == r.angle_1 && angle_2 == r.angle_2;
+}
+
+float G_PS_Source::Rotate::GetAngle()
+{
+    switch (angle_use)
+    {
+    case AU__contant: return angle_1;
+    case AU__random_between_constants: return ZC_Random::GetRandomInt(0, 1) ? angle_1 : angle_2;
+    case AU__random_between_angles: return ZC_Random::GetRandomFloat_x_100(angle_1, angle_2);
+    }
+    return 0.f;
+}
+
+
+    //  G_PS_Source::Animation
+
+float G_PS_Source::Animation::Calc_animation_start_secs(float life_time_secs_total)
+{
+    return offset_from == G_PS_Source::Animation::OF__Start ? offset_to_start_animation_secs : life_time_secs_total - offset_to_start_animation_secs;
+}
