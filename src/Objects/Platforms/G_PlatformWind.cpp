@@ -55,7 +55,7 @@ void G_PlatformWind::VDeactivatePlatform_P()
 {
     ch_d.wind_phase = wind_end;      //  stop activity
     ch_d.cur_time = 0.f;
-    ch_d.deactivate_color = ZC_UnpackUINTtoFloat_RGB(this->unColor);
+    ch_d.deactivate_color = ZC_Unpack_UInt_2x10x10x10_To_Float(this->unColor);
     ch_d.deactivate_sound_wind = this->upSK->GetVolume(G_SN__platform_wind);
     ch_d.deactivate_particles_alpha = upPS_wind->GetAlpha();
 }
@@ -225,7 +225,7 @@ void G_PlatformWind::Callback_Updater(float time)
         }
 
         float wind_power_coef = ch_d.wind_power / wind_push_power_max;
-        this->unColor = ZC_PackColorFloatToUInt_RGB(0.f, wind_power_coef, wind_power_coef);
+        this->unColor = ZC_Pack_Float_To_UInt_2x10x10x10(0.f, wind_power_coef, wind_power_coef);
         
         for (auto iter = this->objects_on_platform.begin(); iter != this->objects_on_platform.end(); )
         {

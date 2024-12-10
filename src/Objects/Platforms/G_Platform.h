@@ -36,9 +36,9 @@ public:
     
 protected:
     static inline const ZC_Vec3<float> color_default { 0.f, 0.f, 0.f };
-    static inline const uint color_default_packed = ZC_PackColorFloatToUInt_RGB(color_default[0], color_default[1], color_default[2]);
+    static inline const uint color_default_packed = ZC_Pack_Float_To_UInt_2x10x10x10(color_default[0], color_default[1], color_default[2]);
     static inline const ZC_Vec3<float> color_white { 1.f, 1.f, 1.f };
-    static inline const uint packed_active_color = ZC_PackColorFloatToUInt_RGB(color_white[0], color_white[1], color_white[2]);
+    static inline const uint packed_active_color = ZC_Pack_Float_To_UInt_2x10x10x10(color_white[0], color_white[1], color_white[2]);
     static inline const float platform_light_radius_divisor = 9.2f;
 
     ZC_EC ecUpdater;

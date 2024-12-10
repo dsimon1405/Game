@@ -76,13 +76,6 @@ int main(int argv, char** args)
                     .secs_max = 5.f    //  b
                     // .secs_max = 3.f    //  f
                 },
-            .visibility = G_PS_Source::Visibility
-                {
-                    .appear_secs = 0.3,      //  b
-                    .disappear_secs = 0.6F,       //  b
-                    // .visibility_appear_secs = 0.2,     //  f
-                    // .visibility_disappear_secs = 0.6F,     //  f
-                },
             .move = G_PS_Source::Move
                 {
                     .direction_type = G_PS_Source::Move::DT__variable_is_direction,
@@ -103,7 +96,15 @@ int main(int argv, char** args)
                     .tiles_per_second = 7.f,
                     .offset_from = G_PS_Source::Animation::OF__Start,
                     .offset_to_start_animation_secs = 0.f
-                }
+                },
+            .color = G_PS_Source::Color
+                {
+                    .rgb_use = G_PS_Source::Color::RGBU_Add,
+                    .appear_secs = 0.3,      //  b
+                    .disappear_secs = 0.6F,       //  b
+                    // .color_appear_secs = 0.2,     //  f
+                    // .color_disappear_secs = 0.6F,     //  f
+                },
         });
         ps.SetDrawState(true);
 
@@ -114,10 +115,10 @@ int main(int argv, char** args)
         // float height = 2.f;        //  buuble
         // float secs_to_start_max = 3.f;  //  takes random from 0 to secs_to_start_max
 
-        // float visibility_appear_secs = 0.8f;           //  BUBBLE
-        // float visibility_disappear_secs = 1.f;         //  BUBBLE
-        // // float visibility_appear_secs = 0.2f;        //  FLAME
-        // // float visibility_disappear_secs = 0.6f;     //  FLAME
+        // float color_appear_secs = 0.8f;           //  BUBBLE
+        // float color_disappear_secs = 1.f;         //  BUBBLE
+        // // float color_appear_secs = 0.2f;        //  FLAME
+        // // float color_disappear_secs = 0.6f;     //  FLAME
 
         // float pos_x = 0.f;
         // float pos_y = 0.f;

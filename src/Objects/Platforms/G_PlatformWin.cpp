@@ -24,7 +24,7 @@ void G_PlatformWin::VAddObjectOnPlatform_P(G_Object* pObj_add)
     if (ch_d.state == S_player_move_to_next_level) return;
     if (pObj_add->VGetTypeMask_IO() & G_OT__Player)
     {
-        ch_d = { ch_d.state = S_win, ch_d.time = 0.f, ch_d.color = ZC_UnpackUINTtoFloat_RGB(this->unColor) };
+        ch_d = { ch_d.state = S_win, ch_d.time = 0.f, ch_d.color = ZC_Unpack_UInt_2x10x10x10_To_Float(this->unColor) };
         objects_on_platform.emplace_back(pObj_add);
         this->upSK->SetSoundState(G_SN__platform_win, ZC_SS__Play);
     }
@@ -44,7 +44,7 @@ void G_PlatformWin::Callback_Updater(float time)
     static const float seconds_activate = 3.f;
     static const float seconds_active = 10.f;
     static const ZC_Vec3<float> color_win { 0.f, 1.f, 0.f };
-    static const uint win_color_packed = ZC_PackColorFloatToUInt_RGB(color_win[0], color_win[1], color_win[2]);
+    static const uint win_color_packed = ZC_Pack_Float_To_UInt_2x10x10x10(color_win[0], color_win[1], color_win[2]);
 
     ch_d.time += time;
     switch (ch_d.state)

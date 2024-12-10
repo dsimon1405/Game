@@ -52,7 +52,7 @@ void G_PlatformScale::Callback_Updater(float time)
     static const float seconds_scale = 2.f;
     static const float scale_Z = G_Map::scaleZ_platform;
     static const ZC_Vec3<float> scale_color { 1.f, 1.f, 0.f };
-    static const uint scale_color_packed = ZC_PackColorFloatToUInt_RGB(scale_color[0], scale_color[1], scale_color[2]);
+    static const uint scale_color_packed = ZC_Pack_Float_To_UInt_2x10x10x10(scale_color[0], scale_color[1], scale_color[2]);
     static const float deactivate_time = 1.f;
 
     ch_d.scale_time += time;

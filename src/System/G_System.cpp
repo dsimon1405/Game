@@ -101,26 +101,29 @@ void G_System::SetUpGUI()
     static const float icon_tex_height = 900.f;
     ZC_GUI_IconUV::quad = ZC_GUI_UV{ .bl = { 0.f, 101.f / icon_tex_height }, .tr = { 1.f, 1.f } };;
     ZC_GUI_IconUV::button = ZC_GUI_UV{ .bl = { 0.f, 0.f }, .tr = { 399.f / icon_tex_width, 100.f / icon_tex_height } };
-    ZC_GUI_IconUV::arrow_down = ZC_GUI_UV{ .bl = { 502.f / icon_tex_width, 0.f }, .tr = { 602.f / icon_tex_width, 100.f / icon_tex_height } };
-    ZC_GUI_IconUV::arrow_right = ZC_GUI_UV{ .bl = { 602.f / icon_tex_width, 0.f }, .tr = { 702.f / icon_tex_width, 100.f / icon_tex_height } };
+    ZC_GUI_IconUV::button_quad = ZC_GUI_UV{ .bl = { 10.f / icon_tex_width, 10.f / icon_tex_height }, .tr = { 390.f / icon_tex_width, 90.f / icon_tex_height } };
+    ZC_GUI_IconUV::arrow_down = ZC_GUI_UV{ .bl = { 502.f / icon_tex_width, 0.f }, .tr = { 602.f / icon_tex_width, 99.f / icon_tex_height } };
+    ZC_GUI_IconUV::arrow_right = ZC_GUI_UV{ .bl = { 602.f / icon_tex_width, 0.f }, .tr = { 702.f / icon_tex_width, 99.f / icon_tex_height } };
+    ZC_GUI_IconUV::quad_colored = ZC_GUI_UV{ .bl = { 702.f / icon_tex_width, 23.f / icon_tex_height }, .tr = { 722.f / icon_tex_width, 45.f / icon_tex_height } };
+    ZC_GUI_IconUV::background_alpha = ZC_GUI_UV{ .bl = { 702.f / icon_tex_width, 0.f }, .tr = { 722.f / icon_tex_width, 22.f / icon_tex_height } };
 
     //  Widnow
     ZC_GUI_Colors::window = 0;
     ZC_GUI_Colors::window_focused = 0;
         //  text
-    ZC_GUI_Colors::window_text = ZC_PackColorUCharToUInt_RGB(230, 230, 230);
+    ZC_GUI_Colors::window_text = ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230);
         //  Button (for Window background)
-    ZC_GUI_Colors::button = ZC_PackColorUCharToUInt_RGB(10, 10, 10);
-    ZC_GUI_Colors::button_under_cursor = ZC_PackColorUCharToUInt_RGB(40, 40, 40);
-    ZC_GUI_Colors::button_pressed = ZC_PackColorUCharToUInt_RGB(70, 70, 70);
+    ZC_GUI_Colors::button = ZC_Pack_UChar_To_UInt_2x10x10x10(10, 10, 10);
+    ZC_GUI_Colors::button_under_cursor = ZC_Pack_UChar_To_UInt_2x10x10x10(40, 40, 40);
+    ZC_GUI_Colors::button_pressed = ZC_Pack_UChar_To_UInt_2x10x10x10(70, 70, 70);
     ZC_GUI_Colors::button_not_active = 0;
     ZC_GUI_Colors::button_text = 0;
-    ZC_GUI_Colors::button_text_not_active = ZC_PackColorUCharToUInt_RGB(100, 100, 100);
+    ZC_GUI_Colors::button_text_not_active = ZC_Pack_UChar_To_UInt_2x10x10x10(100, 100, 100);
 
     //  CheckBox
     ZC_GUI_Colors::checkBox_button = 0;
-    ZC_GUI_Colors::checkBox_button_under_cursor = ZC_PackColorUCharToUInt_RGB(20, 20, 20);
-    ZC_GUI_Colors::checkBox_button_pressed = ZC_PackColorUCharToUInt_RGB(50, 50, 50);
+    ZC_GUI_Colors::checkBox_button_under_cursor = ZC_Pack_UChar_To_UInt_2x10x10x10(20, 20, 20);
+    ZC_GUI_Colors::checkBox_button_pressed = ZC_Pack_UChar_To_UInt_2x10x10x10(50, 50, 50);
         //  arrow
     ZC_GUI_Colors::checkBox_arrow = 0;
         //  text
@@ -136,13 +139,13 @@ void G_System::SetUpGUI()
     ZC_GUI_Colors::number_text_name = ZC_GUI_Colors::window_text;
         //  arrows
     ZC_GUI_Colors::number_arrow = 0;
-    ZC_GUI_Colors::number_arrow_under_cursor = ZC_PackColorUCharToUInt_RGB(10, 10, 10);
-    ZC_GUI_Colors::number_arrow_pressed = ZC_PackColorUCharToUInt_RGB(30, 30, 30);
+    ZC_GUI_Colors::number_arrow_under_cursor = ZC_Pack_UChar_To_UInt_2x10x10x10(10, 10, 10);
+    ZC_GUI_Colors::number_arrow_pressed = ZC_Pack_UChar_To_UInt_2x10x10x10(30, 30, 30);
 
     //  DropDownSwitch
-    ZC_GUI_Colors::dropDownSwitch_button = ZC_PackColorUCharToUInt_RGB(40, 40, 40);
-    ZC_GUI_Colors::dropDownSwitch_button_under_cursor = ZC_PackColorUCharToUInt_RGB(60, 60, 60);
-    ZC_GUI_Colors::dropDownSwitch_button_pressed = ZC_PackColorUCharToUInt_RGB(100, 100, 100);
+    ZC_GUI_Colors::dropDownSwitch_button = ZC_Pack_UChar_To_UInt_2x10x10x10(40, 40, 40);
+    ZC_GUI_Colors::dropDownSwitch_button_under_cursor = ZC_Pack_UChar_To_UInt_2x10x10x10(60, 60, 60);
+    ZC_GUI_Colors::dropDownSwitch_button_pressed = ZC_Pack_UChar_To_UInt_2x10x10x10(100, 100, 100);
     ZC_GUI_Colors::dropDownSwitch_text = 0;
     ZC_GUI_Colors::dropDownSwitch_arrow = 0;
 }

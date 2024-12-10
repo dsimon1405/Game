@@ -10,7 +10,7 @@ G_GUI_W_PlayerWin::G_GUI_W_PlayerWin()
     : window(ZC_WOIData(550.f, 360.f, 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Center), ZC_GUI_WF__None
     // | ZC_GUI_WF__NeedDraw),
     ),
-    text_Victory(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), ZC_GUI_TextAlignment::Center, ZC_PackColorFloatToUInt_RGB(0.f, 0.6, 0.f),
+    text_Victory(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), ZC_GUI_TextAlignment::Center, ZC_Pack_Float_To_UInt_2x10x10x10(0.f, 0.6, 0.f),
         { G_LangText{ .lang = G_L_Russian, .text = L"Победа" }, { .lang = G_L_English, .text = L"Victory" } }),
     text_Level(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Уровнь" }, { .lang = G_L_English, .text = L"Level" } }),
     text_Total(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), ZC_GUI_TextAlignment::Center, 0, { G_LangText{ .lang = G_L_Russian, .text = L"Общее" }, { .lang = G_L_English, .text = L"Total" } }),

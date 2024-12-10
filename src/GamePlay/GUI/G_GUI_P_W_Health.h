@@ -17,9 +17,9 @@ public:
 
 private:
     const ZC_Vec3<float> color_hp_max { 0.f, 0.8f, 0.f };
-    const unsigned int color_hp_max_pack = ZC_PackColorFloatToUInt_RGB(color_hp_max);
+    const unsigned int color_hp_max_pack = ZC_Pack_Float_To_UInt_2x10x10x10(color_hp_max);
     const ZC_Vec3<float> color_hp_min { 0.8f, 0.f, 0.f };
-    const unsigned int color_hp_min_pack = ZC_PackColorFloatToUInt_RGB(color_hp_min);
+    const unsigned int color_hp_min_pack = ZC_Pack_Float_To_UInt_2x10x10x10(color_hp_min);
 
     ZC_GUI__WinImmutable window;
 

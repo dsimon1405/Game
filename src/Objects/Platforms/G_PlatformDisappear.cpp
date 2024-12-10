@@ -30,7 +30,7 @@ G_LightSet G_PlatformDisappear::GetLightSet_P()
         //  when object at the edge of the platform, need to make effect there is no light farther. So dive radous on some value, I found 9.2F.
     static const float light_platform_radius = G_Map::radiusXY_other_platforms - (G_Map::radiusXY_other_platforms / platform_light_radius_divisor);
         //  the light power depends on the visibility of the disappearing platform
-    return G_LightSet{ .pos = CalculateLightPos(light_platform_radius), .color = ZC_PackColorFloatToUInt_RGB(ch_d.cur_color * this->unAlpha) };
+    return G_LightSet{ .pos = CalculateLightPos(light_platform_radius), .color = ZC_Pack_Float_To_UInt_2x10x10x10(ch_d.cur_color * this->unAlpha) };
 }
 
 std::vector<G_GameSound> G_PlatformDisappear::GetSounds()
@@ -49,7 +49,7 @@ void G_PlatformDisappear::Callback_Updater(float time)
     static const float disappear_phase1_alpha = 0.5f;
     static const float disappear_alpha_max = 1.f;
     static const ZC_Vec3<float> disappear_color { 0.f, 0.f, 1.f };
-    static const uint disappear_color_packed = ZC_PackColorFloatToUInt_RGB(disappear_color);
+    static const uint disappear_color_packed = ZC_Pack_Float_To_UInt_2x10x10x10(disappear_color);
 
     ch_d.time += time;
     switch (ch_d.disapear_state)
@@ -68,7 +68,7 @@ void G_PlatformDisappear::Callback_Updater(float time)
         else
         {
             ch_d.cur_color = G_InterpolateColor(G_Platform::color_white, disappear_color, ch_d.time / seconds_phase);
-            this->unColor = ZC_PackColorFloatToUInt_RGB(ch_d.cur_color);
+            this->unColor = ZC_Pack_Float_To_UInt_2x10x10x10(ch_d.cur_color);
         }
     } break;
     case DS_phase1_disapear:
@@ -141,7 +141,7 @@ void G_PlatformDisappear::Callback_Updater(float time)
             float time_coef = ch_d.time / seconds_apear;
             this->unAlpha = disappear_phase1_alpha + (disappear_phase1_alpha * time_coef);
             ch_d.cur_color = G_InterpolateColor(disappear_color, G_Platform::color_default, time_coef);
-            this->unColor = ZC_PackColorFloatToUInt_RGB(ch_d.cur_color);
+            this->unColor = ZC_Pack_Float_To_UInt_2x10x10x10(ch_d.cur_color);
         }
     } break;
     }

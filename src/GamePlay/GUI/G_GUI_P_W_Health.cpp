@@ -105,7 +105,7 @@ void G_GUI_P_W_Health::Callback_Updater(float time)
 
                 //  cur_hp color color
             static const ZC_Vec3<float> color_midle(color_hp_min[0], color_hp_max[1], 0.f);
-            static const uint color_midle_packed = ZC_PackColorFloatToUInt_RGB(color_midle);
+            static const uint color_midle_packed = ZC_Pack_Float_To_UInt_2x10x10x10(color_midle);
             
             static const float half_hp = hp_default / 2;
             if (cur_hp > half_hp) text_health.SetColor(G_InterpolateColor_PackToUInt(color_hp_max, color_midle, 1.f - ((float(cur_hp) - half_hp) / half_hp)));

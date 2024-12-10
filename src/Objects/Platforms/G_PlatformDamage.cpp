@@ -35,7 +35,7 @@ void G_PlatformDamage::VAddObjectOnPlatform_P(G_Object* pObj_add)
 void G_PlatformDamage::VDeactivatePlatform_P()
 {
     ch_d.is_active = false;
-    ch_d.deactivate_color = ZC_UnpackUINTtoFloat_RGB(this->unColor);
+    ch_d.deactivate_color = ZC_Unpack_UInt_2x10x10x10_To_Float(this->unColor);
     ch_d.deactivate_sound_load_dmg_volume = this->upSK->GetVolume(G_SN__platform_dmg_load_dmg);
     ch_d.dmg_time = 0.f;
 }

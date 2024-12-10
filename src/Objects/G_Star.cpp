@@ -84,7 +84,7 @@ static bool b = true;
     }
     else
     {
-    static const uint color_packed = ZC_PackColorFloatToUInt_RGB(1.f, 0.86f, 0.55f);    //  peach color
+    static const uint color_packed = ZC_Pack_Float_To_UInt_2x10x10x10(1.f, 0.86f, 0.55f);    //  peach color
     G_LightUBO::UpdateLightData(G_LN__Star, G_LightSet{ .pos = collision_object.GetFigure().center_fact, .color = color_packed });
     }
 }
@@ -143,6 +143,6 @@ void G_Star::CalculateModelMatrix(float time)
         //  update pos in collision, particles, and light
     collision_object.UpdateModelMatrix(model);
     particles_star.SetPosition(star_center);
-    static const uint color_packed = ZC_PackColorFloatToUInt_RGB(1.f, 0.86f, 0.55f);    //  peach color
+    static const uint color_packed = ZC_Pack_Float_To_UInt_2x10x10x10(1.f, 0.86f, 0.55f);    //  peach color
     G_LightUBO::UpdateLightData(G_LN__Star, G_LightSet{ .pos = star_center, .color = color_packed });
 }

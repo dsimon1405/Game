@@ -15,7 +15,7 @@ ZC_Vec3<float> G_InterpolateColor(const ZC_Vec3<float>& start_color, const ZC_Ve
 
 unsigned int G_InterpolateColor_PackToUInt(const ZC_Vec3<float>& start_color, const ZC_Vec3<float>& end_color, float growing_coef)
 {
-    uint res = ZC_PackColorFloatToUInt_RGB(G_InterpolateColor(start_color, end_color, growing_coef));
+    uint res = ZC_Pack_Float_To_UInt_2x10x10x10(G_InterpolateColor(start_color, end_color, growing_coef));
     // assert(end_color != ZC_Vec3<float>() && res != 0u);
     return res;
 }

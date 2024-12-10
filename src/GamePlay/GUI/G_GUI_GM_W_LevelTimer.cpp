@@ -13,13 +13,13 @@ G_GUI_GM_W_LevelTimer::G_GUI_GM_W_LevelTimer()
         + G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width / 5.f * 5.f,  //  calc window width ( (* 5.f) is 5 distances loock AddRow())
         G_GUI_Fonts::GetFontHeight(G_GUI_FN__Arial_40), 0.f, 0.f, ZC_WOIF__X_Center | ZC_WOIF__Y_Top_Pixel), ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Stacionar | ZC_GUI_WF__NoBackground),
     text_hours(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"00", false, G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 2,
-        ZC_GUI_TextAlignment::Center, ZC_PackColorUCharToUInt_RGB(150, 150, 150)),
+        ZC_GUI_TextAlignment::Center, ZC_Pack_UChar_To_UInt_2x10x10x10(150, 150, 150)),
     text_minute(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"00", false, G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 2,
-        ZC_GUI_TextAlignment::Center, ZC_PackColorUCharToUInt_RGB(150, 150, 150)),
+        ZC_GUI_TextAlignment::Center, ZC_Pack_UChar_To_UInt_2x10x10x10(150, 150, 150)),
     text_seconds(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"00", false, G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width * 2,
-        ZC_GUI_TextAlignment::Center, ZC_PackColorUCharToUInt_RGB(150, 150, 150)),
-    text_colon_1(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L":", true, 0, ZC_GUI_TextAlignment::Left, ZC_PackColorUCharToUInt_RGB(150, 150, 150)),
-    text_colon_2(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L":", true, 0, ZC_GUI_TextAlignment::Left, ZC_PackColorUCharToUInt_RGB(150, 150, 150))
+        ZC_GUI_TextAlignment::Center, ZC_Pack_UChar_To_UInt_2x10x10x10(150, 150, 150)),
+    text_colon_1(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L":", true, 0, ZC_GUI_TextAlignment::Left, ZC_Pack_UChar_To_UInt_2x10x10x10(150, 150, 150)),
+    text_colon_2(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L":", true, 0, ZC_GUI_TextAlignment::Left, ZC_Pack_UChar_To_UInt_2x10x10x10(150, 150, 150))
 {
     this->AddRow(ZC_GUI_Row(ZC_GUI_Row(ZC_GUI_RowParams(0, ZC_GUI_RowParams::X_Left, 0, G_GUI_Fonts::Get(G_GUI_FN__Arial_40)->longest_number_pixels_width / 5, ZC_GUI_RowParams::Y_Center),
         { text_hours.GetObj(), text_colon_1.GetObj(), text_minute.GetObj(), text_colon_2.GetObj(), text_seconds.GetObj() })));
