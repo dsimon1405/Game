@@ -13,7 +13,7 @@ public:
     void OpenWindow();
     void CloseWindow();
 
-private:
+// private:
     G_WindowName win_name = G_WN__main_menu;
 
     ZC_GUI__WinImmutable window;

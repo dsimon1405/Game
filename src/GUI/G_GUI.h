@@ -16,7 +16,7 @@ public:
         //  Calls to close window before start game process
     void CloseCurrentWindow();
 
-private:
+// private:
     G_WindowName opened_window = G_WN__main_menu;
 
     bool try_close_game = false;

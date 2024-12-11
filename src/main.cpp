@@ -12,15 +12,22 @@
 #include <ZC/GUI/ZC_GUI__Text.h>
 #include <ZC/GUI/ZC__GUI.h>
 #include <GUI/Text/G_GUI_Fonts.h>
+#include <ZC/ZC__System.h>
 void Life_space(ui_zc){}
 void Spawn_shape__fill_to_center(uchar){}
+ZC_EC ec;
+void SYKA_ZAEBAL(float){
+    G_GameManager::pGM->gui.w_main_menu.StartNewGame(0.f);
+    ec.Disconnect();}
 
 void F(const ZC_Vec3<float>&){}
+
 int main(int argv, char** args)
 {
     G_System system;
     G_GameManager gm;
     
+    ec = ZC__Updater::Connect({SYKA_ZAEBAL}, 0);
     // G_Camera cam_test(ZC_Function<void(const ZC_Vec3<float>&)>{&F}, ZC_Vec3<float>{ 0.f, 0.f, 0.f });
     // cam_test.SetConnectionToEvents(true);
     
@@ -39,7 +46,7 @@ int main(int argv, char** args)
     // // ZC_Texture::LoadTexture2D(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/flame.png").string().c_str(), 0, GL_REPEAT, GL_REPEAT);
     G_ParticleSystem ps(G_PS_Source
         {
-            .particles_count = 1,     //  b
+            .particles_count = 20,     //  b
             // .particles_count = 10,     //  f
             .render = G_PS_Source::Render
                 {
@@ -54,35 +61,35 @@ int main(int argv, char** args)
                 },
             .spawn_shape = G_PS_Source::SpawnShape
                 {
-                    .shape = G_PS_Source::SpawnShape::S__Circle,
-                    .fill_to_center = 1.f
+                    .shape = G_PS_Source::SpawnShape::S__Hemisphere,
+                    .fill_to_center = 0.6f
                 },
             .spawn_mat_model = G_PS_Source::SpawnMatModel
                 {
-                    .translate = { 2.f, 2.f, 2.f },
-                    .scale = { 2.f, 2.f, 2.f }
+                    .translate = { 10.f, 10.f, 1.f },
+                    .scale = { 3.f, 3.f, 3.f }
                 },
             .size = G_PS_Source::Size
                 {
-                    .width = 0.5f,    //  b
-                    .height = 0.5f,   //  b
+                    .width = 1.f,    //  b
+                    .height = 1.f,   //  b
                     // .width = 30.f,      //  f
                     // .height = 30.f,     //  f
                 },
             .life_time = G_PS_Source::LifeTime
                 {
                     .secs_to_start_max = 0.f,
-                    .secs_min = 5.f,
+                    .secs_min = 3.f,
                     .secs_max = 5.f    //  b
                     // .secs_max = 3.f    //  f
                 },
             .move = G_PS_Source::Move
                 {
                     .direction_type = G_PS_Source::Move::DT__variable_is_direction,
-                    .variable = { 0.f, 0.f, 3.f },
-                    .speed_power = 0.f,
-                    .speed_min = 1.f,
-                    .speed_max = 3.f   //  b
+                    .variable = { -1.f, -1.f, 0.f },
+                    .speed_power = 1.f,
+                    .speed_min = 7.f,
+                    .speed_max = 10.f   //  b
                     // .speed_max = 7.f   //  f
                 },
             .rotate = G_PS_Source::Rotate
@@ -92,21 +99,24 @@ int main(int argv, char** args)
                 },
             .animation = G_PS_Source::Animation
                 {
-                    .repaet = G_PS_Source::Animation::R_Loop,
-                    .tiles_per_second = 7.f,
-                    .offset_from = G_PS_Source::Animation::OF__Start,
-                    .offset_to_start_animation_secs = 0.f
+                    .repaet = G_PS_Source::Animation::R_Single_pass,
+                    .tiles_per_second = 20.f,
+                    .offset_from = G_PS_Source::Animation::OF__End,
+                    .offset_to_start_animation_secs = 0.7f
                 },
             .color = G_PS_Source::Color
                 {
                     .rgb_use = G_PS_Source::Color::RGBU_Add,
-                    .appear_secs = 0.3,      //  b
-                    .disappear_secs = 0.6F,       //  b
+                    .appear_secs = 1.f,
+                    .disappear_secs = 0.2F,
+                    .rgba_start = { 0.f, 0.f, 0.f, 1.f },
+                    .rgba_end = { 0.f, 0.f, 0.f, 0.f },
                     // .color_appear_secs = 0.2,     //  f
                     // .color_disappear_secs = 0.6F,     //  f
                 },
         });
         ps.SetDrawState(true);
+        ps.AddCollisionObject(1.f, { 0.f, 0.f, 1.26f });    //  set collision object to player start pos
 
         // float tiles_per_second = 7.f;
         // // float width = 30.f;      //  flame

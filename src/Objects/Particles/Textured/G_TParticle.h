@@ -83,8 +83,8 @@ struct G_PS_Source
         DirectionType direction_type = DT__from_particles_center;   //  help calculate Particle::move_dir_normalized
         ZC_Vec3<float> variable;       //  see DT__variable_is_direction, DT__variable_is_destination
         float speed_power = 1.f;       //  coefficient of movement speed of all particles. ParticleSystem::speed_power. Speed power of all particles (multiplied by the individual speed of each particle). If 0 particles do not move.
-        float speed_min = 1.f;         //  particle move speed calculate param. ParticleSystem::move_speed_secs - takes random [speed_min, speed_max]
-        float speed_max = 1.f;         //  particle move speed calculate param. ParticleSystem::move_speed_secs - takes random [speed_min, speed_max]
+        float speed_min = 1.f;         //  particle move speed calculate param. ParticleSystem::move_speed_secs_start - takes random [speed_min, speed_max]
+        float speed_max = 1.f;         //  particle move speed calculate param. ParticleSystem::move_speed_secs_start - takes random [speed_min, speed_max]
     };
         //  Rotate particle in 2d
     struct Rotate
@@ -140,12 +140,6 @@ struct G_PS_Source
         ZC_Vec4<float> rgba_start { 0.f, 0.f, 0.f, 1.f };      //  rgba range [0, 1]. rgb interpolated over life time from start to end. Alpha interpolated with appear_secs
         ZC_Vec4<float> rgba_end { 0.f, 0.f, 0.f, 1.f };        //  rgba range [0, 1]. rgb interpolated over life time from start to end. Alpha interpolated with disappear_secs
     };
-        //  collision
-    enum CollisionAction
-    {
-        CA_None                 = 0,    //  don't make collision
-        CA_StartAnimationTime   = 1,    //  sets Particle::life_time_secs_cur = Particle::animation_start_secs, to start the animation if it doesn't already exist
-    };
 
     ul_zc particles_count = 1;
     Render render;
@@ -157,7 +151,6 @@ struct G_PS_Source
     Rotate rotate;
     Animation animation;
     Color color;
-    CollisionAction collision_action = CA_None;     //  cannot be changed before AddCollisionObject() is called at least once
 };
 
 #define SETUP__G_PARTICLE_SYSTEM        //  DEBUG
@@ -168,9 +161,27 @@ struct Setup__G_ParticleSystem;
 class G_ParticleSystem
 {
 public:
-    const G_PS_Source& c_ps_src = ps_src;
+        //  Particle collision source. Each parameter of the structure have effect only on collision.
+    struct Collision     //   on gpu ssbo Collision
+    {
+            //  collision
+        enum SetLifeTime
+        {
+            SLF_None                = 0,        //  don't set any time.
+            SLT_Start_animation     = 1,        //  sets Particle::life_time_secs_cur = Particle::animation_start_secs, to start the animation if it doesn't already exist.
+        };
 
-    G_ParticleSystem(const G_PS_Source& _ps_source);
+        uint collision_objects_count = 0;    //  filles with system, may be missed. Count of object in collision_objects.
+        float particle_radius = 0.f;    //  radius ofthe particle (may be less then drawing particle size, help to avoid alpha channels border around the particle).
+
+        SetLifeTime set_life_time = SLF_None;     //  cannot be changed before AddCollisionObject() is called at least once.
+        float move_speed = 0.f;      //  percent value to change speed value. Range [-1.f, 1.f].
+    };
+
+    const G_PS_Source& c_ps_src = ps_src;
+    const Collision& c_pc_src = pc_src;
+
+    G_ParticleSystem(const G_PS_Source& _ps_source, const Collision& _pc_src);
     ~G_ParticleSystem();
 
     void SetDrawState(bool need_draw);
@@ -203,9 +214,9 @@ public:
     void Set_Color__disappear_secs(float color_disappear_secs);
     void Set_Color__rgba_start(const ZC_Vec4<float>& rgba_start);
     void Set_Color__rgba_end(const ZC_Vec4<float>& rgba_end);
-        //  collision_action cannot be changed before AddCollisionObject() is called at least once
-    void Set_collisoin_action(typename G_PS_Source::CollisionAction collision_action);
-
+    
+        //  update collison source
+    void Add_CollisionSource(const Collision& _upPC_Source);
     /*
     Adds object for collision.
 
@@ -221,6 +232,10 @@ public:
     void SetCollisionObject_world_pos(ul_zc id, const ZC_Vec3<float>& world_pos);
     void SetCollisionObject_radius(ul_zc id, float radius);
 
+    void Set_Collision__particle_radius(float particle_radius);
+    void Set_Collision__set_life_time(typename Collision::SetLifeTime set_life_time);
+    void Set_Collision__move_speed(float move_speed);
+
     static float GetRandom(float secs_min, float secs_max);
 
 private:
@@ -231,6 +246,13 @@ private:
 #define G_BIND_SSBO_PARTICLE 0
 #define G_BIND_SSBO_TEX_DATA 1
 #define G_Bind_SSBO_COLLISION 2
+
+    enum ExternalInfluence
+    {
+        EI_None         = 0,
+        EI_Collision    = 1,    //  creates collision ssbo, may be used funnction for collision setup
+    };
+    typedef i_zc ExternalInfluenceMask;
 
     struct UV   //  array of UV into SSBO_UV on gpu
     {
@@ -251,7 +273,8 @@ private:
         ZC_Vec3<float> pos_cur;
             //  move
         ZC_Vec3<float> move_dir_normalized;
-        float move_speed_secs = 0.f;
+        float move_speed_secs_start = 0.f;  //  sets to move_speed_secs_cur at respawn
+        float move_speed_secs_cur = 0.f;    //  cur speed
             //  coners world pos
         ZC_Vec3<float> world_bl;
         ZC_Vec3<float> world_br;
@@ -277,20 +300,20 @@ private:
         float size_half_width = 0.f;
         float size_half_height = 0.f;
             //  move
-        G_PS_Source::Move::DirectionType move_direction_type = G_PS_Source::Move::DirectionType::DT__from_particles_center;     //  see G_PS_Source::Move::DirectionType
+        typename G_PS_Source::Move::DirectionType move_direction_type = G_PS_Source::Move::DirectionType::DT__from_particles_center;     //  see G_PS_Source::Move::DirectionType
         ZC_Vec3<float> move_variable;       //  see G_PS_Source::Move::DirectionType
         float move_speed_power = 0.f;       //  total move speed of all particles
             //  animation
-        G_PS_Source::Animation::Repaet animation_repeat = G_PS_Source::Animation::R_Loop;
+        typename G_PS_Source::Animation::Repaet animation_repeat = G_PS_Source::Animation::R_Loop;
         float animation_uv_shift_speed = 0.f;                //  how much change tiles in second
             //  color
-        G_PS_Source::Color::RGBUse color_rgb_use = G_PS_Source::Color::RGBU_Add;
+        typename G_PS_Source::Color::RGBUse color_rgb_use = G_PS_Source::Color::RGBU_Add;
         float color_appear_secs = 0.f;
         float color_disappear_secs = 0.f;
         uint color_rgba_start = 0;       //  rgba to packed [32]->8x8x8x8. rgb interpolated over life time from start to end. Alpha interpolated with appear_secs
         uint color_rgba_end = 0;         //  rgba to packed [32]->8x8x8x8. rgb interpolated over life time from start to end. Alpha interpolated with color_disappear_secs
             //  collision
-        G_PS_Source::CollisionAction collision_action = G_PS_Source::CA_None;
+        ExternalInfluenceMask external_influence_mask = EI_None;
 
         // Particle particles[];    AT GPU
     };
@@ -301,7 +324,6 @@ private:
         float radius = 0.f;   //  if radius = 0 it is free space
         ZC_Vec3<float> world_pos;
     };
-    std::vector<CollisionObject> collision_objects;    //  each particle will be make collision with this objects in compute shader
 
     static inline const float f_100 = 100.f;
     static inline const int i_100 = 100;
@@ -311,6 +333,9 @@ private:
     G_PS_Source ps_src;
     ParticleSystem ps;
     std::vector<Particle> particles;
+
+    Collision pc_src;
+    std::vector<CollisionObject> collision_objects;    //  each particle will be make collision with this objects in compute shader
 
     ZC_DrawerSet ds;
     ZC_DSController ds_con;
@@ -335,7 +360,8 @@ private:
     ZC_DrawerSet CreateDrawerSet();
 
     void SetSpawnDataToDefault();
-
+    float CheckCollisionMoveSpeed(float move_speed);
+    
     void Callback_Updater(float time);
 };
 
@@ -428,12 +454,14 @@ struct Setup__G_ParticleSystem
     ZC_GUI__ColorManipulator cm__color__rgba_end;
         //  collision
     ZC_GUI__Text t__collision;
-    ZC_GUI__Text t__collision_action;
-    ZC_GUI__SwitchDropDown sdd__collision_action;
+    ZC_GUI__ButtonNumberText<float> bnt__collision__particle_radius;
+    ZC_GUI__Text t__collision__set_life_time;
+    ZC_GUI__SwitchDropDown sdd__collision__set_life_time;
+    ZC_GUI__ButtonNumberText<float> bnt__collision__move_speed;
     
     Setup__G_ParticleSystem(G_ParticleSystem* _pPS)
         : pPS(_pPS),
-        win(ZC_WOIData(350.f, 600.f, 300.f, 0.f, ZC_WOIF__X_Center_Pixel | ZC_WOIF__Y_Center_Pixel), ZC_GUI_WF__Movable | ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Scrollable),
+        win(ZC_WOIData(350.f, 600.f, -300.f, 0.f, ZC_WOIF__X_Center_Pixel | ZC_WOIF__Y_Center_Pixel), ZC_GUI_WF__Movable | ZC_GUI_WF__NeedDraw | ZC_GUI_WF__Scrollable),
         bnt__particles_count(ZC_GUI_ButtonNumber<ui_zc>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.particles_count, 1, 10000, 1, 2, 0, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Particles_count, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Particles amount", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
             //  spawn shape
         t__spawn_shape(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Spawn Shape ", true, 0, ZC_GUI_TextAlignment::Left),
@@ -456,13 +484,13 @@ struct Setup__G_ParticleSystem
         bnt__spawn_mat_model__scale_Z(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.spawn_mat_model.scale[2], 0.f, 100.f, 0.1f, 1.f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Spawn_Mat_model__scale_Z, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Z", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
             //  size
         t__size(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Size", true, 0, ZC_GUI_TextAlignment::Left),
-        bnt__size__width(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.size.width, 0.01f, 100.f, 0.01f, 0.1f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Size__width, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Width", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
-        bnt__size__height(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.size.height, 0.01f, 100.f, 0.01f, 0.1f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Size__height, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Height", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__size__width(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.size.width, 0.01f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Size__width, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Width", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__size__height(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.size.height, 0.01f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Size__height, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Height", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
             //  life time
         t__life_time(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Life Time (seconds)", true, 0, ZC_GUI_TextAlignment::Left),
-        bnt__life_time__secs_to_start_max(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.life_time.secs_to_start_max, 0.1f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Life_time__secs_to_start_max, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Life start at", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
-        bnt__life_time__secs_min(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.life_time.secs_min, 0.f, 100.f, 0.1f, 1.f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Life_time__secs_min, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Duration min", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
-        bnt__life_time__secs_max(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.life_time.secs_max, 0.f, 100.f, 0.1f, 1.f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Life_time__secs_max, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Duration max", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__life_time__secs_to_start_max(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.life_time.secs_to_start_max, 0.f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Life_time__secs_to_start_max, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Life start at", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__life_time__secs_min(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.life_time.secs_min, 0.f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Life_time__secs_min, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Duration min", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__life_time__secs_max(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.life_time.secs_max, 0.f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Life_time__secs_max, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Duration max", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
             //  move set
         t__move_set(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Move (seconds)", true, 0, ZC_GUI_TextAlignment::Left),
         t__move_set__direction_type(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Type (local space)", true, 0, ZC_GUI_TextAlignment::Left),
@@ -483,24 +511,26 @@ struct Setup__G_ParticleSystem
         t__animation(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Animation (seconds)", true, 0, ZC_GUI_TextAlignment::Left),
         t__animation__repeat(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Repeat", true, 0, ZC_GUI_TextAlignment::Left),
         sdd__animation__repeat(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"Loop", L"Single pass" }, pPS->c_ps_src.animation.repaet, 0.f, 0.f, { &Setup__G_ParticleSystem::Animation__repeat, this }),
-        bnt__animation__tiles_per_second(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.animation.tiles_per_second, 0.f, 1000.f, 1.f, 1.f, 0, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Animation__tiles_per_second, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Tiles per second", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__animation__tiles_per_second(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.animation.tiles_per_second, 0.f, 1000.f, 0.1f, 0.5f, 0, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Animation__tiles_per_second, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Tiles per second", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
         t__animation__offset_from(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Offset from life", true, 0, ZC_GUI_TextAlignment::Left),
         sdd__animation__offset_from(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"Start", L"End" }, pPS->c_ps_src.animation.offset_from, 0.f, 0.f, { &Setup__G_ParticleSystem::Animation__offset_from, this }),
-        bnt__animation__secs_offset_to_start_animation(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.animation.offset_to_start_animation_secs, 0.f, 1000.f, 1.f, 1.f, 0, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Animation__secs_offset_to_start_animation, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Start animation at", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__animation__secs_offset_to_start_animation(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.animation.offset_to_start_animation_secs, 0.f, 1000.f, 0.1f, 0.5f, 0, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Animation__secs_offset_to_start_animation, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Start animation at", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
             //  color
         t__color(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Color", true, 0, ZC_GUI_TextAlignment::Left),
         t__color__rgb_use(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Use RGB: ", true, 0, ZC_GUI_TextAlignment::Left),
         st__color__rgb_use(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"Add", L"Replace" }, 0.f, 0.f, true, 10.f, { &Setup__G_ParticleSystem::Color__rgb_use, this }, pPS->c_ps_src.color.rgb_use),
         t__color__start(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Start", true, 0, ZC_GUI_TextAlignment::Left),
-        bnt__color__appear_secs(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.color.appear_secs, 0.f, 100.f, 0.01f, 0.1f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Color__appear_secs, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Appear (seconds)", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__color__appear_secs(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.color.appear_secs, 0.f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Color__appear_secs, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Appear (seconds)", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
         cm__color__rgba_start(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { &Setup__G_ParticleSystem::Color__rgba_start, this }, false),
         t__color__end(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"End", true, 0, ZC_GUI_TextAlignment::Left),
-        bnt__color__disappear_secs(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.color.disappear_secs, 0.f, 100.f, 0.01f, 0.1f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Color__disappear_secs, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Disappear (seconds)", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        bnt__color__disappear_secs(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_ps_src.color.disappear_secs, 0.f, 100.f, 0.1f, 0.5f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Color__disappear_secs, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Disappear (seconds)", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
         cm__color__rgba_end(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { &Setup__G_ParticleSystem::Color__rgba_end, this }, false),
             //  collision
         t__collision(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Collision", true, 0, ZC_GUI_TextAlignment::Left),
-        t__collision_action(G_GUI_Fonts::Get(G_GUI_FN__Arial_40), L"Collision action", true, 0, ZC_GUI_TextAlignment::Left),
-        sdd__collision_action(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"None", L"Start animatoin time" }, pPS->c_ps_src.animation.repaet, 0.f, 0.f, { &Setup__G_ParticleSystem::Collision_action, this })
+        bnt__collision__particle_radius(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_pc_src.particle_radius, 0.f, 100.f, 0.1f, 0.4f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Collision__particle_radius, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Particle radius", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0))),
+        t__collision__set_life_time(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"Jump to life time:", true, 0, ZC_GUI_TextAlignment::Left),
+        sdd__collision__set_life_time(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), { L"None", L"Start Animation" }, pPS->c_pc_src.set_life_time, 0.f, 0.f, { &Setup__G_ParticleSystem::Collision__set_life_time, this }),
+        bnt__collision__move_speed(ZC_GUI_ButtonNumber<float>(G_GUI_Fonts::Get(G_GUI_FN__Arial_20), 0.f, 0.f, pPS->c_pc_src.move_speed, -100.f, 100.f, 1.f, 5.f, 2, ZC_GUI_TextAlignment::Center, { &Setup__G_ParticleSystem::Collision__move_speed, this }, nullptr), ZC_GUI_TextForButton(ZC_GUI_TFB_Indent(button_text_dist, ZC_GUI_TFB_Indent_Location::OutOfButtonRight), G_GUI_Fonts::Get(G_GUI_FN__Arial_20), L"% Move speed", true, 0, ZC_GUI_TextAlignment::Left, ZC_GUI_TFB_Colors(ZC_Pack_UChar_To_UInt_2x10x10x10(230, 230, 230), 0)))
     {
         float section_y = 20;
         float sub_section_y = 15;
@@ -579,7 +609,9 @@ struct Setup__G_ParticleSystem
         cm__color__rgba_end.SetAlpha(pPS->c_ps_src.color.rgba_end[3], false);
             //  collision
         win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(0.f, ZC_GUI_RowParams::X_Center, section_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__collision.GetObj() }));
-        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(indent_left, ZC_GUI_RowParams::X_Left, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__collision_action.GetObj(), sdd__collision_action.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(indent_left, ZC_GUI_RowParams::X_Left, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__collision__particle_radius.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(indent_left, ZC_GUI_RowParams::X_Left, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { t__collision__set_life_time.GetObj(), sdd__collision__set_life_time.GetObj() }));
+        win.AddRow(ZC_GUI_Row(ZC_GUI_RowParams(indent_left, ZC_GUI_RowParams::X_Left, row_y, 0.f, ZC_GUI_RowParams::Y_Center), { bnt__collision__move_speed.GetObj() }));
     }
     
     void Particles_count(ui_zc v) { pPS->Set_Particles_count(v); }
@@ -642,6 +674,8 @@ struct Setup__G_ParticleSystem
     void Color__disappear_secs(float v) { pPS->Set_Color__disappear_secs(v); }
     void Color__rgba_end(float r, float g, float b, float a) { pPS->Set_Color__rgba_end({ r, g, b, a }); }
         //  collision action
-    void Collision_action(ui_zc v) { pPS->Set_collisoin_action(G_PS_Source::CollisionAction(v)); }
+    void Collision__particle_radius(float v) { pPS->Set_Collision__particle_radius(v); }
+    void Collision__set_life_time(ui_zc v) { pPS->Set_Collision__set_life_time(G_ParticleSystem::Collision::SetLifeTime(v)); }
+    void Collision__move_speed(float v) { pPS->Set_Collision__move_speed(v / 100.f); }
 };
 #endif SETUP__G_PARTICLE_SYSTEM

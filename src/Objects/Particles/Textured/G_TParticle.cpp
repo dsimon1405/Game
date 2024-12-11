@@ -10,10 +10,11 @@
 #include <vector>
 #include <string>
 
-G_ParticleSystem::G_ParticleSystem(const G_PS_Source& ps_source)
+G_ParticleSystem::G_ParticleSystem(const G_PS_Source& ps_source, const Collision& _pc_src)
     : ps_src(ps_source),
     ps{CreateParticleSystem()},
     particles(FillParticles()),
+    pc_src(_pc_src),
     ds(CreateDrawerSet()),
     ds_con(ds.MakeZC_DSController(0))
 {
@@ -21,6 +22,8 @@ G_ParticleSystem::G_ParticleSystem(const G_PS_Source& ps_source)
     upSP = new Setup__G_ParticleSystem(this);
 #endif SETUP__G_PARTICLE_SYSTEM
     
+    pc_src.move_speed = CheckCollisionMoveSpeed(pc_src.move_speed);
+
     ec_updater = ZC__Updater::Connect({ &G_ParticleSystem::Callback_Updater, this }, G_UL__game_particles);
 }
 
@@ -67,8 +70,9 @@ void G_ParticleSystem::Set_Particles_count(ul_zc count)
         //  ds_con
     ds_con.pGLDraw = ds.upGLDraw.Get();
 
-    std::forward_list<ZC_Buffer*> ssbo_buffers{ &(ds.buffers.front()), &*(++(ds.buffers.begin())) };
-    ds_con.ssbo_buffers = std::move(ssbo_buffers);
+    std::forward_list<ZC_Buffer*> ds_con_ssbo_buffers;
+    for (ZC_Buffer& b : ds.buffers) ds_con_ssbo_buffers.emplace_front(&b);
+    ds_con.ssbo_buffers = std::move(ds_con_ssbo_buffers);
 
     if (need_draw) SetDrawState(need_draw);
 }
@@ -269,12 +273,13 @@ void G_ParticleSystem::Set_Color__rgba_end(const ZC_Vec4<float>& rgba_end)
     ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, color_rgba_end), sizeof(ParticleSystem::color_rgba_end), &ps.color_rgba_end);
 }
 
-void G_ParticleSystem::Set_collisoin_action(typename G_PS_Source::CollisionAction collision_action)
+void G_ParticleSystem::Add_CollisionSource(const Collision& _pc_src)
 {
-    if (collision_objects.empty()) return;  //  ssbo doesn't existst at gpu
-    if (ps_src.collision_action == collision_action) return;
-    ps_src.collision_action = collision_action;
-    ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, collision_action), sizeof(ParticleSystem::collision_action), &ps.collision_action);
+    ui_zc objs_count = pc_src.collision_objects_count;
+    pc_src = _pc_src;
+    pc_src.move_speed = CheckCollisionMoveSpeed(pc_src.move_speed);
+    pc_src.collision_objects_count = objs_count;
+    if (objs_count != 0) (++(ds.buffers.begin()))->GLNamedBufferSubData(0, sizeof(Collision), &pc_src);
 }
 
 ul_zc G_ParticleSystem::AddCollisionObject(float radius, const ZC_Vec3<float>& world_pos)
@@ -297,29 +302,22 @@ ul_zc G_ParticleSystem::AddCollisionObject(float radius, const ZC_Vec3<float>& w
         //  no empty spaces in collision_objects, need recreate
     std::vector<CollisionObject> new_collision_objects;
     new_collision_objects.reserve(collision_objects.size() + 1);
-    for (CollisionObject& co : collision_objects)    //  replace allready existing data
+    for (CollisionObject& co : collision_objects)    //  replace already existing data
         new_collision_objects.emplace_back(co);
     new_collision_objects.emplace_back(CollisionObject{ .radius = radius, .world_pos = world_pos });    //  add new object
     collision_objects = std::move(new_collision_objects);   //  change collision_objects
     
-    ui_zc collision_objects_count = collision_objects.size();
+    pc_src.collision_objects_count = collision_objects.size();
         //  in fire_c.glsl struct Collision
     ZC_Buffer ssbo_co(GL_SHADER_STORAGE_BUFFER, G_Bind_SSBO_COLLISION);
-    ssbo_co.GLNamedBufferStorage(sizeof(collision_objects_count) + (sizeof(CollisionObject) * collision_objects_count), &collision_objects_count, GL_DYNAMIC_STORAGE_BIT);
-    ssbo_co.GLNamedBufferSubData(sizeof(collision_objects_count), sizeof(CollisionObject) * collision_objects_count, collision_objects.data());
+    ssbo_co.GLNamedBufferStorage(sizeof(Collision) + (sizeof(CollisionObject) * pc_src.collision_objects_count), &pc_src, GL_DYNAMIC_STORAGE_BIT);
+    ssbo_co.GLNamedBufferSubData(sizeof(Collision), sizeof(CollisionObject) * pc_src.collision_objects_count, collision_objects.data());
 
     bool need_draw = GetDrawState();
     if (need_draw) SetDrawState(false);    //  will be added back to the end of the method to update pointers to ZC_GLDraw, ZC_VAO in ZC_DrawerFL
 
         //  ds
-    if (collision_objects.size() == 1)     //  create ssbo first time, need recreate byffers forw_list
-    {
-        std::forward_list<ZC_Buffer> buffers;
-        buffers.emplace_front(std::move(*(++(ds.buffers.begin()))));   //  move ssbo_uvs
-        buffers.emplace_front(std::move(ssbo_co));      //  add ssbo_co
-        buffers.emplace_front(std::move(*(ds.buffers.begin())));    //  move ssbo_ps
-        ds.buffers = std::move(buffers);
-    }
+    if (collision_objects.size() == 1) ds.buffers.emplace_after(ds.buffers.begin(), std::move(ssbo_co));     //  create ssbo_co for the first time, must be placed between existing ssbo_ps and ssbo_uvs
     else *(++(ds.buffers.begin())) = std::move(ssbo_co);    //  ssbo_co already exists, just reset
 
         //  ds_con
@@ -329,6 +327,12 @@ ul_zc G_ParticleSystem::AddCollisionObject(float radius, const ZC_Vec3<float>& w
     ds_con.ssbo_buffers = std::move(ds_con_ssbo_buffers);
 
     if (need_draw) SetDrawState(need_draw);
+
+    if (!(ps.external_influence_mask & EI_Collision))  //  new object added, may be started collision on gpu
+    {
+        ps.external_influence_mask |= EI_Collision;
+        ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, external_influence_mask), sizeof(ParticleSystem::external_influence_mask), &ps.external_influence_mask);
+    }
 
     return collision_objects.size() - 1;    //  return index of the added object
 }
@@ -341,21 +345,19 @@ void G_ParticleSystem::DeleteCollisionObject(ul_zc id)
 
     update_gpu_collision_objects = true;
 
-    if (ps_src.collision_action == G_PS_Source::CA_None) return;
-
-    bool set_CA_None = true;   //  if there's no object for collisoin, stop collision
+    bool stop_gpu_collision = true;   //  if there's no objects (only empty spaces) for collisoin, stop collision
     for (CollisionObject& co : collision_objects)
     {
         if (co.radius != 0)
         {
-            set_CA_None = false;
+            stop_gpu_collision = false;
             break;
         }
     }
-    if (set_CA_None)
+    if (stop_gpu_collision)
     {
-        ps_src.collision_action = G_PS_Source::CA_None;
-        ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, collision_action), sizeof(ParticleSystem::collision_action), &ps.collision_action);
+        ps.external_influence_mask = ~(~(ps.external_influence_mask) & EI_Collision);   //  put away collision flag
+        ds.buffers.front().GLNamedBufferSubData(offsetof(ParticleSystem, external_influence_mask), sizeof(ParticleSystem::external_influence_mask), &ps.external_influence_mask);
     }
 }
 
@@ -376,6 +378,28 @@ void G_ParticleSystem::SetCollisionObject_radius(ul_zc id, float radius)
 
     update_gpu_collision_objects = true;
     collision_objects[id].radius = radius;
+}
+
+void G_ParticleSystem::Set_Collision__particle_radius(float particle_radius)
+{
+    if (pc_src.particle_radius == particle_radius) return;
+    pc_src.particle_radius = particle_radius;
+    if (pc_src.collision_objects_count != 0) (++(ds.buffers.begin()))->GLNamedBufferSubData(offsetof(Collision, particle_radius), sizeof(Collision::particle_radius), &pc_src.particle_radius);
+}
+
+void G_ParticleSystem::Set_Collision__set_life_time(typename Collision::SetLifeTime set_life_time)
+{
+    if (pc_src.set_life_time == set_life_time) return;
+    pc_src.set_life_time = set_life_time;
+    if (pc_src.collision_objects_count != 0) (++(ds.buffers.begin()))->GLNamedBufferSubData(offsetof(Collision, set_life_time), sizeof(Collision::set_life_time), &pc_src.set_life_time);
+}
+
+void G_ParticleSystem::Set_Collision__move_speed(float move_speed)
+{
+    CheckCollisionMoveSpeed(move_speed);
+    if (pc_src.move_speed == move_speed) return;
+    pc_src.move_speed = move_speed;
+    if (pc_src.collision_objects_count != 0) (++(ds.buffers.begin()))->GLNamedBufferSubData(offsetof(Collision, move_speed), sizeof(Collision::move_speed), &pc_src.move_speed);
 }
 
 float G_ParticleSystem::GetRandom(float secs_min, float secs_max)
@@ -458,8 +482,8 @@ G_ParticleSystem::ParticleSystem G_ParticleSystem::CreateParticleSystem()
         .color_disappear_secs = ps_src.color.disappear_secs,
         .color_rgba_start = ZC_Pack_Float_To_UInt_8x8x8x8(ps_src.color.rgba_start),       //  rgba to packed [32]->8x8x8x8. rgb interpolated over life time from start to end. Alpha interpolated with appear_secs
         .color_rgba_end = ZC_Pack_Float_To_UInt_8x8x8x8(ps_src.color.rgba_end),         //  rgba to packed [32]->8x8x8x8. rgb interpolated over life time from start to end. Alpha interpolated with color_disappear_secs
-            //  collision
-        .collision_action = G_PS_Source::CA_None
+            //  external influence
+        .external_influence_mask = EI_None      //  changes if will be added object for collision
     };
 }
 
@@ -482,7 +506,8 @@ std::vector<G_ParticleSystem::Particle> G_ParticleSystem::FillParticles()
                 // .pos_cur                     //  calc on gpu
                     //  move
                 // .move_dir_normalized         //  calc on gpu
-                .move_speed_secs = ps_src.move.speed_min == ps_src.move.speed_max ? ps_src.move.speed_min : G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max),
+                .move_speed_secs_start = ps_src.move.speed_min == ps_src.move.speed_max ? ps_src.move.speed_min : G_ParticleSystem::GetRandom(ps_src.move.speed_min, ps_src.move.speed_max),
+                // .move_speed_secs_cur         //  calc on gpu
                     //  coners world pos
                 // .world_bl                 //  calc on gpu
                 // .world_br                 //  calc on gpu
@@ -741,6 +766,13 @@ void G_ParticleSystem::SetSpawnDataToDefault()
     ds.buffers.front().GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 }
 
+float G_ParticleSystem::CheckCollisionMoveSpeed(float move_speed)
+{
+    return move_speed = move_speed > 1.f ? 1.f
+                        : move_speed < -1.f ? -1.f
+                        : move_speed;
+}
+
 #define G_TParticle_Callback_Updater
 #ifdef G_TParticle_Callback_Updater
 #include <ZC/Tools/Time/ZC_Timer.h>
@@ -785,7 +817,7 @@ void G_ParticleSystem::Callback_Updater(float time)
 
     if (update_gpu_collision_objects)
     {                                           //  make offset to array, first is count, see flame_c.glsl Collisoin
-        (++(ds.buffers.begin()))->GLNamedBufferSubData(sizeof(float), sizeof(CollisionObject) * collision_objects.size(), collision_objects.data());
+        (++(ds.buffers.begin()))->GLNamedBufferSubData(sizeof(Collision), sizeof(CollisionObject) * collision_objects.size(), collision_objects.data());
         update_gpu_collision_objects = false;
     }
 
