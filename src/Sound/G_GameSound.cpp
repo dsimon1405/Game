@@ -31,8 +31,10 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
     case G_SN__platform_activation: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
     case G_SN__platform_disapear: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
     case G_SN__platform_scale: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
-    case G_SN__platform_wind: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
     case G_SN__platform_win: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+                //  wind
+    case G_SN__platform_wind_wind: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
+    case G_SN__platform_wind_bubble: volume_default = volume_max; distance_min = G_Map::radiusXY_other_platforms * 2.f; distance_max = max_dist_to_cam * 0.9f; break;
                 //  dmg
     case G_SN__platform_dmg_make_dmg: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;
     case G_SN__platform_dmg_load_dmg: volume_default = volume_max; distance_min = min_dist_to_cam; distance_max = max_dist_to_cam * 1.5f; break;

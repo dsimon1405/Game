@@ -1,7 +1,12 @@
 #pragma once
 
 #include "G_Platform.h"
+#include <System/G_NewV.h>
+#ifdef G_NewV
+#include <Objects/Particles/New/G_ParticleSystem.h>
+#else
 #include <Objects/Particles/G_PS_Wind.h>
+#endif
 
 class G_PlatformWind : public G_Platform
 {
@@ -36,7 +41,20 @@ private:
         float deactivate_particles_alpha = 0.f;
     } ch_d;
 
+#ifdef G_NewV
+    struct PS_Collision
+    {
+        G_PlatformWind* pHolder;    //  current owner of the pObj
+        G_Object* pObj;
+        ul_zc collision_id;
+    };
+
+    static inline ZC_uptr<G_ParticleSystem> upPS;
+    static inline std::list<PS_Collision> ps_collisions;
+    static inline float bubble_sound_secs_cur = 0.f;
+#else
     static inline ZC_uptr<G_PS_Wind> upPS_wind;
+#endif
     static inline G_PlatformWind* pParticles_holder = nullptr;    //  current holder of the particles
 
     void VAddObjectOnPlatform_P(G_Object* pObj_add) override;

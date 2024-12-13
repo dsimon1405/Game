@@ -478,7 +478,7 @@ void G_OP_MarbleSphere::UpdateSound()
 //     {       //  avoid arthogonal rotation for X change movind direction. Object will change rotation_signe_X downer and start reverce rotate around X 
 //         if ((ch_d.cur_rotate_direction[1] > 0.f && ch_d.cur_rotate_direction[1] >= 0.8f) || (ch_d.cur_rotate_direction[1] < 0.f && ch_d.cur_rotate_direction[1] <= -0.8f))
 //             ch_d.cur_rotate_direction = {};
-//         else    //  for Y axis changing orthogonal diraction make some help, rotate current rotate diraction on 1 degree (wrong way, but help)
+//         else    //  for Y axis changing orthogonal direction make some help, rotate current rotate direction on 1 degree (wrong way, but help)
 //         {
 //             ZC_Vec4<float> cur_rot_dir_v4 = ZC_Mat4<float>(1.f).Rotate(1.f, { 0.f, 0.f, -1.f }) * ZC_Vec4<float>(ch_d.cur_rotate_direction, 1.f);
 //             ch_d.cur_rotate_direction = ZC_Vec3<float>(cur_rot_dir_v4[0], cur_rot_dir_v4[1], cur_rot_dir_v4[2]);
@@ -486,7 +486,7 @@ void G_OP_MarbleSphere::UpdateSound()
 //     }
 
 //     ZC_Vec3<float> cur_to_new_offset = ch_d.cur_move_direction - ch_d.cur_rotate_direction;   //  where to rotate from current rotation angle
-//     ZC_Vec3<float> temp_rotate_direction = ch_d.cur_rotate_direction + cur_to_new_offset * rotate_power * time;   //  calculate new rotate diraction with time controll
+//     ZC_Vec3<float> temp_rotate_direction = ch_d.cur_rotate_direction + cur_to_new_offset * rotate_power * time;   //  calculate new rotate direction with time controll
 //     if (temp_rotate_direction != ZC_Vec3<float>())
 //     {          //  check normalization
 //         Normalize(temp_rotate_direction, ch_d.cur_rotate_direction);
@@ -583,7 +583,7 @@ void G_OP_MarbleSphere::UpdateSound()
 //     // if (cos_new_dir < 0.f)
 //     // {
 //     //     signe *= -1.f;
-//     //     ch_d.rotation_signe_X *= -1.f;  //  change diraction
+//     //     ch_d.rotation_signe_X *= -1.f;  //  change direction
 //     // }
 //     // if (cos_new_dir >= 0.f)   //  save move rotation diration, just rotate around Z
 //     // {
@@ -627,7 +627,7 @@ void G_OP_MarbleSphere::UpdateSound()
 //     // }
 //     // else    //  change move rotate diration (reverse rotation)
 //     // {
-//     //     ch_d.rotation_signe_X *= -1.f;  //  change diraction
+//     //     ch_d.rotation_signe_X *= -1.f;  //  change direction
 
 //     //     // if (dist_to_cur_angle > dist_to_new_angle)      //  clockwise rotation
 //     //     // {

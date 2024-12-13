@@ -44,7 +44,7 @@ void G_PS_Wind::SetPosition(const ZC_Vec3<float>& _start_pos)
     wind_pos = _start_pos;
 }
 
-void G_PS_Wind::SetWindDiraction(const ZC_Vec3<float>& _wind_dir)
+void G_PS_Wind::SetWinddirection(const ZC_Vec3<float>& _wind_dir)
 {
     wind_dir = ZC_Vec::Normalize(_wind_dir);
 }

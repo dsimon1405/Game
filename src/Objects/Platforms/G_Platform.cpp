@@ -120,7 +120,7 @@ ZC_Vec3<float> G_Platform::CalculateLightPos(float platform_radius_divided_xy)
         //  calculate z
     float dir_platf_center_to_obj_center_z = std::abs(dir_platf_center_to_obj_center[2]);   //  dir could be negative, need length
     float move_length_z = dir_platf_center_to_obj_center_z > G_Map::platforms_all_half_height_Z ? G_Map::platforms_all_half_height_Z : dir_platf_center_to_obj_center_z; //  light can't be ouut of platf_half_height_z
-    if (dir_platf_center_to_obj_center[2] < 0.f) move_length_z *= -1.f;  //  take signe of the diraction
+    if (dir_platf_center_to_obj_center[2] < 0.f) move_length_z *= -1.f;  //  take signe of the direction
     float light_pos_z = platf_center[2] + move_length_z;
 
     ZC_Vec3<float> light_pos_on_platf_surface(light_pos_xy[0], light_pos_xy[1], light_pos_z);   //  poisitoin on the one of the edges of the platform, but it's too close to the under light object

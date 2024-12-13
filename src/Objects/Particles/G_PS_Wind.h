@@ -24,7 +24,7 @@ public:
         // - _start_sphere_radius - radius in wich start to apear particles (only half of start sphere are in _length).
     void SetPosition(const ZC_Vec3<float>& _start_pos);
         // - _wind_dir - wind direction (may be not normalized).
-    void SetWindDiraction(const ZC_Vec3<float>& _wind_dir);
+    void SetWinddirection(const ZC_Vec3<float>& _wind_dir);
         // - speed - speed coef, default (1 meter(float) / 1 second).
     void SetSpeed(float speed);
 

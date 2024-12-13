@@ -16,6 +16,7 @@
 #include <ZC/Video/OpenGL/Shader/ZC_ShPComputes.h>
 #include "G_ShPComputeName.h"
 #include <GUI/Text/G_GUI_Fonts.h>
+#include "G_NewV.h"
 
 G_System::G_System()
 {
@@ -25,7 +26,9 @@ G_System::G_System()
     ZC__System::Init(ZC_SF__Collision | ZC_SF__GUI | ZC_SF__Updater, ZC_SWF__Multisampling_4 | ZC_SWF__Border, 800, 600, "SPHERUM");
     ZC__Window::SetMinSize(800, 600);
     if (config.GetConfigData().fuull_screen) ZC__Window::SetFullScreen(true);
-    // ZC__System::GlEnablePointSize();    //  particle system
+#ifndef G_NewV
+    ZC__System::GlEnablePointSize();    //  particle system
+#endif
     // ZC_SWindow::GlClearColor(0.5, 0.5, 0.5, 1.f);
 
     ZC__FPS::SetTimeMeasure(ZC_FPS_TM__Seconds);
@@ -78,8 +81,12 @@ void G_System::LoadSounds()
     ZC_Sounds::LoadWAV(G_SN__platform_activation, ZC_FSPath(path).append("objects/platforms/platform_activation.wav").string());
     ZC_Sounds::LoadWAV(G_SN__platform_disapear, ZC_FSPath(path).append("objects/platforms/platform_disapear.wav").string());
     ZC_Sounds::LoadWAV(G_SN__platform_scale, ZC_FSPath(path).append("objects/platforms/platform_scale.wav").string());
-    ZC_Sounds::LoadWAV(G_SN__platform_wind, ZC_FSPath(path).append("objects/platforms/platform_wind.wav").string());
     ZC_Sounds::LoadWAV(G_SN__platform_win, ZC_FSPath(path).append("objects/platforms/platform_win.wav").string());
+                //  wind
+    ZC_Sounds::LoadWAV(G_SN__platform_wind_wind, ZC_FSPath(path).append("objects/platforms/wind/platform_wind_wind.wav").string());
+#ifdef G_NewV
+    ZC_Sounds::LoadWAV(G_SN__platform_wind_bubble, ZC_FSPath(path).append("objects/platforms/wind/platform_wind_bubble.wav").string());
+#endif
                 //  dmg
     ZC_Sounds::LoadWAV(G_SN__platform_dmg_make_dmg, ZC_FSPath(path).append("objects/platforms/dmg/platform_dmg_make_dmg.wav").string());
     ZC_Sounds::LoadWAV(G_SN__platform_dmg_load_dmg, ZC_FSPath(path).append("objects/platforms/dmg/platform_dmg_load_dmg.wav").string());
@@ -104,8 +111,8 @@ void G_System::SetUpGUI()
     ZC_GUI_IconUV::button_quad = ZC_GUI_UV{ .bl = { 10.f / icon_tex_width, 10.f / icon_tex_height }, .tr = { 390.f / icon_tex_width, 90.f / icon_tex_height } };
     ZC_GUI_IconUV::arrow_down = ZC_GUI_UV{ .bl = { 502.f / icon_tex_width, 0.f }, .tr = { 602.f / icon_tex_width, 99.f / icon_tex_height } };
     ZC_GUI_IconUV::arrow_right = ZC_GUI_UV{ .bl = { 602.f / icon_tex_width, 0.f }, .tr = { 702.f / icon_tex_width, 99.f / icon_tex_height } };
-    ZC_GUI_IconUV::quad_colored = ZC_GUI_UV{ .bl = { 702.f / icon_tex_width, 23.f / icon_tex_height }, .tr = { 722.f / icon_tex_width, 45.f / icon_tex_height } };
-    ZC_GUI_IconUV::background_alpha = ZC_GUI_UV{ .bl = { 702.f / icon_tex_width, 0.f }, .tr = { 722.f / icon_tex_width, 22.f / icon_tex_height } };
+    ZC_GUI_IconUV::quad_colored = ZC_GUI_UV{ .bl = { 704.f / icon_tex_width, 24.f / icon_tex_height }, .tr = { 724.f / icon_tex_width, 46.f / icon_tex_height } };
+    ZC_GUI_IconUV::background_alpha = ZC_GUI_UV{ .bl = { 704.f / icon_tex_width, 0.f }, .tr = { 724.f / icon_tex_width, 22.f / icon_tex_height } };
 
     //  Widnow
     ZC_GUI_Colors::window = 0;
@@ -154,5 +161,5 @@ void G_System::LoadComputeShaders()
 {
     ZC_FSPath path = ZC_FSPath(ZC_assetsDirPath).append("ZC/Shaders/Game");
 
-    ZC_ShPComputes::Load(G_ShPCN__flame, path.append("flame_c.glsl").string().c_str());
+    ZC_ShPComputes::Load(G_ShPCN__flame, path.append("particle_system_c.glsl").string().c_str());
 }

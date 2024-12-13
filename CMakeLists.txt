@@ -123,7 +123,9 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_PS_Wind.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_ParticleMoveCircle.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Particles/G_PS_Star.cpp
-    ${PROJECT_SOURCE_DIR}/src/Objects/Particles/Textured/G_TParticle.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Particles/New/G_ParticleSystem.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Particles/New/G_PS_Setup.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/Particles/New/G_PS_Source.cpp
     
     ${PROJECT_SOURCE_DIR}/src/Model/G_Assimp_ZC_Converter.cpp
     ${PROJECT_SOURCE_DIR}/src/Model/G_ModelLoader.cpp
