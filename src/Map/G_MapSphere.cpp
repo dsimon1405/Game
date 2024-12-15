@@ -18,8 +18,3 @@ void G_MapSphere::SetScale(float _scale)
     scale = _scale;
     unModel = ZC_Mat4<float>(1.f).Scale(scale, scale, scale);
 }
-
-float G_MapSphere::GetScale() const noexcept
-{
-    return scale;
-}

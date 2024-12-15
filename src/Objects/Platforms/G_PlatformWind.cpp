@@ -24,7 +24,7 @@ G_PlatformWind::G_PlatformWind(const G_PlatformTransforms& _plat_trans)
                     .render = G_PS_Source::Render
                         {
                             .render_level = ZC_RL_Default,
-                            .drawer_level = G_DL_AlphaBlending_ParticleSystem_Wind,
+                            .drawer_level = G_DL_AlphaBlending_ParticleSystem_WindBubble,
                             .tex_path = ZC_FSPath(ZC_assetsDirPath).append("Game/textures/bubble.png").string(),     //  b
                             .columns_count = 3,      //  b
                             .rows_count = 2,     //  b

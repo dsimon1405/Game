@@ -719,7 +719,7 @@ ZC_DrawerSet G_ParticleSystem::CreateDrawerSet()
     ssbo_particles.GLNamedBufferSubData(sizeof(ParticleSystem), sizeof(Particle) * particles.size(), particles.data());
 
         //  texture
-    ZC_Texture tex = ZC_Texture::LoadTexture2D(ps_src.render.tex_path.c_str(), 0, GL_REPEAT, GL_REPEAT);
+    ZC_Texture tex = ZC_Texture::LoadTexture2D(ps_src.render.tex_path.c_str(), 0, ps_src.render.create_apha_from_rgb, GL_REPEAT, GL_REPEAT);
         //  fill tex uv
     const int tile_width = tex.GetWidth() / ps_src.render.columns_count;
     const int tile_heihgt = tex.GetHeight() / ps_src.render.rows_count;

@@ -321,7 +321,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 		ZC_TexSets::VectorOfTexturesCreator texCreator = pShPIS->texSets.GetCreator();
 		auto pNext_tex_name = texCreator.NextName();
 		if (pNext_tex_name && *pNext_tex_name == ZC_TexSets::texColor)
-			texCreator.Add(ZC_Texture::LoadTexture2D(tex_path.c_str(), 0, GL_REPEAT, GL_REPEAT));
+			texCreator.Add(ZC_Texture::LoadTexture2D(tex_path.c_str(), 0, false, GL_REPEAT, GL_REPEAT));
 		
 		tex_sets.emplace_front(ZC_TexturesSet{ .id = 0, .textures = texCreator.GetVector() });
 	}

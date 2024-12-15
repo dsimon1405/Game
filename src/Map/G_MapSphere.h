@@ -10,7 +10,6 @@ public:
     G_MapSphere();
         //  set scale for sphere map and return eadius of the sphere map
     void SetScale(float _scale);
-    float GetScale() const noexcept;
 
 private:
     ZC_DSController dsCon_sphere_map;

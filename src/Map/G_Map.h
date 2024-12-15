@@ -29,11 +29,11 @@ public:
     static inline float first_section_lenght = 0.f;
     static inline float other_section_length = 0.f;
     static inline float dist_to_last_platform_center = 0.f;   //  distance to center of platform from last circle
+    static inline float map_radius = 0.f;
 
     G_Map();
 
     void CreateLevel(int _lvl);
-    float GetMapSphereScale() const noexcept;
 
 private:
     const int lines_count_in_first_level = 6;

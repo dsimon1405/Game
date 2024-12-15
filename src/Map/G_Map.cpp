@@ -43,10 +43,6 @@ void G_Map::CreateLevel(int _lvl)
     star.VSetDefaultState_IO();
 
     static const float dist_star_center_to_map_sphere = dist_between_other_platforms * 3.f;
-    map_sphere.SetScale(dist_to_star + dist_star_center_to_map_sphere);    //  set map shpere radius 
-}
-
-float G_Map::GetMapSphereScale() const noexcept
-{
-    return map_sphere.GetScale();
+    map_radius = dist_to_star + dist_star_center_to_map_sphere;
+    map_sphere.SetScale(map_radius);    //  set map shpere radius
 }

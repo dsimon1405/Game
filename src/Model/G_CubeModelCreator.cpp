@@ -44,7 +44,7 @@ G_ModelSet G_CubeModelCreator::LoadModel()
     auto pNext_tex_name = texCreator.NextName();
     if (pNext_tex_name && *pNext_tex_name == ZC_TexSets::texColor)
     {
-        texCreator.Add(ZC_Texture::LoadTexture2D(tex_path.c_str(), 0));
+        texCreator.Add(ZC_Texture::LoadTexture2D(tex_path.c_str(), 0, false));
     }
     textures = texCreator.GetVector();
     tex_sets.emplace_front(ZC_TexturesSet{ .id = 0, .textures = std::move(textures) });

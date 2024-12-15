@@ -134,8 +134,8 @@ void G_GameManager::PrepareLevel()
     gui_level_timer.SetDefaultState();
     gui_level.SetDefaultState(level);
     G_GameSounds::SetDefaultSate();
-        //  preapare
-    // map.CreateLevel(21);
+        //  prepare
+    // map.CreateLevel(14);
     map.CreateLevel(level);
     player.ChangeCameraState(true);
     if (!ecUpdater.IsConnected()) ecUpdater.NewConnection(ZC__Updater::Connect({ &G_GameManager::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_manager));
@@ -205,7 +205,7 @@ void G_GameManager::ContinueGameUpdate(float time)
                 //  calculate cam move dir and speed
             must_be_cam_pos = pActiveCamera->GetPosition();
             must_be_distance_player_to_cam = ZC_Vec::Length(pActiveCamera->GetLookOn() - must_be_cam_pos);
-            ZC_Vec3<float> new_cam_pos = ZC_Vec::MoveByLength(pActiveCamera->GetLookOn(), pActiveCamera->GetPosition(), map.GetMapSphereScale() - 1.f);  //  cam pos near map spheres border
+            ZC_Vec3<float> new_cam_pos = ZC_Vec::MoveByLength(pActiveCamera->GetLookOn(), pActiveCamera->GetPosition(), G_Map::map_radius - 1.f);  //  cam pos near map spheres border
             ZC_Vec3<float> dir_distance = pActiveCamera->GetPosition() - new_cam_pos;
             cam_move_dir_normallized = ZC_Vec::Normalize(dir_distance);
             static const float seconds_move_to_player = 4.f;

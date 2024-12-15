@@ -12,8 +12,9 @@ struct G_PS_Source
     {
         ZC_RenderLevel render_level = ZC_RL_Default;
         ZC_DrawerLevel drawer_level;
-
+            //  texture
         std::string tex_path;   //  fool path to the texture
+        bool create_apha_from_rgb = false;
             //  for calculation tiles coords in the rexture 
         int columns_count = 1;
         int rows_count = 1;
