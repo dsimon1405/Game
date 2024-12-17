@@ -1,5 +1,7 @@
 #pragma once
 
+#include <System/G_NewV.h>
+#ifndef G_NewV
 #include <ZC/Video/OpenGL/Renderer/ZC_DSController.h>
 #include <ZC/Tools/Math/ZC_Mat4.h>
 
@@ -18,3 +20,4 @@ private:
     float unAlpha = 1.f;
     float scale = 1.f;
 };
+#endif

@@ -1,19 +1,18 @@
+#include <System/G_NewV.h>
+#ifdef G_NewV
 #include "G_CubeMap.h"
 
 #include <System/G_RenderLevel.h>
 #include <ZC/Tools/Math/ZC_Mat4.h>
+#include <ZC/File/ZC_File.h>
+
+// #define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 G_CubeMap::G_CubeMap()
     : ds(CreateDrawerSet()),
     dsCon(ds.MakeZC_DSController(0))
 {
-    // ZC_Mat4<float> unModel(1.f);
-    // uint unColor = 0u;
-    // float unAlpha = 1.f;
-    // dsCon.SetUniformsData(ZC_UN_unModel, &unModel);
-    // dsCon.SetUniformsData(ZC_UN_unColor, &unColor);
-    // dsCon.SetUniformsData(ZC_UN_unAlpha, &unAlpha);
-
     dsCon.SwitchToDrawLvl(ZC_RL_Default, G_DL_CubeMap);
 }
 
@@ -33,7 +32,6 @@ ZC_DrawerSet G_CubeMap::CreateDrawerSet()
     auto upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, elementsCount, elementsType, 0);
 
 		//	ShPInitSet
-	// typename ZC_ShProgs::ShPInitSet* pShPIS = ZC_ShProgs::Get(ShPN_Game_Sphere);
 	typename ZC_ShProgs::ShPInitSet* pShPIS = ZC_ShProgs::Get(ShPN_Game_CubeMap);
 
 		//	vao
@@ -44,24 +42,40 @@ ZC_DrawerSet G_CubeMap::CreateDrawerSet()
 	buffers.emplace_front(std::move(vbo));
 	buffers.emplace_front(std::move(ebo));
 
-    std::vector<std::string> paths
-        {
-            { "C:/Users/simon007/source/repos/Game1/Game/assets/Game/textures/cube_map/right.jpg" },
-            { "C:/Users/simon007/source/repos/Game1/Game/assets/Game/textures/cube_map/left.jpg" },
-            { "C:/Users/simon007/source/repos/Game1/Game/assets/Game/textures/cube_map/front.jpg" },
-            { "C:/Users/simon007/source/repos/Game1/Game/assets/Game/textures/cube_map/back.jpg" },
-            { "C:/Users/simon007/source/repos/Game1/Game/assets/Game/textures/cube_map/top.jpg" },
-            { "C:/Users/simon007/source/repos/Game1/Game/assets/Game/textures/cube_map/bottom.jpg" },
-        };
-
     std::vector<ZC_Texture> textures;
     textures.reserve(1.f);
-    textures.emplace_back(ZC_Texture::LoadCubeMap(paths));
+    textures.emplace_back(LoadCubeMap());
 
     std::forward_list<ZC_TexturesSet> tex_sets;
     tex_sets.emplace_front(ZC_TexturesSet{ .id = 0, .textures = std::move(textures) });
 
 	return ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers), std::move(tex_sets));
+}
+
+ZC_Texture G_CubeMap::LoadCubeMap()
+{
+    int width = 0;
+    int height = 0;
+    int channels = 0;
+    uch_zc* datas[6];
+
+    stbi_set_flip_vertically_on_load(true);
+    std::fill(datas, datas + 6, stbi_load(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/cube_map/cube_map.jpg").string().c_str(), &width, &height, &channels, 0));      //  use one texture for all cube map sides
+
+    GLenum internalFormat = 0;
+    switch (channels)
+    {
+    case 1: internalFormat = GL_R8; break;
+    case 3: internalFormat = GL_RGB8; break;
+    case 4: internalFormat = GL_RGBA8; break;
+    default: assert(false);
+    }
+
+    ZC_Texture texture(internalFormat, width, height, datas);   //  cube map ctr
+
+    stbi_image_free(datas[0]);
+
+    return texture;
 }
 
 std::vector<float> G_CubeMap::GetCubeVretices()
@@ -156,3 +170,4 @@ std::vector<float> G_CubeMap::GetCubeVretices()
     //      1.0f, -1.0f,  1.0f
     // };
 }
+#endif

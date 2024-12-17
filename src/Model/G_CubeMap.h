@@ -1,5 +1,8 @@
 #pragma once
 
+#include <System/G_NewV.h>
+#ifdef G_NewV
+
 #include <ZC/Video/OpenGL/Renderer/ZC_DrawerSet.h>
 
 class G_CubeMap
@@ -12,10 +15,11 @@ private:
     ZC_DSController dsCon;
 
     ZC_DrawerSet CreateDrawerSet();
+    ZC_Texture LoadCubeMap();
         //  return vectices look from the inside of the box
     std::vector<float> GetCubeVretices();
 };
-
+#endif
 
 
 

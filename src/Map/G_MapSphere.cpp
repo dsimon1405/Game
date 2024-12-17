@@ -1,3 +1,5 @@
+#include <System/G_NewV.h>
+#ifndef G_NewV
 #include "G_MapSphere.h"
 
 #include <Model/G_Models.h>
@@ -18,3 +20,4 @@ void G_MapSphere::SetScale(float _scale)
     scale = _scale;
     unModel = ZC_Mat4<float>(1.f).Scale(scale, scale, scale);
 }
+#endif
