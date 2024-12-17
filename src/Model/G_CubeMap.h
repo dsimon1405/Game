@@ -1,20 +1,20 @@
-// #pragma once
+#pragma once
 
-// #include <ZC/Video/OpenGL/Renderer/ZC_DrawerSet.h>
+#include <ZC/Video/OpenGL/Renderer/ZC_DrawerSet.h>
 
-// class G_CubeMap
-// {
-// public:
-//     G_CubeMap();
+class G_CubeMap
+{
+public:
+    G_CubeMap();
 
-//     ZC_DrawerSet CreateDrawerSet();
+private:
+    ZC_DrawerSet ds;
+    ZC_DSController dsCon;
 
-// private:
-//     ZC_DrawerSet ds;
-//     ZC_DSController dsCon;
-//         //  return vectices look from the inside of the box
-//     std::vector<float> GetCubeVretices();
-// };
+    ZC_DrawerSet CreateDrawerSet();
+        //  return vectices look from the inside of the box
+    std::vector<float> GetCubeVretices();
+};
 
 
 

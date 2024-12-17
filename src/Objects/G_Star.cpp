@@ -91,9 +91,16 @@ void G_Star::SetNewPosition(float dist_to_star)
     float new_length = 2.f * ZC_PI * dist_to_star;
     rot_angle_Z = ZC_angle_360f / (new_length / speed_horizontal_move);
 
+    if (dist_to_star != dist_to_center)     //  recalculate light data
+    {
+        light_linear_start_player_sphere = G_LightUBO::c_light.attenuations[G_LAN_PlayerSphere].linear;
+        light_linear_start_platform = G_LightUBO::c_light.attenuations[G_LAN_Platform].linear;
+        light_linear_start_cube_map = G_LightUBO::c_light.attenuations[G_LAN_CubeMap].linear;
+        RecalcLightData();
+    }
+
     dist_to_center = dist_to_star;
     collision_object.UpdateRadius(dist_to_star / 2.f);      //  will start damage object on that distance
-    // CalculateModelMatrix(1.f);
 }
 
 float G_Star::VGetRadius_IO() const noexcept
@@ -131,7 +138,8 @@ G_ObjectTypeMask G_Star::VGetTypeMask_IO() const
 void G_Star::Callback_Updater(float time)
 {
     UpdateDMG(time);
-    CalculateModelMatrix(time);
+    // CalculateModelMatrix(time);
+    UpdateLight(time);
 }
 
 void G_Star::Callback_Collision(const ZC_CO_CollisionResult& coll_result)
@@ -185,6 +193,36 @@ void G_Star::CalculateModelMatrix(float time)
     ps_star.Set_SpawnMatModel__translation(star_pos_cur);
     static const uint color_packed = ZC_Pack_Float_To_UInt_2x10x10x10(1.f, 0.86f, 0.55f);    //  peach color
     G_LightUBO::UpdateLightData(G_LN__Star, G_LightSet{ .pos = star_pos_cur, .color = color_packed });
+}
+
+void G_Star::UpdateLight(float time)
+{
+    light_secs_to_move -= time;
+    if (light_secs_to_move <= 0) RecalcLightData();
+    G_LightUBO::UpdateAttenuation(G_LAN_PlayerSphere,
+        G_LightAttenuation{ .linear = G_LightUBO::c_light.attenuations[G_LAN_PlayerSphere].linear + (light_linear_speed_player_sphere * time), .quadratic = G_LightUBO::c_light.attenuations[G_LAN_PlayerSphere].quadratic });
+    G_LightUBO::UpdateAttenuation(G_LAN_Platform,
+        G_LightAttenuation{ .linear = G_LightUBO::c_light.attenuations[G_LAN_Platform].linear + (light_linear_speed_platform * time), .quadratic = G_LightUBO::c_light.attenuations[G_LAN_Platform].quadratic });
+    G_LightUBO::UpdateAttenuation(G_LAN_CubeMap,
+        G_LightAttenuation{ .linear = G_LightUBO::c_light.attenuations[G_LAN_CubeMap].linear + (light_linear_speed_cube_map * time), .quadratic = G_LightUBO::c_light.attenuations[G_LAN_CubeMap].quadratic });
+}
+// #include <iostream>
+void G_Star::RecalcLightData()
+{
+    light_secs_to_move = ZC_Random::GetRandomFloat_x_100(1.f, 10.f) / 10.f;
+    float offset_percent = ZC_Random::GetRandomFloat_x_100(5.f, 100.f) / 100.f;
+    float move_signe = light_linear_start_player_sphere < G_LightUBO::c_light.attenuations[G_LAN_PlayerSphere].linear ? -1.f : 1.f;
+
+    auto lamb_calc_speed = [this, offset_percent, move_signe](float val_start, float val_cur) -> float
+    {
+        float dest = val_start + (val_start * offset_percent);
+        float move_length = move_signe > 0 ? dest - val_cur : val_cur - dest;
+        return move_length / light_secs_to_move * move_signe;
+    };
+
+    light_linear_speed_player_sphere = lamb_calc_speed(light_linear_start_player_sphere, G_LightUBO::c_light.attenuations[G_LAN_PlayerSphere].linear);
+    light_linear_speed_platform = lamb_calc_speed(light_linear_start_platform, G_LightUBO::c_light.attenuations[G_LAN_Platform].linear);
+    light_linear_speed_cube_map = lamb_calc_speed(light_linear_start_cube_map, G_LightUBO::c_light.attenuations[G_LAN_CubeMap].linear);
 }
 
 #else

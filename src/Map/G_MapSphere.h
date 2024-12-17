@@ -17,5 +17,4 @@ private:
     uint unColor = 0u;
     float unAlpha = 1.f;
     float scale = 1.f;
-    float dist_map_sphere_to_star = 0.f;
 };

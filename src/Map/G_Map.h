@@ -2,7 +2,13 @@
 
 #include "G_Section.h"
 #include <Objects/G_Star.h>
+
+#include <System/G_NewV.h>
+#ifdef G_NewV
+#include <Model/G_CubeMap.h>
+#else
 #include "G_MapSphere.h"
+#endif
 
 #include <list>
 
@@ -42,6 +48,12 @@ private:
     G_Platform start_platform;
     std::list<G_Section> sections;
 
+#ifdef G_NewV
+    G_CubeMap cube_map;
+#else
     G_MapSphere map_sphere;
+#endif
     G_Star star;
+
+    void CalcAttenuation(float dist_to_star);
 };

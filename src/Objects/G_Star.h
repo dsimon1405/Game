@@ -29,10 +29,18 @@ private:
     std::list<G_IObject*> objects_dmg;
 
     G_GameSoundSet ss_star;
-
+        //  move
     float dist_to_center = 0.f;
     float rot_angle_Z = 0.f;
     float cur_angle_Z = 0.f;
+        //  light
+    float light_linear_start_player_sphere = 0.f;   //  start value, can't move far from them, only some above higher or lower
+    float light_linear_start_platform = 0.f;    //  start value, can't move far from them, only some above higher or lower
+    float light_linear_start_cube_map = 0.f;    //  start value, can't move far from them, only some above higher or lower
+    float light_linear_speed_player_sphere = 0.f;   //  speed to move above or under the start
+    float light_linear_speed_platform = 0.f;    //  speed to move above or under the start
+    float light_linear_speed_cube_map = 0.f;    //  speed to move above or under the start
+    float light_secs_to_move = 0.f;
 
     std::vector<G_GameSound> GetSoundsVector();
     
@@ -44,8 +52,9 @@ private:
     void Callback_UBOLightUpdate();
     
     void UpdateDMG(float time);
-
     void CalculateModelMatrix(float time);
+    void UpdateLight(float time);
+    void RecalcLightData();
 };
 #else
 #include <Objects/Particles/G_PS_Star.h>

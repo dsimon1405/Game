@@ -129,7 +129,8 @@ void G_OP_MarbleSphere::Callback_Updater(float time)
     if (ch_d.space_position != SP_Jump)
     {
         const float gravitation_power = 10.f;
-        pos[2] -= gravitation_power * time;
+        float max_delay = 1 / 40.f;     //  40 fps
+        pos[2] -= gravitation_power * (time > max_delay ? max_delay : time);
     }
 
     UpdateSound();

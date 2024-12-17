@@ -135,7 +135,7 @@ void G_GameManager::PrepareLevel()
     gui_level.SetDefaultState(level);
     G_GameSounds::SetDefaultSate();
         //  prepare
-    // map.CreateLevel(14);
+    // map.CreateLevel(21);
     map.CreateLevel(level);
     player.ChangeCameraState(true);
     if (!ecUpdater.IsConnected()) ecUpdater.NewConnection(ZC__Updater::Connect({ &G_GameManager::Callback_Updater, this }, G_UpdaterLevels::G_UL__game_manager));

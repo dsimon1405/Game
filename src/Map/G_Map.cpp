@@ -1,5 +1,7 @@
 #include "G_Map.h"
 
+#include <System/G_LightUBO.h>
+
 G_Map::G_Map()
     : start_platform(G_PlatformTransforms{ .translate = platforms_start_pos, .scale = { scaleXY_start_platform, scaleXY_start_platform, scaleZ_platform } })
 {
@@ -42,7 +44,20 @@ void G_Map::CreateLevel(int _lvl)
     star.SetNewPosition(dist_to_star);
     star.VSetDefaultState_IO();
 
+    float temp_radius = map_radius;
     static const float dist_star_center_to_map_sphere = dist_between_other_platforms * 3.f;
     map_radius = dist_to_star + dist_star_center_to_map_sphere;
+    if (map_radius != temp_radius) CalcAttenuation(dist_to_star);   //  map radius updated, need recalculate attenuations
+#ifndef G_NewV
     map_sphere.SetScale(map_radius);    //  set map shpere radius
+#endif
+}
+
+void G_Map::CalcAttenuation(float dist_to_star)
+{
+    float attenuation_dist_coef = floor(dist_to_star / 100.f);  //  coef for calculation linear and quadratic params, each section is pluss 100.f to map radius
+        //  hard coded start values
+    G_LightUBO::UpdateAttenuation(G_LAN_PlayerSphere, G_LightAttenuation{ 0.014f / (2.f * attenuation_dist_coef), 0.00007f / (4.f * attenuation_dist_coef) });
+    G_LightUBO::UpdateAttenuation(G_LAN_Platform, G_LightAttenuation{ 0.0028f / (2.f * attenuation_dist_coef), 0.00002f / (4.f * attenuation_dist_coef) });
+    G_LightUBO::UpdateAttenuation(G_LAN_CubeMap, G_LightAttenuation{ 0.007f / (2.f * attenuation_dist_coef), 0.0002f / (4.f * attenuation_dist_coef) });
 }

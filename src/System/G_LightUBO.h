@@ -14,6 +14,21 @@ enum G_LightName
     G_LN__sizeof
 };
 
+enum G_LightAttenuationName
+{
+    G_LAN_PlayerSphere = 0,
+    G_LAN_Platform = 1,
+    G_LAN_CubeMap = 2,
+
+    G_LAN_sizeof
+};
+
+struct G_LightAttenuation
+{
+    float linear;
+    float quadratic;
+};
+
 class G_LightUBO
 {
 public:
@@ -21,17 +36,23 @@ public:
     static void Destroy();
 
     static void UpdateLightData(G_LightName light_name, const G_LightSet& light_set);
+    static void UpdateAttenuation(G_LightAttenuationName att_name, const G_LightAttenuation& attenuation);
 
 private:
     static inline ZC_uptr<ZC_UBO> upUBO_light;
-    static inline G_LightSet light_sets[G_LN__sizeof];
-    static inline std::vector<int> lights_to_update;
+    struct Light
+    {
+        G_LightSet light_sets[G_LN__sizeof];
+        G_LightAttenuation attenuations[G_LAN_sizeof];
+    } static inline light;
+
+    static inline bool update_light = false;
+    static inline bool update_attenuation = false;
 
     static void Callback_UBOLightUpdate();
 
-
-
-    // static inline ZC_uptr<TestLight> upTest_light;
+public:
+    static inline const Light& c_light = light;
 };
 
 
