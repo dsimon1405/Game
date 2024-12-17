@@ -6,15 +6,15 @@
 
 G_GUI_Button::G_GUI_Button(bool _use_focuse_changed_sound)
     : use_focuse_changed_sound(_use_focuse_changed_sound)
-{
-    if (!(ss_button_focused.upSound) && use_focuse_changed_sound) ss_button_focused = G_SystemSound(G_SN__gui_button_focused, 100.f);
+{       //  if return pointer to audio set then sound is exists
+    if (!up_ss_button_focused && use_focuse_changed_sound) up_ss_button_focused = new G_SystemSound(G_SN__gui_button_focused, 100.f);
 }
 
 void G_GUI_Button::ButtonFocusChanged(bool is_on)
 {
     if (!is_on || !use_focuse_changed_sound) return;
-    if (ss_button_focused.upSound->GetState() == ZC_SS__Play) ss_button_focused.upSound->Stop();
-    ss_button_focused.upSound->Play();
+    if (up_ss_button_focused->sound.GetState() == ZC_SS__Play) up_ss_button_focused->sound.Stop();
+    up_ss_button_focused->sound.Play();
 }
 
 float G_GUI_Button::CalculateButtonWidth(const ZC_GUI_Font* pFont, const std::forward_list<G_LangText>& _lang_texts)

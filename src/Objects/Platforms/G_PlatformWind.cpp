@@ -188,7 +188,7 @@ void G_PlatformWind::Callback_Updater(float time)
             static const float azure_g_b = wind_push_power_min / wind_push_power_max;
 
             float time_coef = ch_d.cur_time / seconds_to_start_wind;
-            this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_white, { 0.f, azure_g_b, azure_g_b }, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(G_Platform::color_white, { 0.f, azure_g_b, azure_g_b }, time_coef);
             this->upSK->SetVolume(G_SN__platform_wind_wind, sound_wind_min * time_coef);
         }
     }
@@ -280,7 +280,7 @@ void G_PlatformWind::Callback_Updater(float time)
             else
             {
                 float time_coef = ch_d.cur_time / seconds_deactivate;
-                this->unColor = G_InterpolateColor_PackToUInt(ch_d.deactivate_color, G_Platform::color_default, time_coef);
+                this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.deactivate_color, G_Platform::color_default, time_coef);
                 this->upSK->SetVolume(G_SN__platform_wind_wind, ch_d.deactivate_sound_wind - (ch_d.deactivate_sound_wind * time_coef));
                 if (pParticles_holder == this) upPS->Set_Color__system_alpha(ch_d.deactivate_particles_alpha - (ch_d.deactivate_particles_alpha * time_coef));
             }
@@ -437,7 +437,7 @@ void G_PlatformWind::Callback_Updater(float time)
             static const float azure_g_b = wind_push_power_min / wind_push_power_max;
 
             float time_coef = ch_d.cur_time / seconds_to_start_wind;
-            this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_white, { 0.f, azure_g_b, azure_g_b }, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(G_Platform::color_white, { 0.f, azure_g_b, azure_g_b }, time_coef);
             this->upSK->SetVolume(G_SN__platform_wind_wind, sound_wind_min * time_coef);
 
                 //  particles proccess
@@ -546,7 +546,7 @@ void G_PlatformWind::Callback_Updater(float time)
             else
             {
                 float time_coef = ch_d.cur_time / seconds_deactivate;
-                this->unColor = G_InterpolateColor_PackToUInt(ch_d.deactivate_color, G_Platform::color_default, time_coef);
+                this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.deactivate_color, G_Platform::color_default, time_coef);
                 this->upSK->SetVolume(G_SN__platform_wind_wind, ch_d.deactivate_sound_wind - (ch_d.deactivate_sound_wind * time_coef));
                 upPS_wind->SetAlpha(ch_d.deactivate_particles_alpha - (ch_d.deactivate_particles_alpha * time_coef));
             }

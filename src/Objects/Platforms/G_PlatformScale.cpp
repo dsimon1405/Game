@@ -67,7 +67,7 @@ void G_PlatformScale::Callback_Updater(float time)
             this->unColor = scale_color_packed;
             this->upSK->SetSoundState(G_SN__platform_scale, ZC_SS__Play);
         }
-        else this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_white, scale_color, ch_d.scale_time / seconds_pause);
+        else this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(G_Platform::color_white, scale_color, ch_d.scale_time / seconds_pause);
     } break;
     case SS_scale_down: 
     {
@@ -101,8 +101,8 @@ void G_PlatformScale::Callback_Updater(float time)
         else 
         {
             float half_pause_time = seconds_pause / 2.f;
-            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor_PackToUInt(scale_color, G_Platform::color_default, ch_d.scale_time / half_pause_time);
-            else this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_default, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
+            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(scale_color, G_Platform::color_default, ch_d.scale_time / half_pause_time);
+            else this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(G_Platform::color_default, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
         }
     } break;
     case SS_scale_up: 
@@ -137,8 +137,8 @@ void G_PlatformScale::Callback_Updater(float time)
         else 
         {
             float half_pause_time = seconds_pause / 2.f;
-            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor_PackToUInt(scale_color, G_Platform::color_default, ch_d.scale_time / half_pause_time);
-            else this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_default, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
+            if (ch_d.scale_time < half_pause_time) this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(scale_color, G_Platform::color_default, ch_d.scale_time / half_pause_time);
+            else this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(G_Platform::color_default, scale_color, (ch_d.scale_time - half_pause_time) / half_pause_time);
         }
     } break;
     case SS_end: 
@@ -164,7 +164,7 @@ void G_PlatformScale::Callback_Updater(float time)
                     //  update model matrix and radius for collision object
                 this->platf_trans.Update_scale(scale, G_MN__Platform_cylinder_black);
             }
-            this->unColor = G_InterpolateColor_PackToUInt(scale_color, G_Platform::color_default, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(scale_color, G_Platform::color_default, time_coef);
         }
     } break;
     }

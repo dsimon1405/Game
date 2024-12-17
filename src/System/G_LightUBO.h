@@ -35,7 +35,7 @@ public:
     static void Init();
     static void Destroy();
 
-    static void UpdateLightData(G_LightName light_name, const G_LightSet& light_set);
+    static void UpdateLightSet(G_LightName light_name, const G_LightSet& light_set);
     static void UpdateAttenuation(G_LightAttenuationName att_name, const G_LightAttenuation& attenuation);
 
 private:

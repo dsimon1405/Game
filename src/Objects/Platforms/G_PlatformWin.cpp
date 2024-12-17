@@ -56,7 +56,7 @@ void G_PlatformWin::Callback_Updater(float time)
             ch_d = { .state = S_active, .time = 0.f, .color = G_Platform::color_white };
             this->unColor = packed_active_color;
         }
-        else this->unColor = G_InterpolateColor_PackToUInt(ch_d.color, G_Platform::color_white, ch_d.time / seconds_activate);
+        else this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.color, G_Platform::color_white, ch_d.time / seconds_activate);
     } break;
     case S_active: if (ch_d.time >= seconds_active) ch_d = { .state = S_deactivate, .time = 0.f, .color = G_Platform::color_white }; break;
     case S_deactivate:
@@ -67,7 +67,7 @@ void G_PlatformWin::Callback_Updater(float time)
             this->unColor = G_Platform::color_default_packed;
             func_change_pos(this);  //  switch to new position
         }
-        else this->unColor = G_InterpolateColor_PackToUInt(ch_d.color, G_Platform::color_default, ch_d.time / seconds_activate);
+        else this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.color, G_Platform::color_default, ch_d.time / seconds_activate);
     } break;
     case S_win:
     {
@@ -97,7 +97,7 @@ void G_PlatformWin::Callback_Updater(float time)
                 this->upSK->SetSoundState(G_SN__platform_win, ZC_SS__Play);
             }
         }
-        else this->unColor = G_InterpolateColor_PackToUInt(ch_d.color, color_win, ch_d.time / seconds_win_activate);
+        else this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.color, color_win, ch_d.time / seconds_win_activate);
     } break;
     case S_player_move_to_next_level: break;
     }

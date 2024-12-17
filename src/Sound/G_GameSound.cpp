@@ -6,7 +6,7 @@
 #include "G_GameSounds.h"
 
 G_GameSound::G_GameSound(G_SoundName _sound_name)
-    : upSound(ZC_Sounds::GetSound(_sound_name)),
+    : sound(ZC_Sounds::GetSound(_sound_name)),
     sound_name(_sound_name)
 {
                     //      volume_max(100)       volume_default       distance_max(not 0)        distance_min
@@ -55,7 +55,7 @@ G_GameSound::G_GameSound(G_SoundName _sound_name)
 }
 
 G_GameSound::G_GameSound(G_GameSound&& s)
-    : upSound(std::move(s.upSound)),
+    : sound(std::move(s.sound)),
     sound_name(s.sound_name),
     sound_state_default(s.sound_state_default),
     volume_max(s.volume_max),
@@ -88,7 +88,7 @@ bool G_GameSound::DistanceToCameraChanged(float dist_to_cam)
                                 : 1.f - dist_coef;          //  cam somewhere in volume radius
     distacne_pos_to_camera_coef = dist_coef > 1.f ? 0.f : 1.f - dist_coef;
     UpdateVolume();
-    return upSound->GetState() == ZC_SS__Play || upSound->GetState() == ZC_SS__PlayLoop;
+    return sound.GetState() == ZC_SS__Play || sound.GetState() == ZC_SS__PlayLoop;
 }
 
 void G_GameSound::SetVolume(float volume)
@@ -112,22 +112,22 @@ bool G_GameSound::SetDefaultState(float dist_to_cam)
 
 void G_GameSound::UpdateVolume()
 {
-    upSound->SetVolume(volume_cur * distacne_pos_to_camera_coef * G_Config::GetConfigData().volume_coef);
+    sound.SetVolume(volume_cur * distacne_pos_to_camera_coef * G_Config::GetConfigData().volume_coef);
 }
 
 bool G_GameSound::SetSoundState(ZC_SoundState sound_state)
 {
     switch (sound_state)
     {
-    case ZC_SS__Play: upSound->Play(); return true;
-    case ZC_SS__PlayLoop: upSound->PlayLoop(); return true;
-    case ZC_SS__Pause: upSound->Pause(); return false;
-    case ZC_SS__Stop: upSound->Stop(); return false;
+    case ZC_SS__Play: sound.Play(); return true;
+    case ZC_SS__PlayLoop: sound.PlayLoop(); return true;
+    case ZC_SS__Pause: sound.Pause(); return false;
+    case ZC_SS__Stop: sound.Stop(); return false;
     }
     return false;
 }
 
 ZC_SoundState G_GameSound::GetState()
 {
-    return upSound->GetState();
+    return sound.GetState();
 }

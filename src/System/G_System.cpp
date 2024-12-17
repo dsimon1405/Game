@@ -45,7 +45,8 @@ G_System::G_System()
         //      models
     G_Models::LoadModels();
         //  open audio stream
-    ZC_Audio::OpenAudioStream(ZC_AudioSet(ZC_Sounds::GetSound(0)->GetAudioSet()));
+    const ZC_AudioSet* pAudio_set = ZC_Sounds::GetSound(0).GetAudioSet();
+    if (pAudio_set) ZC_Audio::OpenAudioStream(ZC_AudioSet(*pAudio_set));
         //  crete lights ubo
     G_LightUBO::Init();
 }

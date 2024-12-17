@@ -15,7 +15,7 @@ void G_PlatformLightHolder::SetLightHolder(G_Platform* _pPlatform)
     if (pPlatform->platform_type == G_PT__Start)
     {
         ecUpdater.Disconnect();
-        G_LightUBO::UpdateLightData(G_LN__Platform, G_LightSet{ .pos = { 0.f, 0.f, 0.f }, .color = 0u });   //  set default data
+        G_LightUBO::UpdateLightSet(G_LN__Platform, G_LightSet{ .pos = { 0.f, 0.f, 0.f }, .color = 0u });   //  set default data
     }
     else
     {
@@ -40,5 +40,5 @@ void G_PlatformLightHolder::Callback_Updater(float time)
 {
     if (pPlatform->platform_type == G_PT__Start) return;    //  no light
 
-    G_LightUBO::UpdateLightData(G_LN__Platform, pPlatform->GetLightSet_P());
+    G_LightUBO::UpdateLightSet(G_LN__Platform, pPlatform->GetLightSet_P());
 }

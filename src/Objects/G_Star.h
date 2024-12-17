@@ -34,13 +34,17 @@ private:
     float rot_angle_Z = 0.f;
     float cur_angle_Z = 0.f;
         //  light
+    float light_secs_to_move = 0.f;     //  seconds to move light attenuation and color in one direction
+        //  attenuation
     float light_linear_start_player_sphere = 0.f;   //  start value, can't move far from them, only some above higher or lower
     float light_linear_start_platform = 0.f;    //  start value, can't move far from them, only some above higher or lower
     float light_linear_start_cube_map = 0.f;    //  start value, can't move far from them, only some above higher or lower
-    float light_linear_speed_player_sphere = 0.f;   //  speed to move above or under the start
-    float light_linear_speed_platform = 0.f;    //  speed to move above or under the start
-    float light_linear_speed_cube_map = 0.f;    //  speed to move above or under the start
-    float light_secs_to_move = 0.f;
+    float light_linear_speed_player_sphere = 0.f;   //  speed to move above or under the start, coud be positive and negative
+    float light_linear_speed_platform = 0.f;    //  speed to move above or under the start, coud be positive and negative
+    float light_linear_speed_cube_map = 0.f;    //  speed to move above or under the start, coud be positive and negative
+        //  color
+    ZC_Vec3<float> light_color_move_speed;      //  speed to move to next color, coud be positive and negative
+    ZC_Vec3<float> light_color_cur { 1.f, 0.86f, 0.55f };    //  peach color
 
     std::vector<G_GameSound> GetSoundsVector();
     

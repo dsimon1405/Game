@@ -8,7 +8,7 @@
 class G_SystemSound
 {
 public:
-    ZC_upSound upSound = nullptr;
+    ZC_Sound sound;
         //  Look G_Button. May not have sound.
     G_SystemSound() = default;
         //  - _volume - range [0, 100]. Param for updating global sound volume from G_Config in UpdateSoundsVolume(). Set once, and must not be changed in upSound!

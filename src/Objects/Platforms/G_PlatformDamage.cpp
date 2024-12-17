@@ -63,19 +63,19 @@ void G_PlatformDamage::Callback_Updater(float time)
         if (ch_d.is_first_dmg)  //  on first dmg need to change dmg color from color_white to dmg_color full dmg_time, in other case: first half to deactivate, second half time to activate
         {
             float time_coef = ch_d.dmg_time > seconds_to_dmg ? 1.f : ch_d.dmg_time / seconds_to_dmg;
-            this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_white, dmg_color, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(G_Platform::color_white, dmg_color, time_coef);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, time_coef);
             if (ch_d.dmg_time >= seconds_to_dmg) ch_d.is_first_dmg = false;     //  first dmg reached
         }
         else if (ch_d.dmg_time >= half_seconds_between_dmg)    //  activate
         {
             float time_coef = ch_d.dmg_time > seconds_to_dmg ? 1.f : (ch_d.dmg_time - half_seconds_between_dmg) / half_seconds_between_dmg;
-            this->unColor = G_InterpolateColor_PackToUInt(G_Platform::color_default, dmg_color, time_coef);
+            this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(G_Platform::color_default, dmg_color, time_coef);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, time_coef);
         }
         else   //  deactivate
         {
-            this->unColor = G_InterpolateColor_PackToUInt(dmg_color, G_Platform::color_default, ch_d.dmg_time);
+            this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(dmg_color, G_Platform::color_default, ch_d.dmg_time);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, 1.f - ch_d.dmg_time);
         }
 
@@ -109,7 +109,7 @@ void G_PlatformDamage::Callback_Updater(float time)
         }
         else
         {
-            this->unColor = G_InterpolateColor_PackToUInt(ch_d.deactivate_color, G_Platform::color_default, ch_d.dmg_time);
+            this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.deactivate_color, G_Platform::color_default, ch_d.dmg_time);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, 1.f - ch_d.dmg_time);
         }
     }

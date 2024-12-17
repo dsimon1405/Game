@@ -41,13 +41,15 @@ void G_Map::CreateLevel(int _lvl)
 
 
     float dist_to_star = dist_to_last_platform_center + dist_between_other_platforms * 1.5f;
-    star.SetNewPosition(dist_to_star);
-    star.VSetDefaultState_IO();
 
     float temp_radius = map_radius;
     static const float dist_star_center_to_map_sphere = dist_between_other_platforms * 3.f;
     map_radius = dist_to_star + dist_star_center_to_map_sphere;
     if (map_radius != temp_radius) CalcAttenuation(dist_to_star);   //  map radius updated, need recalculate attenuations
+    
+    star.SetNewPosition(dist_to_star);
+    star.VSetDefaultState_IO();
+
 #ifndef G_NewV
     map_sphere.SetScale(map_radius);    //  set map shpere radius
 #endif

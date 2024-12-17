@@ -108,8 +108,8 @@ void G_GUI_P_W_Health::Callback_Updater(float time)
             static const uint color_midle_packed = ZC_Pack_Float_To_UInt_2x10x10x10(color_midle);
             
             static const float half_hp = hp_default / 2;
-            if (cur_hp > half_hp) text_health.SetColor(G_InterpolateColor_PackToUInt(color_hp_max, color_midle, 1.f - ((float(cur_hp) - half_hp) / half_hp)));
-            else if (cur_hp < half_hp) text_health.SetColor(G_InterpolateColor_PackToUInt(color_midle, color_hp_min, 1.f - (float(cur_hp) / half_hp)));
+            if (cur_hp > half_hp) text_health.SetColor(G_InterpolateColor_PackToUInt_2x10x10x10(color_hp_max, color_midle, 1.f - ((float(cur_hp) - half_hp) / half_hp)));
+            else if (cur_hp < half_hp) text_health.SetColor(G_InterpolateColor_PackToUInt_2x10x10x10(color_midle, color_hp_min, 1.f - (float(cur_hp) / half_hp)));
             else text_health.SetColor(color_midle_packed);
         }
     }

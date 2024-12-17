@@ -48,16 +48,16 @@ void G_GameSounds::GameSound::ChangeState(bool on)
     {
         if (sound_state_restore != ZC_SS__Stop)
         {
-            sound_state_restore == ZC_SS__Play ? pSound->upSound->Play() : pSound->upSound->PlayLoop();
+            sound_state_restore == ZC_SS__Play ? pSound->sound.Play() : pSound->sound.PlayLoop();
             sound_state_restore = ZC_SS__Stop;  //  back ZC_SS__Stop in restore state for next call ChangeState()
         }
     }
     else
     {
-        if (pSound->upSound->GetState() == ZC_SS__Play || pSound->upSound->GetState() == ZC_SS__PlayLoop)
+        if (pSound->sound.GetState() == ZC_SS__Play || pSound->sound.GetState() == ZC_SS__PlayLoop)
         {
-            sound_state_restore = pSound->upSound->GetState();
-            pSound->upSound->Pause();
+            sound_state_restore = pSound->sound.GetState();
+            pSound->sound.Pause();
         }
     }
 }

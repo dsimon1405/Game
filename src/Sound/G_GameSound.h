@@ -29,7 +29,7 @@ public:
     ZC_SoundState GetState();
 
 private:
-    ZC_upSound upSound;
+    ZC_Sound sound;
     G_SoundName sound_name;
 
     ZC_SoundState sound_state_default = ZC_SS__Stop;

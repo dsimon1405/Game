@@ -17,7 +17,7 @@ void G_LightUBO::Destroy()
     upUBO_light = nullptr;
 }
 
-void G_LightUBO::UpdateLightData(G_LightName light_name, const G_LightSet& light_set)
+void G_LightUBO::UpdateLightSet(G_LightName light_name, const G_LightSet& light_set)
 {
     assert(light_name != G_LN__sizeof);     //  not a light name
     light.light_sets[light_name] = light_set;

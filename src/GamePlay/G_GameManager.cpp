@@ -15,7 +15,7 @@ G_GameManager::G_GameManager()
 
     ChangeGameLevelsUpdaterState(false);
     // ZC_SWindow::ChangeLevelState(G_UpdaterLevels::G_UL__game_play, false);
-    ss_main_theme.upSound->PlayLoop();
+    ss_main_theme.sound.PlayLoop();
 }
 
 G_GameManager::~G_GameManager()

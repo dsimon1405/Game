@@ -20,7 +20,7 @@ public:
     static float GetLongestName(const ZC_GUI_Font* pFont, const std::forward_list<G_LangText>& _lang_texts);
 
 private:
-    static inline G_SystemSound ss_button_focused;
+    static inline ZC_uptr<G_SystemSound> up_ss_button_focused;
     
     bool use_focuse_changed_sound;
 };

@@ -413,7 +413,7 @@ void G_OP_MarbleSphere::UpdateColorDMG(float time)
         this->unColor = 0.f;
         ch_d.dmg_color = {};
     }
-    else this->unColor = G_InterpolateColor_PackToUInt(ch_d.dmg_color, { 0.01f, 0.01f, 0.01f }, ch_d.dmg_time / seconds_dmg_phase);
+    else this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.dmg_color, { 0.01f, 0.01f, 0.01f }, ch_d.dmg_time / seconds_dmg_phase);
 }
 
 void G_OP_MarbleSphere::UpdateSound()
