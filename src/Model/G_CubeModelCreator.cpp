@@ -16,7 +16,7 @@ G_ModelSet G_CubeModelCreator::LoadModel()
     vbo.GLNamedBufferSubData(quads_b_size + normals_b_size, tex_coords_b_size, tex_coords.data());
 
         //  ebo
-    ulong elementsCount = 0;
+    ul_zc elementsCount = 0;
     GLenum elementsType = 0;
     ZC_DA<uchar> elements = GetTriangleElements(elementsCount, elementsType, quads.size());
 
@@ -52,11 +52,11 @@ G_ModelSet G_CubeModelCreator::LoadModel()
     return G_ModelSet{ .model_name = G_MN__Platform_cube, .drawer_set = ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers), std::move(tex_sets)), .surfaces = Get_COSurfaces() };
 }
 
-ZC_DA<uchar> G_CubeModelCreator::GetTriangleElements(ulong& rElementsCount, GLenum& rElementsType, ulong quad_size)
+ZC_DA<uchar> G_CubeModelCreator::GetTriangleElements(ul_zc& rElementsCount, GLenum& rElementsType, ul_zc quad_size)
 {
-    ulong quadsElementsCount = quad_size * 6;     //  6 elements in ebo on one quad
+    ul_zc quadsElementsCount = quad_size * 6;     //  6 elements in ebo on one quad
     rElementsCount = quadsElementsCount;  
-    ulong verticesInVBO = quad_size * 4,     //  4 vertices in vbo on one quad
+    ul_zc verticesInVBO = quad_size * 4,     //  4 vertices in vbo on one quad
         storingTypeSize = 0;
     ZC_Buffer::GetElementsData(verticesInVBO - 1, storingTypeSize, rElementsType);
     ZC_DA<uchar> elements(storingTypeSize * rElementsCount);

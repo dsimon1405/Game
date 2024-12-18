@@ -22,7 +22,7 @@ ZC_DrawerSet G_CubeMap::CreateDrawerSet()
 	ZC_Buffer vbo(GL_ARRAY_BUFFER);
 	vbo.GLNamedBufferStorage(vertices.size() * sizeof(float), vertices.data(), 0);
         //  ebo
-    ulong elementsCount = 0;
+    ul_zc elementsCount = 0;
     GLenum elementsType;
     ZC_DA<uchar> elements = ZC_Buffer::GetTriangleElements(elementsCount, elementsType, 6, 0);
 

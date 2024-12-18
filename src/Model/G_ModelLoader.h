@@ -13,18 +13,14 @@ class G_ModelLoader
 public:
     static G_ModelSet LoadModel(G_ModelName model_name);
     
-private:
+// private:
 	static inline bool SURFACES_IS_QUADS = true;	//	TYPE OF SURFACES IN MODEL: QUADS OR TRIANGLES
 
 	struct Vertex
 	{
-		// position
-		ZC_Vec3<float> position;
-		// normal
-		int normal;
-		// texCoords
-		// ZC_Vec2<ushort> texCoords;
-		ZC_Vec2<float> texCoords;
+		ZC_Vec3<f_zc> position;
+		i_zc normal;
+		ZC_Vec2<f_zc> texCoords;
 	};
 	struct VertNorm
 	{
@@ -38,6 +34,9 @@ private:
     static G_ModelSet ProcessNode(G_ModelName model_name, aiNode* pNode, const aiScene* pScene, const std::string& path);
 	static std::vector<ZC_CO_Surface<ZC_Vec3<float>>> LoadCollisionSurfaces(aiNode* pNode, const aiScene* pScene);
 	static ZC_DrawerSet CreateDrawerSet(aiNode* pNode, const aiScene* pScene, const std::string& path, bool smooth_normals, bool invert_normals, G_ModelName model_name);
+
+	static void WriteToFile(G_ModelName model_name, const std::vector<Vertex>& verts);
+	static void ReadFile(G_ModelName model_name);
 
 	// template <typename T>
 	// static void FillElements(T* pElementsHead, aiMesh* pMesh)

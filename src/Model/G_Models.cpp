@@ -4,15 +4,18 @@
 #include "G_ModelLoader.h"
 #include "G_CubeModelCreator.h"
 
+#include <ZC/Tools/Time/ZC_Timer.h>
 void G_Models::LoadModels()
 {
 	models.reserve(G_MN__Platform_cube);
+    ZC_Timer t1(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "total load");
+    t1.StartPoint();
 	for (int i = 0.f; i < G_MN__Platform_cube; ++i)
 	{
 		auto& iter = models.emplace_back(G_ModelLoader::LoadModel((G_ModelName)i));
 		if ((G_ModelName)i != G_MN__SphereMap && (G_ModelName)i != G_MN__SphereStar) iter.radius = ZC_Vec::Length(GetFarestVertexOfSurface(iter.surfaces));	//	set radius
 	}
-
+	t1.EndPoint();
 	// models.emplace_back(G_CubeModelCreator::LoadModel());	//	load quad platform, not from blender, hard coded vertices
 }
 

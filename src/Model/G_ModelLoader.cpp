@@ -6,14 +6,19 @@
 #include <assimp/postprocess.h>
 
 #include <list>
+#include <fstream>
 
+// #include <ZC/Tools/Time/ZC_Timer.h>
 G_ModelSet G_ModelLoader::LoadModel(G_ModelName model_name)
 {
 	// read file via ASSIMP
 	Assimp::Importer importer;
 	std::string model_path = GetPath(model_name);
 	
+    // static ZC_Timer t1(ZC_TR__repeats, 4.0, ZC_TRO__seconds_total, "assimp load");
+    // t1.StartPoint();
 	const aiScene* pScene = importer.ReadFile(model_path, 0);
+	// t1.EndPoint();
 	// const aiScene* pScene = importer.ReadFile(model_path, aiProcess_Triangulate );
 
 	// check for errors
@@ -165,7 +170,7 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 		//	count vertices
 	uint verts_count = 0;
 	for(uint i = 0; i < pNode->mNumMeshes; i++)
-		verts_count += pScene->mMeshes[pNode->mMeshes[i]]->mNumVertices;
+		verts_count += pScene->mMeshes[pNode->mMeshes[i]]->mNumVertices / 6 * 4;	//	need only 4 vertices equal corners of the quad for elements rendering, don't need repeat vertices in one quad. See lower at mesh reading.
 
 	char gpu_object_id_for_lightning = 0;
 	switch (model_name)
@@ -180,54 +185,65 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	std::list<std::list<VertNorm>> verts_to_smooth;
 	std::vector<Vertex> vertices;
 	vertices.reserve(verts_count);
+
+	auto lamb_load_Vertex = [pModel, &model, invert_normals, smooth_normals, &model_scale_rotate, gpu_object_id_for_lightning, &vertices, &verts_to_smooth](aiMesh* pMesh, uint vert_i)
+	{
+		Vertex vertex;
+		if (pModel)
+		{
+			ZC_Vec4<float> pos = pModel ? model * ZC_Vec4<float>(G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]), 1.f) : ZC_Vec4<float>(G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]), 1.f);
+			vertex.position = { pos[0], pos[1], pos[2] };
+		}
+		else vertex.position = G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]);
+			//	normal
+		aiVector3D& normal = pMesh->mNormals[vert_i];
+		if (invert_normals) normal *= -1.f;		//	invert if need
+		if (!smooth_normals)	//	set normal if don't need make smoth (later)
+		{
+			if (pModel)		//	need rotate and scale with pModel
+			{
+				ZC_Vec3<float> new_normal = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(model_scale_rotate * ZC_Vec4<float>(normal.x, normal.y, normal.z, 1.f)));
+				vertex.normal = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2], gpu_object_id_for_lightning);
+			}
+			else vertex.normal = ZC_Pack_INT_2_10_10_10_REV(normal.x, normal.y, normal.z, gpu_object_id_for_lightning);
+		}
+
+			//	tex coords
+		if (pMesh->mTextureCoords[0])
+		{
+			aiVector3D& tex_coords = pMesh->mTextureCoords[0][vert_i];
+				//	don't use pack, texture may have coords out of range [0,1]
+			vertex.texCoords = ZC_Vec2<float>(tex_coords.x, tex_coords.y);
+		}
+		Vertex& v = vertices.emplace_back(vertex);
+		
+		if (smooth_normals)		//	add same vertices to lists to recalculate normals
+		{
+			bool new_vertex = true;
+			for (auto& same_verts : verts_to_smooth)
+			{
+				if (same_verts.front().pVert->position == v.position)
+				{
+					same_verts.emplace_back(VertNorm{ .pVert = &v, .normal = {normal.x, normal.y, normal.z} });
+					new_vertex = false;
+					break;
+				}
+			}
+			if (new_vertex) verts_to_smooth.emplace_back(std::list<VertNorm>{ VertNorm{ .pVert = &v, .normal = ZC_Vec::Normalize<float>({ normal.x, normal.y, normal.z }) } });
+		}
+	};
+
 	for(uint mesh_i = 0; mesh_i < pNode->mNumMeshes; mesh_i++)
 	{
 		aiMesh* pMesh = pScene->mMeshes[pNode->mMeshes[mesh_i]];
-		for (uint vert_i = 0; vert_i < pMesh->mNumVertices; vert_i++)
+		uint quads_count = pMesh->mNumVertices / 6;
+			//	assimp store at first all first triangles of the quads of the mesh, then second triangles of the quads. The order of the corners of triangles: first - tl, br, bl; second - tl, tr, br.
+			//	So, we need all the vertices of the first triangle and only the tr of the second.
+		uint offset_to_second_triangles = pMesh->mNumVertices / 2;	//	index of tl of the first of the second triangles
+		for (uint vert_i = 0; vert_i < offset_to_second_triangles; vert_i++)
 		{
-			Vertex vertex;
-			if (pModel)
-			{
-				ZC_Vec4<float> pos = model * ZC_Vec4<float>(G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]), 1.f);
-				vertex.position = { pos[0], pos[1], pos[2] };
-			}
-			else vertex.position = G_Assimp_ZC_Converter::GetVec3(pMesh->mVertices[vert_i]);
-				//	normal
-			aiVector3D& normal = pMesh->mNormals[vert_i];
-			if (invert_normals) normal *= -1.f;		//	invert if need
-			if (!smooth_normals)	//	set normal if don't need make smoth (later)
-			{
-				if (pModel)		//	need rotate and scale with pModel
-				{
-					ZC_Vec3<float> new_normal = ZC_Vec::Normalize(ZC_Vec::Vec4_to_Vec3(model_scale_rotate * ZC_Vec4<float>(normal.x, normal.y, normal.z, 1.f)));
-					vertex.normal = ZC_Pack_INT_2_10_10_10_REV(new_normal[0], new_normal[1], new_normal[2], gpu_object_id_for_lightning);
-				}
-				else vertex.normal = ZC_Pack_INT_2_10_10_10_REV(normal.x, normal.y, normal.z, gpu_object_id_for_lightning);
-			}
-
-				//	tex coords
-			if (pMesh->mTextureCoords[0])
-			{
-				aiVector3D& tex_coords = pMesh->mTextureCoords[0][vert_i];
-					//	don't use pack, texture may have coords out of range [0,1]
-				vertex.texCoords = ZC_Vec2<float>(tex_coords.x, tex_coords.y);
-			}
-			Vertex& v = vertices.emplace_back(vertex);
-			
-			if (smooth_normals)		//	add same vertices to lists to recalculate normals
-			{
-				bool new_vertex = true;
-				for (auto& same_verts : verts_to_smooth)
-				{
-					if (same_verts.front().pVert->position == v.position)
-					{
-						same_verts.emplace_back(VertNorm{ .pVert = &v, .normal = {normal.x, normal.y, normal.z} });
-						new_vertex = false;
-						break;
-					}
-				}
-				if (new_vertex) verts_to_smooth.emplace_back(std::list<VertNorm>{ VertNorm{ .pVert = &v, .normal = ZC_Vec::Normalize<float>({ normal.x, normal.y, normal.z }) } });
-			}
+			lamb_load_Vertex(pMesh, vert_i);	//	read tl, br, bl from the first triangle
+			if ((vert_i + 1) % 3 == 0) lamb_load_Vertex(pMesh, offset_to_second_triangles + vert_i - 1);	//	when tl, br, bl is read from the first triangle, add tr from second triangle
 		}
 	}
 	if (smooth_normals)
@@ -250,39 +266,17 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	}
 	ZC_Buffer vbo(GL_ARRAY_BUFFER);
 	vbo.GLNamedBufferStorage(vertices.size() * sizeof(Vertex), vertices.data(), 0u);
-
-		//	ebo
-	// 		//	elemnts count
-	// ulong elementsCount = 0;
-	// for (unsigned int i = 0; i < pMesh->mNumFaces; i++)
-	// {
-	// 	aiFace& face = pMesh->mFaces[i];
-	// 	for (unsigned int j = 0; j < face.mNumIndices; j++) ++elementsCount;
-	// }
-			//	get elements type and size, and fill
+	
 	GLenum elementsType = 0;
-	ulong storingTypeSize = 0;
-	ZC_Buffer::GetElementsData(vertices.size() - 1ull, storingTypeSize, elementsType);
-	// ZC_DA<uchar> elements(storingTypeSize * elementsCount);
-	ZC_DA<uchar> elements(storingTypeSize * verts_count);	//	from blender elements count equal verts count...
-	switch (storingTypeSize)
-	{
-	case 1: FillElements<uchar>(elements.pHead, verts_count); break;
-	case 2: FillElements<ushort>(reinterpret_cast<ushort*>(elements.pHead), verts_count); break;
-	case 4: FillElements<uint>(reinterpret_cast<uint*>(elements.pHead), verts_count); break;
-	}
-	// switch (storingTypeSize)
-	// {
-	// case 1: FillElements<uchar>(elements.pHead, pMesh); break;
-	// case 2: FillElements<ushort>(reinterpret_cast<ushort*>(elements.pHead), pMesh); break;
-	// case 4: FillElements<uint>(reinterpret_cast<uint*>(elements.pHead), pMesh); break;
-	// }
+	ul_zc elements_count = 0;
+		//	draw order triangles of the quad: first(tl, br, bl), second(tl, tr, bl). GetTriangleElements() in description have another corners order (bl, tr, tl	bl, br, tr). But in both cases we will get order of indexes for first quad (0, 1, 2,  0, 3, 2) and so on for other quads...
+	ZC_DA<uchar> elements = ZC_Buffer::GetTriangleElements(elements_count, elementsType, vertices.size() / 4, 0);
+	
 	ZC_Buffer ebo(GL_ELEMENT_ARRAY_BUFFER);
 	ebo.GLNamedBufferStorage(elements.size, elements.Begin(), 0u);
 		
 		//	glDraw
-	// ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, elementsCount, elementsType, 0);
-	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, verts_count, elementsType, 0u);
+	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, elements_count, elementsType, 0u);
 
 		//	ShPInitSet
 	typename ZC_ShProgs::ShPInitSet* pShPIS =
@@ -290,17 +284,9 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 		: model_name == G_MN__SphereStar ? ZC_ShProgs::Get(ShPN_Game_Star)
 		: nullptr;
 
-	// switch (model_name)
-	// {
-	// case : break;
-	
-	// default:
-	// 	break;
-	// }
-
 		//	vao
 	ZC_VAO vao;
-	vao.Config(pShPIS->vaoConfigData, vbo, &ebo, 0, 0);   //  vertices count in vbo (in one quad 4, in one triangle 3)
+	vao.Config(pShPIS->vaoConfigData, vbo, &ebo, 0, 0);
 
 	std::forward_list<ZC_Buffer> buffers;
 	buffers.emplace_front(std::move(vbo));
@@ -336,4 +322,41 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 	// textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 		
 	return ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers), std::move(tex_sets));
+}
+
+void G_ModelLoader::WriteToFile(G_ModelName model_name, const std::vector<Vertex>& verts)
+{
+	std::ofstream ofs(model_name == G_MN__SphereMarble ? "sphere.zcm" : "cylinder.zcm", std::ios::binary);
+	assert(ofs.is_open());
+		//	byte size
+	ul_zc verts_bytes = verts.size() * sizeof(Vertex);
+	ofs.write(reinterpret_cast<char*>(&verts_bytes), sizeof(verts_bytes));	//	8 bytes
+	// ofs << verts_bytes;	//	8 bytes
+	ofs.write(reinterpret_cast<const char*>(verts.data()), sizeof(Vertex) * verts.size());
+	// for (const Vertex& v : verts)
+	// 	ofs << v.position[0] << v.position[1] << v.position[2] << v.normal << v.texCoords[0] << v.texCoords[1];
+	
+	ofs.close();
+}
+
+void G_ModelLoader::ReadFile(G_ModelName model_name)
+{
+	std::ifstream ifs(model_name == G_MN__SphereMarble ? "sphere.zcm" : "cylinder.zcm", std::ios::binary);
+	assert(ifs.is_open());
+	if (!(ifs.is_open())) return;
+		//	read vertes size
+	ul_zc verts_byte_size = 0;
+	ifs.read(reinterpret_cast<char*>(&verts_byte_size), sizeof(verts_byte_size));
+	assert(verts_byte_size % sizeof(Vertex) == 0);	//	byte size not equal strucs Vertex type
+		//	read verts data
+	ZC_DA<char> verts(verts_byte_size);
+	ifs.read(verts.pHead, verts_byte_size);
+
+		//	test
+	Vertex* pVetex = reinterpret_cast<Vertex*>(verts.pHead);
+	std::list<Vertex> lv;
+	for (ul_zc i = 0; i < verts_byte_size / sizeof(Vertex); ++i)
+		lv.emplace_back(*(pVetex + i));
+
+	int q = 3;
 }

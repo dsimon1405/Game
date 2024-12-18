@@ -11,7 +11,7 @@ struct G_CubeModelCreator
     static G_ModelSet LoadModel();
 
 private:
-    static ZC_DA<uchar> GetTriangleElements(ulong& rElementsCount, GLenum& rElementsType, ulong quad_size);
+    static ZC_DA<uchar> GetTriangleElements(ul_zc& rElementsCount, GLenum& rElementsType, ul_zc quad_size);
 
     static std::vector<ZC_Quad> GetCoords();
     static std::vector<int> GetNormals();
@@ -21,7 +21,7 @@ private:
     static float GetPlatformRadius(const ZC_Mat4<float>& model);
 
     template<typename T>
-    static void FillTriangleElements(T* pElementsHead, ulong elementsSize, ulong quadsElementsCount)
+    static void FillTriangleElements(T* pElementsHead, ul_zc elementsSize, ul_zc quadsElementsCount)
     {
         ulong elementsI = 0,
             index = 0;

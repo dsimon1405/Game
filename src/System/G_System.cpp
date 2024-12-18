@@ -18,9 +18,15 @@
 #include <GUI/Text/G_GUI_Fonts.h>
 #include "G_NewV.h"
 
+// #include <ZC/Tools/Time/ZC_Timer.h>
 G_System::G_System()
 {
+    // ZC_Timer t0(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "total");
+    // t0.StartPoint();
+    // ZC_Timer t1(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "sounds");
+    // t1.StartPoint();
     LoadSounds();
+    // t1.EndPoint();
     SetUpGUI();
         //  create window
     ZC__System::Init(ZC_SF__Collision | ZC_SF__GUI | ZC_SF__Updater, ZC_SWF__Multisampling_4 | ZC_SWF__Border, 800, 600, "SPHERUM");
@@ -43,12 +49,16 @@ G_System::G_System()
         //  create G_GUI_W_ConfigSaveLevel
     config.CreateGUI();
         //      models
+    // ZC_Timer t2(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "models");
+    // t2.StartPoint();
     G_Models::LoadModels();
+    // t2.EndPoint();
         //  open audio stream
     const ZC_AudioSet* pAudio_set = ZC_Sounds::GetSound(0).GetAudioSet();
     if (pAudio_set) ZC_Audio::OpenAudioStream(ZC_AudioSet(*pAudio_set));
         //  crete lights ubo
     G_LightUBO::Init();
+    // t0.EndPoint();
 }
 
 G_System::~G_System()
