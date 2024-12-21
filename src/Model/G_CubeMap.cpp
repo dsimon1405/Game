@@ -60,7 +60,7 @@ ZC_Texture G_CubeMap::LoadCubeMap()
     uch_zc* datas[6];
 
     stbi_set_flip_vertically_on_load(true);
-    std::fill(datas, datas + 6, stbi_load(ZC_FSPath(ZC_assetsDirPath).append("Game/textures/cube_map/cube_map.jpg").string().c_str(), &width, &height, &channels, 0));      //  use one texture for all cube map sides
+    std::fill(datas, datas + 6, stbi_load(ZC_FSPath(ZC_assetsDirPath).append("Game/models/sphere/cube_map.jpg").string().c_str(), &width, &height, &channels, 0));      //  use one texture for all cube map sides
 
     GLenum internalFormat = 0;
     switch (channels)

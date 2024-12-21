@@ -1,5 +1,7 @@
 #pragma once
 
+#include <System/G_NewV.h>
+#ifndef G_NewV
 #include "G_ModelSet.h"
 #include <ZC/Tools/Math/ZC_Figures.h>
 #include <ZC/Collision/ZC_CO_Figure.h>
@@ -40,3 +42,4 @@ private:
         }
     }
 };
+#endif

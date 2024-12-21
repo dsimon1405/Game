@@ -1,4 +1,5 @@
 #include "G_CubeModelCreator.h"
+#ifndef G_NewV
 
 #include <ZC/File/ZC_File.h>
 
@@ -245,3 +246,4 @@ std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_CubeModelCreator::Get_COSurfaces()
         },
     };
 }
+#endif

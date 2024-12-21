@@ -33,11 +33,11 @@ G_ParticleSystem* pPS = nullptr;
 int main(int argv, char** args)
 {
 
-    G_ModelLoader::WriteToFile(G_MN__SphereMarble, { G_ModelLoader::Vertex{ .position = { 1.f, 2.f, 3.f }, .normal = 654, .texCoords = { 8.9f, 102.f } },
-        G_ModelLoader::Vertex{ .position = { 11.f, 22.f, 33.f }, .normal = 44, .texCoords = { 5.5f, 6.6f } },
-        G_ModelLoader::Vertex{ .position = { 111.f, 222.f, 333.f }, .normal = 444, .texCoords = { 55.5f, 66.6f } } });
+    // G_ModelLoader::WriteToFile(G_MN__SphereMarble, { G_ModelLoader::Vertex{ .position = { 1.f, 2.f, 3.f }, .normal = 654, .texCoords = { 8.9f, 102.f } },
+    //     G_ModelLoader::Vertex{ .position = { 11.f, 22.f, 33.f }, .normal = 44, .texCoords = { 5.5f, 6.6f } },
+    //     G_ModelLoader::Vertex{ .position = { 111.f, 222.f, 333.f }, .normal = 444, .texCoords = { 55.5f, 66.6f } } });
     
-    G_ModelLoader::ReadFile(G_MN__SphereMarble);
+    // G_ModelLoader::ReadFile(G_MN__SphereMarble);
     
     G_System system;
     G_GameManager gm;

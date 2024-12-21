@@ -16,7 +16,7 @@ ZC_uptr<ZC_Drawer> G_DrawerCreator::GetRendererLevelDrawer(ZC_DrawerLevel lvl)
     case G_DL_CubeMap: return { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>
             (0, ZC_GLDepth(false), ZC_GLStencil(false), ZC_GLBlend(false), ZC_GLCullFace(false)) };
     case G_DL_AlphaBlending_ParticleStar: return { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>
-            (0, ZC_GLDepth(false), ZC_GLStencil(false), ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE), ZC_GLCullFace(false)) };
+            (0, ZC_GLDepth(false), ZC_GLStencil(false), ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE), ZC_GLCullFace(true)) };
     case G_DL_AlphaBlending_ParticleSystem_FlameStar: return { new ZC_DrawerFL<ZC_TexturesHolder, const ZC_VAO*, ZC_SSBOActivator, const ZC_ShPCompute*, const ZC_ShProg*, ZC_RLDData_Uniforms_GLDraw>
             (0, ZC_GLDepth(true, GL_FALSE), ZC_GLStencil(false), ZC_GLBlend(true, GL_SRC_ALPHA, GL_ONE), ZC_GLCullFace(false)) };
     // case G_DL_AlphaBlending_ParticleFlame: return { new ZC_DrawerFL<const ZC_ShProg*, ZC_TexturesHolder, const ZC_VAO*, ZC_RLDData_Uniforms_GLDraw>

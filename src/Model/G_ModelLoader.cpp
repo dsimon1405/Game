@@ -1,12 +1,148 @@
 #include "G_ModelLoader.h"
 
 #include <ZC/File/ZC_File.h>
-#include "G_Assimp_ZC_Converter.h"
+#include <ZC/Tools/Container/ZC_ContFunc.h>
 
+#ifdef G_NewV
+#include <fstream>
+
+// void G_ModelLoader::WriteToFile(G_ModelName model_name, const std::vector<Vertex>& verts, const std::vector<ZC_CO_Surface<ZC_Vec3<float>>>& surfs)
+// {
+// 	/*
+// 	Structure of .zcm file:
+// 		size	-	value
+	
+// 			gpu data
+// 	- 8 bytes - number of structs Vertex in byte size
+// 	- byte size from previous line value - Vertex data
+	
+// 			collision data
+// 	- 8 bytes - amount of structs ZC_CO_Surface<ZC_Vec3<float>> (amount, not size in bytes!)
+// 		The following lines are the structure ZC_CO_Surface<ZC Vec3<float>>. Will repeat the number of times from the previous line
+// 	- 12 bytes - ZC_CO_Surface<ZC Vec3<float>>.normal
+// 	- 8 bytes - number of points in vector ZC_CO_Surface<ZC Vec3<float>>.points
+// 		the next line is repeated the number of times from the previous line
+// 	- 12 bytes - point
+// 	*/
+// 	std::ofstream ofs(model_name == G_MN__SphereMarble ? "sphere.zcm" : "cylinder.zcm", std::ios::binary);
+// 	assert(ofs.is_open());
+// 		//	vertices for gpu
+// 	ul_zc verts_bytes = verts.size() * sizeof(Vertex);		//	byte size
+// 	ofs.write(reinterpret_cast<char*>(&verts_bytes), sizeof(verts_bytes));	//	8 bytes
+// 	ofs.write(reinterpret_cast<const char*>(verts.data()), sizeof(Vertex) * verts.size());
+
+// 		//	surfaces for collistion
+// 	ul_zc surfs_count = surfs.size();
+// 	ofs.write(reinterpret_cast<char*>(&surfs_count), sizeof(surfs_count));
+// 	for (const ZC_CO_Surface<ZC_Vec3<float>>& surf : surfs)
+// 	{
+// 		ofs.write(reinterpret_cast<const char*>(&surf.normal), sizeof(surf.normal));
+		
+// 		ul_zc points_count = surf.points.size();
+// 		ofs.write(reinterpret_cast<char*>(&points_count), sizeof(points_count));
+// 		ofs.write(reinterpret_cast<const char*>(surf.points.data()), points_count * sizeof(ZC_Vec3<float>));
+// 	}
+
+// 	ofs.close();
+// }
+
+G_ModelSet G_ModelLoader::LoadModel(G_ModelName model_name)
+{
+	/*
+	Structure of .zcm file:
+		size	-	value
+	
+			gpu data
+	- 8 bytes - number of structs Vertex in byte size
+	- byte size from previous line value - Vertex data
+	
+			collision data
+	- 8 bytes - amount of structs ZC_CO_Surface<ZC_Vec3<float>> (amount, not size in bytes!)
+		The following lines are the structure ZC_CO_Surface<ZC Vec3<float>>. Will repeat the number of times from the previous line
+	- 12 bytes - ZC_CO_Surface<ZC Vec3<float>>.normal
+	- 8 bytes - number of points in vector ZC_CO_Surface<ZC Vec3<float>>.points
+		the next line is repeated the number of times from the previous line
+	- 12 bytes - point
+	*/
+	std::ifstream ifs(ZC_FSPath(ZC_assetsDirPath).append(model_name == G_MN__SphereMarble ? "Game/models/sphere/sphere.zcm" : "Game/models/platform/cylinder.zcm").string().c_str(), std::ios::binary);
+	assert(ifs.is_open());
+		//	vertices for gpu
+		//	read size of the Vertex array
+	ul_zc verts_byte_size = 0;
+	ifs.read(reinterpret_cast<char*>(&verts_byte_size), sizeof(verts_byte_size));
+	assert(verts_byte_size % sizeof(Vertex) == 0);	//	byte size not equal strucs Vertex type
+		//	read Vertex data
+	ZC_DA<char> verts(verts_byte_size);
+	ifs.read(verts.pHead, verts_byte_size);
+
+		//	surfaces for collistion
+	ul_zc surfs_count = 0;
+	ifs.read(reinterpret_cast<char*>(&surfs_count), sizeof(surfs_count));
+	std::vector<ZC_CO_Surface<ZC_Vec3<float>>> surfs;
+	surfs.reserve(surfs_count);
+	for (ul_zc i = 0; i < surfs_count; ++i)
+	{
+			//	normal
+		ZC_Vec3<float> normal;
+		ifs.read(reinterpret_cast<char*>(&normal), sizeof(normal));
+			//	points
+		ul_zc points_count = 0;
+		ifs.read(reinterpret_cast<char*>(&points_count), sizeof(points_count));
+		std::vector<ZC_Vec3<float>> points(points_count);
+		for (ZC_Vec3<float>& p : points)
+			ifs.read(reinterpret_cast<char*>(&p), sizeof(p));
+		
+		surfs.emplace_back(std::move(points), normal);
+	}
+	
+	return G_ModelSet{ .model_name = model_name, .drawer_set = CreateDrawerSet(model_name, std::move(verts)), .surfaces = std::move(surfs) };
+}
+
+ZC_DrawerSet G_ModelLoader::CreateDrawerSet(G_ModelName model_name, ZC_DA<char>&& verts)
+{
+	ZC_Buffer vbo(GL_ARRAY_BUFFER);
+	vbo.GLNamedBufferStorage(verts.size, verts.pHead, 0u);
+	
+	GLenum elementsType = 0;
+	ul_zc elements_count = 0;
+		//	draw order triangles of the quad: first(tl, br, bl), second(tl, tr, bl). GetTriangleElements() in description have another corners order (bl, tr, tl	bl, br, tr). But in both cases we will get order of indexes for first quad (0, 1, 2,  0, 3, 2) and so on for other quads...
+	ZC_DA<uchar> elements = ZC_Buffer::GetTriangleElements(elements_count, elementsType, verts.size / sizeof(Vertex) / 4, 0);
+	
+	ZC_Buffer ebo(GL_ELEMENT_ARRAY_BUFFER);
+	ebo.GLNamedBufferStorage(elements.size, elements.Begin(), 0u);
+		
+		//	glDraw
+	ZC_uptr<ZC_GLDraw> upDraw = ZC_uptrMakeFromChild<ZC_GLDraw, ZC_DrawElements>(GL_TRIANGLES, elements_count, elementsType, 0u);
+
+		//	ShPInitSet
+	typename ZC_ShProgs::ShPInitSet* pShPIS =
+		model_name == G_MN__SphereMarble || model_name == G_MN__Platform_cylinder_black ? ZC_ShProgs::Get(ShPN_Game_Sphere) 
+		: nullptr;
+
+		//	vao
+	ZC_VAO vao;
+	vao.Config(pShPIS->vaoConfigData, vbo, &ebo, 0, 0);
+
+	std::forward_list<ZC_Buffer> buffers;
+	buffers.emplace_front(std::move(vbo));
+	buffers.emplace_front(std::move(ebo));
+
+		//	texture
+	std::forward_list<ZC_TexturesSet> tex_sets;
+	ZC_TexSets::VectorOfTexturesCreator texCreator = pShPIS->texSets.GetCreator();
+	texCreator.Add(ZC_Texture::LoadTexture2D(ZC_FSPath(ZC_assetsDirPath).append(model_name == G_MN__SphereMarble ? "Game/models/sphere/cube_map.jpg" : "Game/models/platform/marble_black.jpg").string().c_str(), 0, false, GL_REPEAT, GL_REPEAT));
+	
+	tex_sets.emplace_front(ZC_TexturesSet{ .id = 0, .textures = texCreator.GetVector() });
+
+	return ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers), std::move(tex_sets));
+}
+
+#else
+
+#include "G_Assimp_ZC_Converter.h"
 #include <assimp/postprocess.h>
 
-#include <list>
-#include <fstream>
+
 
 // #include <ZC/Tools/Time/ZC_Timer.h>
 G_ModelSet G_ModelLoader::LoadModel(G_ModelName model_name)
@@ -74,11 +210,11 @@ G_ModelSet G_ModelLoader::ProcessNode(G_ModelName model_name, aiNode* pNode, con
 	}
 
 	std::vector<ZC_CO_Surface<ZC_Vec3<float>>> co_surfs;
-	if (model_name != G_MN__SphereMap && model_name != G_MN__SphereStar) co_surfs = LoadCollisionSurfaces(pNode->mChildren[collision_index], pScene);	
+	if (model_name != G_MN__SphereMap && model_name != G_MN__SphereStar) co_surfs = LoadCollisionSurfaces(pNode->mChildren[collision_index], pScene, model_name);	
 	
 	return G_ModelSet{ .model_name = model_name, .drawer_set = CreateDrawerSet(pNode->mChildren[draw_index], pScene, path,
 		(model_name == G_MN__SphereMarble || model_name == G_MN__SphereMap), model_name == G_MN__SphereMap, model_name),
-		.surfaces = std::move(co_surfs) } ;
+		.surfaces = std::move(co_surfs) };
 
 	// static const aiMatrix4x4 model_one;
 	// // process each mesh located at the current pNode
@@ -99,7 +235,7 @@ G_ModelSet G_ModelLoader::ProcessNode(G_ModelName model_name, aiNode* pNode, con
 	// return ZC_DrawerSet(nullptr, ZC_VAO(), nullptr, {});
 }
 
-std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(aiNode *pNode, const aiScene *pScene)
+std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(aiNode *pNode, const aiScene *pScene, G_ModelName model_name)
 {		
 		//	get model matrix if it is
 	static const aiMatrix4x4 model_one;
@@ -117,9 +253,9 @@ std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(
 		}
 		else return G_Assimp_ZC_Converter::GetVec3(v);
 	};
-
+	
 	std::vector<ZC_CO_Surface<ZC_Vec3<float>>> surfaces;
-	const uint triangle_size = 3;	//	e vertices in triangle
+	static const uint triangle_size = 3;	//	e vertices in triangle
 	if (SURFACES_IS_QUADS)		//	QUADS
 	{
 			//	In .dae stores triangles, we need quads, so take only half of triangles and add to them rest vertex to make a quad.
@@ -128,12 +264,47 @@ std::vector<ZC_CO_Surface<ZC_Vec3<float>>> G_ModelLoader::LoadCollisionSurfaces(
 		const uint quad_size = 4;	//	4 vertices on quad
 		const uint num_quad_faces = pMesh->mNumFaces / 2;		//	pMesh->mNumFaces have triangles count, we need quads
 		const uint num_vertices = pMesh->mNumVertices / 2;	//	need only falf of vertices
+			
+			//	return true if surface was added to the surfaces, otherwise false
+		auto lamb_add_cylinder_suf = [&surfaces, pMesh, num_quad_faces, lamb_CalculateVector](uint v_i, uint quad_i) -> bool
+		{
+			ZC_Vec3<float> normal = G_Assimp_ZC_Converter::GetVec3(pMesh->mNormals[v_i]);
+			if (normal[2] == 1.f || normal[2] == -1.f)		//	in our cylinder if normal.z is 1 or -1 then x and y are always 0, but rounding with floating point It's too stupid to make it 0 in all cases. So sometimes we can get values ​​close to 0, but we know they should be 0.
+			{
+				normal[0] = 0.f;
+				normal[1] = 0.f;
+			}
+			for (ZC_CO_Surface<ZC_Vec3<float>>& surf : surfaces)
+			{
+				if (surf.normal == normal)
+				{
+					for (uint triangle_i = 0; triangle_i < triangle_size; ++triangle_i)	//	add unadded points of the triangle of the quad
+					{
+						ZC_Vec3<float> point = lamb_CalculateVector(pMesh->mVertices[v_i + triangle_i]);
+						if (!ZC_Find(surf.points, point))
+						{
+							surf.points.reserve(surf.points.size() + 1);
+							surf.points.emplace_back(point);
+						}
+					}
+
+					uint v4_i = (num_quad_faces + quad_i) * triangle_size + 1;		//	index of 4th vertex of quad, from second part of vertices
+					ZC_Vec3<float> point = lamb_CalculateVector(pMesh->mVertices[v4_i]);
+					if (!ZC_Find(surf.points, point)) surf.points.emplace_back(point);
+					return true;
+				}
+			}
+			return false;
+		};
+
 		surfaces.reserve(num_quad_faces);
 		for (uint v_i = 0, quad_i = 0; v_i < num_vertices; v_i += triangle_size, ++quad_i)
 		{
+			if (model_name == G_MN__Platform_cylinder_black && lamb_add_cylinder_suf(v_i, quad_i)) continue;		//	this was the top or bottom surface added to an existing surface
+
 			std::vector<ZC_Vec3<float>> quad_verts;
 			quad_verts.reserve(quad_size);
-			for (uint triangle_i = 0; triangle_i < triangle_size; ++triangle_i)	//	fill triangle
+			for (uint triangle_i = 0; triangle_i < triangle_size; ++triangle_i)	//	fill triangle of the quad
 				quad_verts.emplace_back(lamb_CalculateVector(pMesh->mVertices[v_i + triangle_i]));
 
 			uint v4_i = (num_quad_faces + quad_i) * triangle_size + 1;		//	index of 4th vertex of quad, from second part of vertices
@@ -323,40 +494,4 @@ ZC_DrawerSet G_ModelLoader::CreateDrawerSet(aiNode* pNode, const aiScene* pScene
 		
 	return ZC_DrawerSet(pShPIS, std::move(vao), std::move(upDraw), std::move(buffers), std::move(tex_sets));
 }
-
-void G_ModelLoader::WriteToFile(G_ModelName model_name, const std::vector<Vertex>& verts)
-{
-	std::ofstream ofs(model_name == G_MN__SphereMarble ? "sphere.zcm" : "cylinder.zcm", std::ios::binary);
-	assert(ofs.is_open());
-		//	byte size
-	ul_zc verts_bytes = verts.size() * sizeof(Vertex);
-	ofs.write(reinterpret_cast<char*>(&verts_bytes), sizeof(verts_bytes));	//	8 bytes
-	// ofs << verts_bytes;	//	8 bytes
-	ofs.write(reinterpret_cast<const char*>(verts.data()), sizeof(Vertex) * verts.size());
-	// for (const Vertex& v : verts)
-	// 	ofs << v.position[0] << v.position[1] << v.position[2] << v.normal << v.texCoords[0] << v.texCoords[1];
-	
-	ofs.close();
-}
-
-void G_ModelLoader::ReadFile(G_ModelName model_name)
-{
-	std::ifstream ifs(model_name == G_MN__SphereMarble ? "sphere.zcm" : "cylinder.zcm", std::ios::binary);
-	assert(ifs.is_open());
-	if (!(ifs.is_open())) return;
-		//	read vertes size
-	ul_zc verts_byte_size = 0;
-	ifs.read(reinterpret_cast<char*>(&verts_byte_size), sizeof(verts_byte_size));
-	assert(verts_byte_size % sizeof(Vertex) == 0);	//	byte size not equal strucs Vertex type
-		//	read verts data
-	ZC_DA<char> verts(verts_byte_size);
-	ifs.read(verts.pHead, verts_byte_size);
-
-		//	test
-	Vertex* pVetex = reinterpret_cast<Vertex*>(verts.pHead);
-	std::list<Vertex> lv;
-	for (ul_zc i = 0; i < verts_byte_size / sizeof(Vertex); ++i)
-		lv.emplace_back(*(pVetex + i));
-
-	int q = 3;
-}
+#endif

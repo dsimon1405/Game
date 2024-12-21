@@ -7,6 +7,11 @@
 #include <ZC/Tools/Time/ZC_Timer.h>
 void G_Models::LoadModels()
 {
+#ifdef G_NewV
+	models.reserve(2);
+	models.emplace_back(G_ModelLoader::LoadModel(G_MN__SphereMarble));
+	models.emplace_back(G_ModelLoader::LoadModel(G_MN__Platform_cylinder_black));
+#else
 	models.reserve(G_MN__Platform_cube);
     ZC_Timer t1(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "total load");
     t1.StartPoint();
@@ -17,6 +22,7 @@ void G_Models::LoadModels()
 	}
 	t1.EndPoint();
 	// models.emplace_back(G_CubeModelCreator::LoadModel());	//	load quad platform, not from blender, hard coded vertices
+#endif
 }
 
 ZC_DSController G_Models::GetModel_DSController(G_ModelName model_name, int texSetId, std::forward_list<ZC_uptr<ZC_RSPersonalData>>&& personalData)
