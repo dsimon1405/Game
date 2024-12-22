@@ -105,12 +105,13 @@ set(Game_SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/Map/G_Map.cpp
     ${PROJECT_SOURCE_DIR}/src/Map/G_Section.cpp
     ${PROJECT_SOURCE_DIR}/src/Map/G_MapSphere.cpp
-
+    
     ${PROJECT_SOURCE_DIR}/src/Objects/G_Object.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/G_ObjPlayable.cpp    
     ${PROJECT_SOURCE_DIR}/src/Objects/G_OP_MarbleSphere.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/G_PushSet.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/G_Star.cpp
+    ${PROJECT_SOURCE_DIR}/src/Objects/G_CylinderDMG.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformLightHolder.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_Platform.cpp
     ${PROJECT_SOURCE_DIR}/src/Objects/Platforms/G_PlatformWind.cpp

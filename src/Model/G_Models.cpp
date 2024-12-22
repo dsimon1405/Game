@@ -9,8 +9,11 @@ void G_Models::LoadModels()
 {
 #ifdef G_NewV
 	models.reserve(2);
-	models.emplace_back(G_ModelLoader::LoadModel(G_MN__SphereMarble));
-	models.emplace_back(G_ModelLoader::LoadModel(G_MN__Platform_cylinder_black));
+	G_ModelSet& m1 = models.emplace_back(G_ModelLoader::LoadModel(G_MN__SphereMarble));
+	m1.radius = ZC_Vec::Length(GetFarestVertexOfSurface(m1.surfaces));
+
+	G_ModelSet& m2 = models.emplace_back(G_ModelLoader::LoadModel(G_MN__Platform_cylinder_black));
+	m2.radius = ZC_Vec::Length(GetFarestVertexOfSurface(models.back().surfaces));
 #else
 	models.reserve(G_MN__Platform_cube);
     ZC_Timer t1(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "total load");

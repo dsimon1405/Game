@@ -15,4 +15,5 @@ enum G_DrawerLevel
     G_DL_AlphaBlending_ParticlesWind = ZC_DrawerLevels::TextScene + 1,
     G_DL_AlphaBlending_PlatformDisappear = G_DL_AlphaBlending_ParticlesWind + 1,
     G_DL_AlphaBlending_ParticleSystem_WindBubble = G_DL_AlphaBlending_PlatformDisappear + 1,
+    G_DL_AlphaBlending_CylinderDMG = G_DL_AlphaBlending_ParticleSystem_WindBubble + 1
 };

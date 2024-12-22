@@ -90,6 +90,7 @@ void G_Star::SetNewPosition(float dist_to_star)
 
     float new_length = 2.f * ZC_PI * dist_to_star;
     rot_angle_Z = ZC_angle_360f / (new_length / speed_horizontal_move);
+    cur_angle_Z = ZC_Random::GetRandomInt(ZC_angle_0i, ZC_angle_360i);
 
     if (dist_to_star != dist_to_center)     //  recalculate light data
     {

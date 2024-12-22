@@ -14,6 +14,22 @@ G_PlatformDamage::G_PlatformDamage(const G_PlatformTransforms& _plat_trans)
     const float min_dmg = 5.f;
     const float max_dmg = 15.f;
     damage = std::round(min_dmg + ((max_dmg - min_dmg) * (dist_to_plat / G_Map::dist_to_last_platform_center)));
+
+    if (!upCylinder_dmg) upCylinder_dmg = new G_CylinderDMG();
+}
+
+G_PlatformDamage::~G_PlatformDamage()
+{
+    if (upCylinder_dmg && pPlatf_cylinder_holder == this)
+    {
+        upCylinder_dmg->SetDrawState(false);
+        pPlatf_cylinder_holder = nullptr;
+    }
+}
+
+void G_PlatformDamage::FreeCylinderDMG()
+{
+    upCylinder_dmg = nullptr;
 }
 
 void G_PlatformDamage::VAddObjectOnPlatform_P(G_Object* pObj_add)
@@ -37,6 +53,7 @@ void G_PlatformDamage::VDeactivatePlatform_P()
     ch_d.is_active = false;
     ch_d.deactivate_color = ZC_Unpack_UInt_2x10x10x10_To_Float(this->unColor);
     ch_d.deactivate_sound_load_dmg_volume = this->upSK->GetVolume(G_SN__platform_dmg_load_dmg);
+    ch_d.cylinder_end_time = ch_d.dmg_time;
     ch_d.dmg_time = 0.f;
 }
 
@@ -93,7 +110,12 @@ void G_PlatformDamage::Callback_Updater(float time)
             }
             if (this->objects_on_platform.size() == 0) VDeactivatePlatform_P();
             this->upSK->SetSoundState(G_SN__platform_dmg_make_dmg, ZC_SS__Play);
+
+            pPlatf_cylinder_holder = this;
+            upCylinder_dmg->SetDrawState(true);
         }
+
+        UpdateCylinderDMG(ch_d.dmg_time);
     }
     else    //  deactivate
     {
@@ -106,11 +128,36 @@ void G_PlatformDamage::Callback_Updater(float time)
             ch_d = {};
             this->unColor = 0;
             this->upSK->SetSoundState(G_SN__platform_dmg_load_dmg, ZC_SS__Stop);
+
+            pPlatf_cylinder_holder = nullptr;
+            upCylinder_dmg->SetDrawState(false);
         }
         else
         {
             this->unColor = G_InterpolateColor_PackToUInt_2x10x10x10(ch_d.deactivate_color, G_Platform::color_default, ch_d.dmg_time);
             this->upSK->SetVolume(G_SN__platform_dmg_load_dmg, 1.f - ch_d.dmg_time);
+        }
+
+        UpdateCylinderDMG(ch_d.cylinder_end_time += time);
+    }
+}
+
+void G_PlatformDamage::UpdateCylinderDMG(float cylinder_time)
+{
+    if (pPlatf_cylinder_holder && pPlatf_cylinder_holder == this)     //  if have holder then drawing now
+    {
+        static const float cylinder_dmg_life_secs = 0.8f;
+        static const float cylinder_dmg_alpha_max = 0.5f;
+
+        if (cylinder_time >= cylinder_dmg_life_secs)
+        {
+            pPlatf_cylinder_holder = nullptr;
+            upCylinder_dmg->SetDrawState(false);
+        }
+        else
+        {
+            upCylinder_dmg->SetAlpha(cylinder_dmg_alpha_max * (1.f - (cylinder_time / cylinder_dmg_life_secs)));
+            upCylinder_dmg->SetPosition(this->upCO->GetFigure().center_fact);
         }
     }
 }

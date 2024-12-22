@@ -6,6 +6,7 @@
 #include <ZC/Events/ZC_Events.h>
 #include <Sound/G_GameSounds.h>
 #include <Objects/Platforms/G_PlatformWind.h>
+#include <Objects/Platforms/G_PlatformDamage.h>
 
 G_GameManager::G_GameManager()
     : player(),
@@ -22,6 +23,7 @@ G_GameManager::~G_GameManager()
 {
     ecUpdater.Disconnect();
     G_PlatformWind::FreeParticles();
+    G_PlatformDamage::FreeCylinderDMG();
 }
 
 G_Time G_GameManager::GetLevelTime() const noexcept

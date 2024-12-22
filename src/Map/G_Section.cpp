@@ -113,8 +113,8 @@ void G_Section::FillPlatforms(int lines_count, int platforms_on_line, float dist
 
 void G_Section::Callback_Updater(float time)
 {
-    // RotatePlatforms(rotSet_lines, time, platforms_on_lines, rotation_angle_external_lines);
-    // RotatePlatforms(rotSet_circle, time, platforms_on_circle, rotation_angle_external_circle);
+    RotatePlatforms(rotSet_lines, time, platforms_on_lines, rotation_angle_external_lines);
+    RotatePlatforms(rotSet_circle, time, platforms_on_circle, rotation_angle_external_circle);
 }
 
 void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms, float rotation_speed_external)

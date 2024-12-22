@@ -28,7 +28,7 @@
 
 void F(const ZC_Vec3<float>&){}
 
-G_ParticleSystem* pPS = nullptr;
+// G_ParticleSystem* pPS = nullptr;
 
 int main(int argv, char** args)
 {
