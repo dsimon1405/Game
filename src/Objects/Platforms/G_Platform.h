@@ -33,6 +33,8 @@ public:
     bool SwitchWithWinPlatform(G_Platform* pPLat_win);
         //  calls from G_PlatfromLightHolder::Callback_Updater(). Overrides G_PlatformDisappear, G_PlatformScale.
     virtual G_LightSet GetLightSet_P();
+        //  checks is platform in frustum, if yes add to render, otherwise erase from render
+    void ChekDrawState();
     
 protected:
     static inline const ZC_Vec3<float> color_default { 0.f, 0.f, 0.f };
@@ -69,4 +71,6 @@ private:
 
     virtual void VAddObjectOnPlatform_P(G_Object* pObj_add);
     virtual void VDeactivatePlatform_P() {}
+        //   overrides in G_PlatformDisappear
+    virtual void VSetDrawState(bool need_draw);
 };

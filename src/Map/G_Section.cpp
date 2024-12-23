@@ -59,7 +59,7 @@ G_Section::~G_Section()
 
 ZC_uptr<G_Platform> G_Section::GetRandomPlatform(const ZC_Vec3<float>& translate)
 {
-    return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
+    // return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
     switch (ZC_Random::GetRandomInt(G_PT__Damage, G_PT__Wind))
     {
     case G_PT__Damage: return new G_PlatformDamage(G_PlatformTransforms{ .translate = translate, .scale = G_Map::other_platform_scale });
@@ -115,6 +115,10 @@ void G_Section::Callback_Updater(float time)
 {
     RotatePlatforms(rotSet_lines, time, platforms_on_lines, rotation_angle_external_lines);
     RotatePlatforms(rotSet_circle, time, platforms_on_circle, rotation_angle_external_circle);
+
+        //  update draw state (platform in frustum or not)
+    for (ZC_uptr<G_Platform>& platf : platforms_on_lines) platf->ChekDrawState();
+    for (ZC_uptr<G_Platform>& platf : platforms_on_circle) platf->ChekDrawState();
 }
 
 void G_Section::RotatePlatforms(RotateSet& rotate_set, float time, std::vector<ZC_uptr<G_Platform>>& platforms, float rotation_speed_external)

@@ -3,6 +3,7 @@
 #include <Model/G_Models.h>
 #include <ZC/ZC__System.h>
 #include <Map/G_Map.h>
+#include <ZC/Objects/Camera/ZC_Camera.h>
 
 G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans)
     : G_Platform(_plat_trans, G_MN__Platform_cylinder_black, 0, nullptr, G_PT__Start)
@@ -52,6 +53,70 @@ G_LightSet G_Platform::GetLightSet_P()
         //  when object at the edge of the platform, need to make effect there is no light farther. So dive radous on some value, I found 9.2F.
     static const float light_platform_radius = G_Map::radiusXY_other_platforms - (G_Map::radiusXY_other_platforms / platform_light_radius_divisor);
     return G_LightSet{ .pos = CalculateLightPos(light_platform_radius), .color = this->unColor };
+}
+
+void G_Platform::ChekDrawState()
+{
+    const ZC_Vec3<float>& platf_center = this->upCO->GetFigure().center_fact;
+    const ZC_Mat4<float>& persp_view = *(ZC_Camera::GetActiveCamera()->GetPerspectiveView());
+
+    auto lamb_is_in_frustum = [this](const ZC_Vec4<float>& display_pos)
+    {
+        if (display_pos[3] <= 0.f) return false;  //  if < 0 point behind the camera, if == 0 point equal cam pos. Don't draw in each case
+        float display_x = display_pos[0] / display_pos[3];      //  horizontal, range [-1, 1]
+        float display_y = display_pos[1] / display_pos[3];      //  vertical, range [-1, 1]
+        float display_z = display_pos[2] / display_pos[3];      //  depth, range [0, 1]
+        if (display_x >= -1.f && display_x <= 1.f && display_y >= -1.f && display_y <= 1.f && display_z >= 0.f && display_z <= 1.f)
+        {
+            VSetDrawState(true);
+            return true;
+        }
+        return false;
+    };
+
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] + G_Map::radiusXY_other_platforms, platf_center[1] + G_Map::radiusXY_other_platforms, platf_center[2] + G_Map::platforms_all_half_height_Z, 1.f))) return;     //  tr near
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] + G_Map::radiusXY_other_platforms, platf_center[1] - G_Map::radiusXY_other_platforms, platf_center[2] + G_Map::platforms_all_half_height_Z, 1.f))) return;     //  tr far
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] - G_Map::radiusXY_other_platforms, platf_center[1] + G_Map::radiusXY_other_platforms, platf_center[2] + G_Map::platforms_all_half_height_Z, 1.f))) return;     //  tl near
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] - G_Map::radiusXY_other_platforms, platf_center[1] - G_Map::radiusXY_other_platforms, platf_center[2] + G_Map::platforms_all_half_height_Z, 1.f))) return;     //  tl far
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] + G_Map::radiusXY_other_platforms, platf_center[1] + G_Map::radiusXY_other_platforms, platf_center[2] - G_Map::platforms_all_half_height_Z, 1.f))) return;     //  br near
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] + G_Map::radiusXY_other_platforms, platf_center[1] - G_Map::radiusXY_other_platforms, platf_center[2] - G_Map::platforms_all_half_height_Z, 1.f))) return;     //  br far
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] - G_Map::radiusXY_other_platforms, platf_center[1] + G_Map::radiusXY_other_platforms, platf_center[2] - G_Map::platforms_all_half_height_Z, 1.f))) return;     //  bl near
+    if (lamb_is_in_frustum(persp_view * ZC_Vec4<float>(platf_center[0] - G_Map::radiusXY_other_platforms, platf_center[1] - G_Map::radiusXY_other_platforms, platf_center[2] - G_Map::platforms_all_half_height_Z, 1.f))) return;     //  bl far
+    VSetDrawState(false);
+
+
+        //  Tryied to made collision frustum with sphere model by radius
+    // void G_Platform::ChekDrawState(const ZC_Vec3<float>& cam_pos, const ZC_Vec3<float>& cam_front_norm, const ZC_Mat4<float>& persp_view)
+
+    // float platf_radius = 10.f;  //  works only with too large radius
+    // // float platf_radius = this->upCO->GetFigure().radius;
+    // ZC_Vec3<float> dir_cam_to_platf = platf_center - cam_pos;
+    // float dist_platf_to_cam = ZC_Vec::Length(dir_cam_to_platf);   //  hypotenuse
+    // if (dist_platf_to_cam <= platf_radius)      //  cam in platfrom radius, so need draw
+    // {
+    //     VSetDrawState(true);
+    //     return;
+    // }
+
+    //     //  need to build perpendicular from platform center to cam_front line. We know hypotenuse, need to know katet from cam_pos to perpendicular.
+    // ZC_Vec3<float> cam_to_platf_norm = ZC_Vec::Normalize(dir_cam_to_platf);
+    // float cos_cam_pos_angle = ZC_Vec::Dot(cam_front_norm, cam_to_platf_norm);
+    // if (cos_cam_pos_angle > 0)
+    // {
+    //     float dist_cam_to_perpendicular = cos_cam_pos_angle * dist_platf_to_cam;   //  adjacent leg = cons(adjacent angle) * hypotenuse
+    //     ZC_Vec3<float> perpendicular_pos = ZC_Vec::MoveByLength(cam_pos, cam_front_norm, dist_cam_to_perpendicular);
+    //     ZC_Vec3<float> closest_point_to_frustum = ZC_Vec::MoveByLength(platf_center, perpendicular_pos - platf_center, platf_radius);
+    //     ZC_Vec4<float> display_pos = persp_view * ZC_Vec4<float>(closest_point_to_frustum, 1.f);
+    //     if (display_pos[3] <= 0.f) VSetDrawState(false);  //  if < 0 point behind the camera, if == 0 point equal cam pos. Don't draw in each case
+    //     else
+    //     {
+    //         float display_x = display_pos[0] / display_pos[3];      //  horizontal, range [-1, 1]
+    //         float display_y = display_pos[1] / display_pos[3];      //  vertical, range [-1, 1]
+    //         float display_z = display_pos[2] / display_pos[3];      //  depth, range [0, 1]
+    //         VSetDrawState(display_x >= -1.f && display_x <= 1.f && display_y >= -1.f && display_y <= 1.f && display_z >= 0.f && display_z <= 1.f);
+    //     }
+    // }
+    // else VSetDrawState(false);      //  angle betwwen cam_front and platform in range [90, 270], can't see platform 
 }
 
 G_Platform::G_Platform(const G_PlatformTransforms& _plat_trans, G_ModelName modelName, int texSetId, ZC_uptr<G_GameSoundSet>&& _upSK, G_PlatformType _platform_type)
@@ -138,4 +203,9 @@ std::list<G_Object*>::iterator G_Platform::EraseObjectFromPlatform(std::list<G_O
 void G_Platform::VAddObjectOnPlatform_P(G_Object* pObj_add)
 {
     objects_on_platform.emplace_back(pObj_add);
+}
+
+void G_Platform::VSetDrawState(bool need_draw)
+{
+    this->dsCon.SwitchToDrawLvl(ZC_RL_Default, need_draw ? ZC_DL_Drawing : ZC_DL_None);
 }

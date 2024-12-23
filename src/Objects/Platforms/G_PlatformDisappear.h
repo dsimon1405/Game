@@ -32,4 +32,6 @@ private:
 
     std::vector<G_GameSound> GetSounds();
     void Callback_Updater(float time);
+
+    void VSetDrawState(bool need_draw) override;
 };

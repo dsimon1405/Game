@@ -146,3 +146,8 @@ void G_PlatformDisappear::Callback_Updater(float time)
     } break;
     }
 }
+
+void G_PlatformDisappear::VSetDrawState(bool need_draw)
+{
+    if (!ecUpdater.IsConnected()) this->dsCon.SwitchToDrawLvl(ZC_RL_Default, need_draw ? ZC_DL_Drawing : ZC_DL_None);   //  change state only if platform is not using now
+}

@@ -4,7 +4,7 @@
 #include <ZC/Events/ZC_EC.h>
 #include <ZC/Events/ZC_ButtonID.h>
 
-#define G_CAMERA_DEBUG
+// #define G_CAMERA_DEBUG
 
 class G_Camera
 {
