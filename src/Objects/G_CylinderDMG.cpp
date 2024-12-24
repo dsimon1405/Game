@@ -24,7 +24,7 @@ G_CylinderDMG::G_CylinderDMG()
 
 void G_CylinderDMG::SetDrawState(bool need_draw)
 {
-    ds_con.SwitchToDrawLvl(ZC_RL_Default, need_draw ? G_DL_AlphaBlending_CylinderDMG : ZC_DL_None);
+    ds_con.SwitchToDrawLvl(ZC_RL_Default, need_draw ? ZC_DrawerLevel(G_DL_AlphaBlending_CylinderDMG) : ZC_DrawerLevel(ZC_DL_None));
 }
 
 void G_CylinderDMG::SetPosition(const ZC_Vec3<float>& pos)
@@ -40,20 +40,3 @@ void G_CylinderDMG::SetAlpha(float alpha)
     assert(alpha >= 0.f && alpha <= 1.f);
     unAlpha = alpha;
 }
-// void G_CylinderDMG::Callback_Updater(float time)
-// {
-//     static const float max_secs = 1.f;
-    
-//     cur_secs -= time;
-//     if (cur_secs >= max_secs)
-//     {
-//         ds_con.SwitchToDrawLvl(ZC_RL_Default, ZC_DL_None);
-//         ec_updater.Disconnect();
-//     }
-//     else
-//     {
-//         static const float max_alpha = 1.f;
-
-//         unAlpha = max_alpha * (1.f - (cur_secs / max_secs));
-//     }
-// }

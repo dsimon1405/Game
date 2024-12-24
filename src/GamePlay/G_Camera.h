@@ -25,7 +25,7 @@ public:
     void RotateCameraHorizontal(float angle);
 
 private:
-    ZC_Function<void(const ZC_Vec3<float>&)> callback_camera_roatted;
+    ZC_Function<void(const ZC_Vec3<float>&)> callback_camera_rotated;
 
     ZC_Vec3<float> dirFront,
         dirUp,

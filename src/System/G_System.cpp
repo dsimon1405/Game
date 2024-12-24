@@ -170,7 +170,7 @@ void G_System::SetUpGUI()
 
 void G_System::LoadComputeShaders()
 {
-    ZC_FSPath path = ZC_FSPath(ZC_assetsDirPath).append("ZC/Shaders/Game");
+    ZC_FSPath path = ZC_FSPath(ZC_assetsDirPath).append("ZC/shaders/Game");
 
     ZC_ShPComputes::Load(G_ShPCN__flame, path.append("particle_system_c.glsl").string().c_str());
 }

@@ -56,7 +56,7 @@ struct G_PS_Source
         f_zc rotate_angle_Y = 0.f;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
         f_zc rotate_angle_Z = 0.f;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
             //  scale
-        ZC_Vec3<float> scale;        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
+        ZC_Vec3<float> scale{ 1.f, 1.f, 1.f };        //  ParticleSystem::spawn_mat_model - ZC_Mat4<float>(1.f).Tanslate().Rotate().Rotate().Rotate().Scale()
     };
         //  Particle size
     struct Size

@@ -308,7 +308,7 @@ void G_PlatformWind::Callback_Updater(float time)
         //  platrforms are allways moving, better to update particles direction and position on each call while drawing
     if (pParticles_holder == this && upPS->IsDrawing())
     {
-        const ZC_Vec3<float>& platform_center = this->upCO->GetFigure().center_fact;
+        const ZC_Vec3<float>& platform_center = this->upCO->GetCenterFact();
         ZC_Vec3<float> platform_center_top(platform_center[0], platform_center[1], particles_start_Z);
             //  particles pos and dir
         ZC_Vec3<float> particles_start_pos = ZC_Vec::MoveByLength(platform_center_top, ch_d.wind_dir_cur * -1.f, particles_distance_to_start_pos);

@@ -146,4 +146,4 @@ struct G_PS_Setup
     void Collision__set_life_time(ui_zc v);
     void Collision__move_speed(float v);
 };
-#endif SETUP__G_PARTICLE_SYSTEM
+#endif //   SETUP__G_PARTICLE_SYSTEM

@@ -217,4 +217,4 @@ void G_PS_Setup::Color__rgba_end(float r, float g, float b, float a) { pPS->Set_
 void G_PS_Setup::Collision__particle_radius(float v) { pPS->Set_Collision__particle_radius(v); }
 void G_PS_Setup::Collision__set_life_time(ui_zc v) { pPS->Set_Collision__set_life_time(G_ParticleSystem::Collision::SetLifeTime(v)); }
 void G_PS_Setup::Collision__move_speed(float v) { pPS->Set_Collision__move_speed(v / 100.f); }
-#endif SETUP__G_PARTICLE_SYSTEM
+#endif  //  SETUP__G_PARTICLE_SYSTEM

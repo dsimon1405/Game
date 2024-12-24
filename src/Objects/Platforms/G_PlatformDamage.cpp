@@ -157,7 +157,7 @@ void G_PlatformDamage::UpdateCylinderDMG(float cylinder_time)
         else
         {
             upCylinder_dmg->SetAlpha(cylinder_dmg_alpha_max * (1.f - (cylinder_time / cylinder_dmg_life_secs)));
-            upCylinder_dmg->SetPosition(this->upCO->GetFigure().center_fact);
+            upCylinder_dmg->SetPosition(this->upCO->GetCenterFact());
         }
     }
 }

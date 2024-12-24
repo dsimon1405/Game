@@ -7,7 +7,7 @@
 
 G_Camera::G_Camera(ZC_Function<void(const ZC_Vec3<float>&)>&& _callback_camera_rotated, const ZC_Vec3<float>& look_on)
     : cam(CreateCamera()),
-    callback_camera_roatted(std::move(_callback_camera_rotated))
+    callback_camera_rotated(std::move(_callback_camera_rotated))
 {
     cam.MakeActive();
     SetDefaultState(look_on);
@@ -68,7 +68,7 @@ void G_Camera::RotateCameraHorizontal(float angle)
 {
     horizontal_angle_must_be += angle;
     RotateAroundObject();
-    callback_camera_roatted(cam.GetPosition());
+    callback_camera_rotated(cam.GetPosition());
 }
 
 ZC_Camera G_Camera::CreateCamera()
@@ -229,6 +229,6 @@ void G_Camera::Callback_Updater(float time)
     if (update_vertical_angle || update_horizontal_angle)   //  was updated one or both of rotation angles
     {
         RotateAroundObject();
-        callback_camera_roatted(cam.GetPosition());
+        callback_camera_rotated(cam.GetPosition());
     }
 }
