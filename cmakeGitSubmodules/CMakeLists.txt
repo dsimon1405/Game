@@ -22,24 +22,22 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	F_FATAL_EQUAL(${process_result} 0 "git init => failed with: ${process_result}")
 endif()
 
-function(F_TRY_CLONE_ASSIMP)
-	execute_process(COMMAND ${GIT_EXECUTABLE} clone "https://github.com/assimp/assimp.git"
-					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external
-					RESULT_VARIABLE process_result)
+# function(F_TRY_CLONE_ASSIMP)
+# 	execute_process(COMMAND ${GIT_EXECUTABLE} clone "https://github.com/assimp/assimp.git"
+# 					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external
+# 					RESULT_VARIABLE process_result)
 
-	if(NOT ${process_result} EQUAL 0)
-		F_TRY_CLONE_ASSIMP()	#	recurcive call while not load assimp
-	else()
-		#	checkout
-		message(STATUS "Git checkout assimp to 97257a3")
-		execute_process(COMMAND ${GIT_EXECUTABLE} checkout "97257a3"
-						WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/assimp
-						RESULT_VARIABLE process_result)
-		F_FATAL_EQUAL(${process_result} 0 "git checkout assimp 97257a3 => failed with: ${process_result}")
-	endif()
-endfunction()
-
-# F_TRY_CLONE_ASSIMP()	#start trying to clone assimp
+# 	if(NOT ${process_result} EQUAL 0)
+# 		F_TRY_CLONE_ASSIMP()	#	recurcive call while not load assimp
+# 	else()
+# 		#	checkout
+# 		message(STATUS "Git checkout assimp to 97257a3")
+# 		execute_process(COMMAND ${GIT_EXECUTABLE} checkout "97257a3"
+# 						WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/assimp
+# 						RESULT_VARIABLE process_result)
+# 		F_FATAL_EQUAL(${process_result} 0 "git checkout assimp 97257a3 => failed with: ${process_result}")
+# 	endif()
+# endfunction()
 
 #	git submodule update --init --recursive (updates(clone from remote repository) all submodules and their submodules(--recursive),
 #	and makes (checkout) for each submodule, to commit saved in git).
@@ -49,20 +47,20 @@ execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
                 RESULT_VARIABLE process_result)
 F_FATAL_EQUAL(${process_result} 0 "git submodule update --init --recursive => failed with: ${process_result}")
 
-#	git clone assimp recursive while cloned
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/external/assimp/CMakeLists.txt")
-	message(STATUS "Git clone assimp")
-	F_TRY_CLONE_ASSIMP()
-endif()
+	#	git clone assimp recursive while cloned
+# if (NOT EXISTS "${PROJECT_SOURCE_DIR}/external/assimp/CMakeLists.txt")
+# 	message(STATUS "Git clone assimp")
+# 	F_TRY_CLONE_ASSIMP()
+# endif()
 
 
-#	DELETE ON RELEASE AND ADD ZeroCore submodule last stabel commit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-execute_process(COMMAND ${GIT_EXECUTABLE} fetch		#	update ZeroCore to last commit in repository
-				WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/ZeroCore
-                RESULT_VARIABLE process_result)
-if (NOT ${process_result} EQUAL 0)	# if not last commit, make merge to last 
-	execute_process(COMMAND ${GIT_EXECUTABLE} merge origin main		#	update ZeroCore to last commit in repository
-					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/ZeroCore
-					RESULT_VARIABLE process_result)
-	F_FATAL_EQUAL(${process_result} 0 "git merge origin/main, for (.../external/ZeroCore) => failed with: ${process_result}")
-endif()
+# #	DELETE ON RELEASE AND ADD ZeroCore submodule last stabel commit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# execute_process(COMMAND ${GIT_EXECUTABLE} fetch		#	update ZeroCore to last commit in repository
+# 				WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/ZeroCore
+#                 RESULT_VARIABLE process_result)
+# if (NOT ${process_result} EQUAL 0)	# if not last commit, make merge to last 
+# 	execute_process(COMMAND ${GIT_EXECUTABLE} merge origin main		#	update ZeroCore to last commit in repository
+# 					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/ZeroCore
+# 					RESULT_VARIABLE process_result)
+# 	F_FATAL_EQUAL(${process_result} 0 "git merge origin/main, for (.../external/ZeroCore) => failed with: ${process_result}")
+# endif()

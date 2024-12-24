@@ -45,18 +45,18 @@ set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC ZeroCore)
 if(Game_MY_DEBUG EQUAL 1)
     set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS} PUBLIC /home/dmitry/projects/external/assimp/include)
 else()
-        #   set up
-    set(BUILD_SHARED_LIBS OFF)
-    set(ASSIMP_BUILD_TESTS OFF)
-    set(ASSIMP_WARNINGS_AS_ERRORS OFF)
-        #   add subdiractory
-    add_subdirectory(external/assimp)
-        #   include
-    set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS}
-        PUBLIC ${PROJECT_SOURCE_DIR}/external/assimp/include
-        PUBLIC ${PROJECT_BINARY_DIR}/external/assimp/include)
+    #     #   set up
+    # set(BUILD_SHARED_LIBS OFF)
+    # set(ASSIMP_BUILD_TESTS OFF)
+    # set(ASSIMP_WARNINGS_AS_ERRORS OFF)
+    #     #   add subdiractory
+    # add_subdirectory(external/assimp)
+    #     #   include
+    # set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS}
+    #     PUBLIC ${PROJECT_SOURCE_DIR}/external/assimp/include
+    #     PUBLIC ${PROJECT_BINARY_DIR}/external/assimp/include)
 endif()
-set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC $<IF:${Game_MY_DEBUG},/home/dmitry/projects/external/assimp/lib/libassimp.so,assimp>)
+# set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC $<IF:${Game_MY_DEBUG},/home/dmitry/projects/external/assimp/lib/libassimp.so,assimp>)
 
 #========================= ZERO CREATOR =========================
 
