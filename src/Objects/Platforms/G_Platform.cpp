@@ -29,7 +29,7 @@ G_Platform::~G_Platform()
 void G_Platform::RotateInternal(float angle)
 {
     platf_trans.Update_rotate_angle_internal_Z(platf_trans.rotate_angle_internal_Z + angle);
-    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_IO(this->upCO->GetFigure().center_fact, angle);
+    for (G_Object* pObj : objects_on_platform) pObj->VOnGroundRotateZ_IO(this->upCO->GetCenterFact(), angle);
 }
 
 void G_Platform::RotateExternal(float angle)
@@ -57,7 +57,7 @@ G_LightSet G_Platform::GetLightSet_P()
 
 void G_Platform::ChekDrawState()
 {
-    const ZC_Vec3<float>& platf_center = this->upCO->GetFigure().center_fact;
+    const ZC_Vec3<float>& platf_center = this->upCO->GetCenterFact();
     const ZC_Mat4<float>& persp_view = *(ZC_Camera::GetActiveCamera()->GetPerspectiveView());
 
     auto lamb_is_in_frustum = [this](const ZC_Vec4<float>& display_pos)
@@ -165,7 +165,7 @@ void G_Platform::Callback_Collision(const ZC_CO_CollisionResult& coll_result)
 
 bool G_Platform::IsObjectInPlatformRadiusXY(G_Object* pObj)
 {
-    ZC_Vec3<float> platform_center = this->upCO->GetFigure().center_fact;   //  PLATFORM POS HERE, NOT IN platf_trans.translate, rotation chage position of the platform too
+    ZC_Vec3<float> platform_center = this->upCO->GetCenterFact();   //  PLATFORM POS HERE, NOT IN platf_trans.translate, rotation chage position of the platform too
     ZC_Vec3<float> obj_pos = pObj->VGetPosition_IO();
     float distance = ZC_Vec::Length(ZC_Vec3<float>(platform_center[0], platform_center[1], 0.f) - ZC_Vec3<float>(obj_pos[0], obj_pos[1], 0.f));
     return distance <= pObj->upCO->GetFigure().radius + this->upCO->GetFigure().radius;
@@ -174,8 +174,8 @@ bool G_Platform::IsObjectInPlatformRadiusXY(G_Object* pObj)
 ZC_Vec3<float> G_Platform::CalculateLightPos(float platform_radius_divided_xy)
 {
         //  current system made for only 1 object, for more objects need some else system
-    const ZC_Vec3<float>& obj_center = objects_on_platform.front()->upCO->GetFigure().center_fact;
-    const ZC_Vec3<float>& platf_center = this->upCO->GetFigure().center_fact;
+    const ZC_Vec3<float>& obj_center = objects_on_platform.front()->upCO->GetCenterFact();
+    const ZC_Vec3<float>& platf_center = this->upCO->GetCenterFact();
     ZC_Vec3<float> dir_platf_center_to_obj_center = obj_center - platf_center;
         //  calculate xy
     ZC_Vec2<float> dir_platf_center_to_obj_center_xy = ZC_Vec::Vec3_to_Vec2(dir_platf_center_to_obj_center);

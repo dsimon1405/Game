@@ -125,7 +125,7 @@ void G_PlatformWind::VAddObjectOnPlatform_P(G_Object* pObj_add)
         add_to_collision = false;
     }
     const ZC_CO_FigureSphere& fig = pObj_add->upCO->GetFigure();
-    if (add_to_collision) ps_collisions.emplace_back(PS_Collision{ .pHolder = this, .pObj = pObj_add, .collision_id = upPS->AddCollisionObject(fig.radius, fig.center_fact) });    //  add to collisoin
+    if (add_to_collision) ps_collisions.emplace_back(PS_Collision{ .pHolder = this, .pObj = pObj_add, .collision_id = upPS->AddCollisionObject(fig.radius, pObj_add->upCO->GetCenterFact()) });    //  add to collisoin
 }
 
 void G_PlatformWind::VDeactivatePlatform_P()
@@ -178,7 +178,7 @@ void G_PlatformWind::Callback_Updater(float time)
             upPS->Set_Color__system_alpha(1.f);
             upPS->SetDrawState(true);
             pParticles_holder = this;
-            this->upSK->SetPosition(&(this->upCO->GetFigure().center_fact));
+            this->upSK->SetPosition(&(this->upCO->GetCenterFact()));
 
             static const float time_to_start_bubble_sound = 1.f;
             bubble_sound_secs_cur = time_to_start_bubble_sound;    //  restart sound bubble time
@@ -318,7 +318,7 @@ void G_PlatformWind::Callback_Updater(float time)
         bool object_on_platform = false;
         for (PS_Collision& ps_c : ps_collisions)    //  update objects pos in collisions
         {
-            upPS->SetCollisionObject_world_pos(ps_c.collision_id, ps_c.pObj->upCO->GetFigure().center_fact);
+            upPS->SetCollisionObject_world_pos(ps_c.collision_id, ps_c.pObj->upCO->GetCenterFact());
             if (!object_on_platform) object_on_platform = IsObjectInPlatformRadiusXY(ps_c.pObj);    //  check if there is at least one object on the platform
         }
             //  particle sound.
@@ -574,7 +574,7 @@ void G_PlatformWind::Callback_Updater(float time)
         //  platrforms are allways moving, better to update particles direction and position on each call while drawing
     if (pParticles_holder == this && upPS_wind->IsDrawing())
     {
-        const ZC_Vec3<float>& platform_center = this->upCO->GetFigure().center_fact;
+        const ZC_Vec3<float>& platform_center = this->upCO->GetCenterFact();
         ZC_Vec3<float> platform_center_top(platform_center[0], platform_center[1], particles_start_Z);
 
         ZC_Vec3<float> particles_start_pos = ZC_Vec::MoveByLength(platform_center_top, ch_d.wind_dir_cur * -1.f, particles_distance_to_start_pos);

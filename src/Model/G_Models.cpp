@@ -16,14 +16,14 @@ void G_Models::LoadModels()
 	m2.radius = ZC_Vec::Length(GetFarestVertexOfSurface(models.back().surfaces));
 #else
 	models.reserve(G_MN__Platform_cube);
-    ZC_Timer t1(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "total load");
-    t1.StartPoint();
+    // ZC_Timer t1(ZC_TR__repeats, 1.0, ZC_TRO__seconds_total, "total load");
+    // t1.StartPoint();
 	for (int i = 0.f; i < G_MN__Platform_cube; ++i)
 	{
 		auto& iter = models.emplace_back(G_ModelLoader::LoadModel((G_ModelName)i));
 		if ((G_ModelName)i != G_MN__SphereMap && (G_ModelName)i != G_MN__SphereStar) iter.radius = ZC_Vec::Length(GetFarestVertexOfSurface(iter.surfaces));	//	set radius
 	}
-	t1.EndPoint();
+	// t1.EndPoint();
 	// models.emplace_back(G_CubeModelCreator::LoadModel());	//	load quad platform, not from blender, hard coded vertices
 #endif
 }

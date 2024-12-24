@@ -43,7 +43,7 @@ set(Game_LINK_LIBS ${Game_LINK_LIBS} PUBLIC ZeroCore)
 
     #   assimp
 if(Game_MY_DEBUG EQUAL 1)
-    set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS} PUBLIC /home/dmitry/projects/external/assimp/include)
+    # set(Game_INCLUDE_DIRS ${Game_INCLUDE_DIRS} PUBLIC /home/dmitry/projects/external/assimp/include)
 else()
     #     #   set up
     # set(BUILD_SHARED_LIBS OFF)
