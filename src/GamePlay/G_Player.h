@@ -37,6 +37,8 @@ private:
     bool dirs_actual = false;
 
     G_GUI_P_W_Health gui_w_health;
+    
+    float death_wait_secs = 0.f;
 
     void Callback_CameraRotated(const ZC_Vec3<float>& cam_pos);
     void Callback_W(ZC_ButtonID, float time);

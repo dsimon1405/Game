@@ -72,6 +72,7 @@ void G_GameManager::ContinueGame()
     case GS_PauseContinueWonGame:
     {
         ZC__Updater::ChangeLevelState(G_UL__game_manager, true);
+        ZC__Updater::ChangeLevelState(G_UL__game_particles, true);
         G_GameSounds::ChangeSoundsPlayState(!move_to_player_on_won_level);
         game_state = GS_ContinueWonGame;
     } break;

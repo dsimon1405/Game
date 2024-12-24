@@ -63,6 +63,9 @@ void G_Player::SetDefaultState()
     upObj->VSetDefaultState_IO();
     camera.SetDefaultState({ 0.f, 0.f, upObj->GetRadius() });   //  must be before after upObj, caurse G_Object::upSK (scroll system volume), if cam updated before, cam will have pos on start while player there where dead
     gui_w_health.SetDefaultState();
+
+    death_wait_secs = 0.f;
+    ec_updater.Disconnect();
 }
 
 void G_Player::SetSoundSetToDefault()
@@ -151,12 +154,11 @@ void G_Player::CallbackPlayerInfo(G_PlayerInfro player_info)
 void G_Player::Callback_Updater(float time)
 {
     static const float seconds_after_death_wait = 4.f;
-    static float cur_time = 0.f;
 
-    cur_time += time;
-    if (cur_time >= seconds_after_death_wait)
+    death_wait_secs += time;
+    if (death_wait_secs >= seconds_after_death_wait)
     {
-        cur_time = 0.f;
+        death_wait_secs = 0.f;
         ec_updater.Disconnect();
         G_GameManager::pGM->PlayerDead();
     }
