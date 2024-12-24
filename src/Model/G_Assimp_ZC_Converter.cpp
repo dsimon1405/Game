@@ -1,4 +1,5 @@
 #include "G_Assimp_ZC_Converter.h"
+#ifndef G_NewV
 
 namespace G_Assimp_ZC_Converter
 {
@@ -18,3 +19,5 @@ namespace G_Assimp_ZC_Converter
 		);
 	}
 };
+
+#endif
